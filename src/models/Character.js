@@ -8,18 +8,21 @@ const DEFAULT_ATTRIBUTES = {
 };
 
 export function createCharacter(input = {}) {
+  const xp = Math.max(0, Number(input.xp) || 0);
+
   return {
-    id: input.id || `character-${Date.now()}`,
-    name: input.name || '',
-    player: input.player || '',
-    classKey: input.classKey || '',
-    race: input.race || '',
-    level: input.level || 1,
-    xp: input.xp || 0,
-    background: input.background || '',
-    alignment: input.alignment || '',
+    id: input.id || `character-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+    name: String(input.name || '').trim(),
+    player: String(input.player || '').trim(),
+    classKey: input.classKey || 'Guerreiro',
+    race: String(input.race || '').trim(),
+    xp,
+    background: String(input.background || '').trim(),
+    alignment: String(input.alignment || '').trim(),
     attributes: { ...DEFAULT_ATTRIBUTES, ...(input.attributes || {}) },
-    resources: input.resources || [],
-    inventory: input.inventory || [],
+    resources: Array.isArray(input.resources) ? input.resources : [],
+    inventory: Array.isArray(input.inventory) ? input.inventory : [],
+    createdAt: input.createdAt || new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
   };
 }
