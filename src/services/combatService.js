@@ -15,7 +15,7 @@ export function heroParticipant(character) {
     initiative: 0,
     hp: { current: Math.min(Number(character.hp?.current) || hpMax, hpMax), max: hpMax, temporary: Number(character.hp?.temporary) || 0 },
     conditions: Array.isArray(character.conditions) ? character.conditions : [],
-    deathSaves: { successes: 0, failures: 0, stable: false },
+    deathSaves: { successes: 0, failures: 0, stable: false, dead: false },
     concentrationDc: null,
   };
 }
@@ -30,14 +30,13 @@ export function enemyParticipant(input = {}) {
     initiative: Number(input.initiative) || 0,
     hp: { current: hpMax, max: hpMax, temporary: 0 },
     conditions: [],
-    deathSaves: { successes: 0, failures: 0, stable: false },
+    deathSaves: { successes: 0, failures: 0, stable: false, dead: false },
     concentrationDc: null,
   };
 }
 
 export function applyHpChange(hp, delta) {
   if (delta >= 0) return { ...hp, current: Math.min(hp.max, hp.current + delta) };
-
   let damage = Math.abs(delta);
   const absorbed = Math.min(hp.temporary || 0, damage);
   damage -= absorbed;
@@ -86,11 +85,9 @@ export function toggleCondition(participant, conditionId) {
   const conditions = new Set(participant.conditions || []);
   if (conditions.has(conditionId)) conditions.delete(conditionId);
   else conditions.add(conditionId);
-
   if (INCAPACITATING_CONDITIONS.has(conditionId) && conditions.has(conditionId)) {
     conditions.delete('concentrating');
   }
-
   return {
     ...participant,
     conditions: [...conditions],
@@ -100,12 +97,13 @@ export function toggleCondition(participant, conditionId) {
 
 export function recordDeathSave(participant, roll) {
   if (participant.type !== 'hero' || participant.hp.current > 0) return participant;
+  if (participant.deathSaves?.dead || participant.deathSaves?.stable) return participant;
   if (roll === 20) {
     return {
       ...participant,
       hp: { ...participant.hp, current: 1 },
       conditions: (participant.conditions || []).filter((id) => id !== 'unconscious'),
-      deathSaves: { successes: 0, failures: 0, stable: false },
+      deathSaves: { successes: 0, failures: 0, stable: false, dead: false },
     };
   }
 
@@ -115,7 +113,6 @@ export function recordDeathSave(participant, roll) {
   else saves.failures = Math.min(3, saves.failures + 1);
   saves.stable = saves.successes >= 3;
   saves.dead = saves.failures >= 3;
-
   return { ...participant, deathSaves: saves };
 }
 
