@@ -3,6 +3,7 @@ import { SafeAreaView, StatusBar, StyleSheet, Text, TouchableOpacity, View } fro
 import CompanionScreen from './src/screens/CompanionScreen';
 import GroupsScreen from './src/screens/GroupsScreen';
 import ResourcesScreen from './src/screens/ResourcesScreen';
+import CombatScreen from './src/screens/CombatScreen';
 import { colors } from './src/theme';
 
 export default function App() {
@@ -23,11 +24,14 @@ export default function App() {
     <SafeAreaView style={styles.safe}>
       <StatusBar barStyle="light-content" backgroundColor={colors.background} />
       <View style={styles.screen}>
-        {area === 'groups' ? <GroupsScreen onOpenLegacy={() => setArea('legacy')} /> : <ResourcesScreen />}
+        {area === 'groups' && <GroupsScreen onOpenLegacy={() => setArea('legacy')} />}
+        {area === 'resources' && <ResourcesScreen />}
+        {area === 'combat' && <CombatScreen />}
       </View>
       <View style={styles.navigation}>
         <NavButton label="Grupos" active={area === 'groups'} onPress={() => setArea('groups')} />
         <NavButton label="Recursos" active={area === 'resources'} onPress={() => setArea('resources')} />
+        <NavButton label="Combate" active={area === 'combat'} onPress={() => setArea('combat')} />
       </View>
     </SafeAreaView>
   );
