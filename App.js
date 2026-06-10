@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { SafeAreaView, StatusBar, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import CompanionScreen from './src/screens/CompanionScreen';
 import GroupsScreen from './src/screens/GroupsScreen';
+import ResourcesScreen from './src/screens/ResourcesScreen';
 import { colors } from './src/theme';
 
 export default function App() {
@@ -21,14 +22,34 @@ export default function App() {
   return (
     <SafeAreaView style={styles.safe}>
       <StatusBar barStyle="light-content" backgroundColor={colors.background} />
-      <GroupsScreen onOpenLegacy={() => setArea('legacy')} />
+      <View style={styles.screen}>
+        {area === 'groups' ? <GroupsScreen onOpenLegacy={() => setArea('legacy')} /> : <ResourcesScreen />}
+      </View>
+      <View style={styles.navigation}>
+        <NavButton label="Grupos" active={area === 'groups'} onPress={() => setArea('groups')} />
+        <NavButton label="Recursos" active={area === 'resources'} onPress={() => setArea('resources')} />
+      </View>
     </SafeAreaView>
+  );
+}
+
+function NavButton({ label, active, onPress }) {
+  return (
+    <TouchableOpacity style={[styles.navButton, active && styles.navButtonActive]} onPress={onPress}>
+      <Text style={[styles.navText, active && styles.navTextActive]}>{label}</Text>
+    </TouchableOpacity>
   );
 }
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.background },
   container: { flex: 1, backgroundColor: colors.background },
+  screen: { flex: 1 },
+  navigation: { flexDirection: 'row', gap: 8, backgroundColor: colors.surface, borderTopColor: colors.border, borderTopWidth: 1, padding: 10 },
+  navButton: { flex: 1, alignItems: 'center', borderRadius: 10, padding: 10 },
+  navButtonActive: { backgroundColor: colors.primary },
+  navText: { color: colors.textMuted, fontWeight: '900' },
+  navTextActive: { color: colors.background },
   backButton: {
     backgroundColor: colors.surface,
     borderBottomColor: colors.border,
