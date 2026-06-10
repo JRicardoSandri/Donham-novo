@@ -9,12 +9,12 @@ export default function App() {
 
   if (area === 'legacy') {
     return (
-      <View style={styles.container}>
+      <SafeAreaView style={styles.container}>
         <TouchableOpacity style={styles.backButton} onPress={() => setArea('groups')}>
           <Text style={styles.backText}>Voltar para grupos</Text>
         </TouchableOpacity>
         <CompanionScreen />
-      </View>
+      </SafeAreaView>
     );
   }
 

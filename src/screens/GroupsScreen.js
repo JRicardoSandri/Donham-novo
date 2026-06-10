@@ -54,6 +54,7 @@ export default function GroupsScreen({ onOpenLegacy }) {
   const [groupName, setGroupName] = useState('');
   const [editingGroup, setEditingGroup] = useState(null);
   const [characterDraft, setCharacterDraft] = useState(null);
+  const [saveError, setSaveError] = useState(false);
 
   useEffect(() => {
     loadCampaignState().then((saved) => {
@@ -63,7 +64,9 @@ export default function GroupsScreen({ onOpenLegacy }) {
   }, []);
 
   useEffect(() => {
-    if (loaded) saveCampaignState(state);
+    if (!loaded) return;
+
+    saveCampaignState(state).then((saved) => setSaveError(!saved));
   }, [loaded, state]);
 
   const activeGroup = state.groups.find((group) => group.id === state.activeGroupId) || null;
@@ -72,6 +75,10 @@ export default function GroupsScreen({ onOpenLegacy }) {
     return activeGroup.characterIds
       .map((id) => state.characters.find((character) => character.id === id))
       .filter(Boolean);
+  }, [activeGroup, state.characters]);
+  const availableCharacters = useMemo(() => {
+    if (!activeGroup) return [];
+    return state.characters.filter((character) => !activeGroup.characterIds.includes(character.id));
   }, [activeGroup, state.characters]);
 
   function addGroup() {
@@ -161,12 +168,28 @@ export default function GroupsScreen({ onOpenLegacy }) {
     }));
   }
 
+  function addExistingCharacter(character) {
+    setState((old) => ({
+      ...old,
+      groups: old.groups.map((group) =>
+        group.id === activeGroup.id
+          ? { ...group, characterIds: [...group.characterIds, character.id] }
+          : group
+      ),
+    }));
+  }
+
   return (
     <View style={styles.screen}>
       <ScrollView contentContainerStyle={styles.content}>
         <Text style={styles.eyebrow}>RPG COMPANION</Text>
         <Text style={styles.title}>Suas campanhas</Text>
         <Text style={styles.subtitle}>Organize grupos e personagens sem prender o app a uma única mesa.</Text>
+        {saveError && (
+          <View style={styles.warning}>
+            <Text style={styles.warningText}>Não foi possível salvar os dados neste dispositivo. Tente novamente antes de fechar o app.</Text>
+          </View>
+        )}
 
         <View style={styles.createRow}>
           <TextInput
@@ -257,6 +280,26 @@ export default function GroupsScreen({ onOpenLegacy }) {
             <TouchableOpacity style={styles.primaryWide} onPress={() => openCharacter()}>
               <Text style={styles.primaryText}>Adicionar personagem</Text>
             </TouchableOpacity>
+
+            {availableCharacters.length > 0 && (
+              <View style={styles.availableSection}>
+                <Text style={styles.cardTitle}>Personagens disponíveis</Text>
+                <Text style={styles.muted}>Adicione ao grupo personagens que já foram criados.</Text>
+                {availableCharacters.map((character) => (
+                  <TouchableOpacity
+                    key={`available-${character.id}`}
+                    style={styles.availableCharacter}
+                    onPress={() => addExistingCharacter(character)}
+                  >
+                    <View style={styles.flex}>
+                      <Text style={styles.secondaryText}>{character.name}</Text>
+                      <Text style={styles.muted}>{character.classKey} · {character.player || 'Sem jogador'}</Text>
+                    </View>
+                    <Text style={styles.addText}>+ Adicionar</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            )}
           </>
         )}
 
@@ -391,6 +434,8 @@ const styles = StyleSheet.create({
   eyebrow: { color: colors.primary, fontSize: 12, fontWeight: '900', letterSpacing: 2 },
   title: { color: colors.text, fontSize: 30, fontWeight: '900', marginTop: 6 },
   subtitle: { color: colors.textMuted, lineHeight: 20, marginTop: 6, marginBottom: spacing.lg },
+  warning: { backgroundColor: '#241B0D', borderColor: '#7A5A1C', borderWidth: 1, borderRadius: radii.md, marginBottom: spacing.md, padding: 12 },
+  warningText: { color: '#FFD78A', fontSize: 12, lineHeight: 18 },
   createRow: { flexDirection: 'row', gap: spacing.sm },
   inputGrow: {
     flex: 1,
@@ -442,6 +487,9 @@ const styles = StyleSheet.create({
   secondaryText: { color: colors.text, fontWeight: '800' },
   legacyButton: { backgroundColor: colors.surfaceMuted, borderColor: colors.border, borderWidth: 1, borderRadius: radii.lg, marginTop: spacing.xl, padding: spacing.lg },
   legacyTitle: { color: colors.primary, fontWeight: '900', marginBottom: 4 },
+  availableSection: { backgroundColor: colors.surfaceMuted, borderColor: colors.border, borderWidth: 1, borderRadius: radii.lg, marginTop: spacing.lg, padding: spacing.lg },
+  availableCharacter: { flexDirection: 'row', alignItems: 'center', borderTopColor: colors.border, borderTopWidth: 1, marginTop: spacing.md, paddingTop: spacing.md },
+  addText: { color: colors.primary, fontWeight: '900' },
   modalBackground: { flex: 1, backgroundColor: 'rgba(0,0,0,0.75)', justifyContent: 'center', padding: spacing.lg },
   modalCard: { backgroundColor: colors.surface, borderRadius: radii.lg, padding: spacing.lg },
   sheet: { maxHeight: '92%', backgroundColor: colors.surface, borderRadius: radii.lg },
