@@ -1,0 +1,28 @@
+{
+  "expo": {
+    "name": "Domhan RPG Companion",
+    "slug": "domhan-rpg-companion-supremo",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "splash": {
+      "backgroundColor": "#070A0F"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "android": {
+      "package": "com.domhan.rpgcompanion",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/icon.png",
+        "backgroundColor": "#070A0F"
+      }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "72b5b937-0c26-4cbc-bdc8-03fe792010ef"
+      }
+    }
+  }
+}
