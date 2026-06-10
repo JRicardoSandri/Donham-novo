@@ -2,7 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export const STORAGE_KEYS = {
   LEGACY_APP_STATE: 'domhan_rpg_companion_supremo_v1',
-  APP_STATE: 'rpg_companion_state_v2',
+  CAMPAIGNS: 'rpg_companion_campaigns_v1',
 };
 
 export async function loadJson(key, fallback = null) {
@@ -21,16 +21,6 @@ export async function saveJson(key, value) {
     return true;
   } catch (error) {
     console.warn(`Falha ao salvar ${key}:`, error);
-    return false;
-  }
-}
-
-export async function removeValue(key) {
-  try {
-    await AsyncStorage.removeItem(key);
-    return true;
-  } catch (error) {
-    console.warn(`Falha ao remover ${key}:`, error);
     return false;
   }
 }

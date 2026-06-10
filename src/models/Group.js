@@ -1,9 +1,9 @@
-export function createGroup({ id, name, characterIds = [] }) {
+export function createGroup(input = {}) {
   return {
-    id: id || `group-${Date.now()}`,
-    name: String(name || 'Novo grupo').trim(),
-    characterIds: [...characterIds],
-    createdAt: new Date().toISOString(),
+    id: input.id || `group-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+    name: String(input.name || 'Novo grupo').trim(),
+    characterIds: Array.isArray(input.characterIds) ? [...input.characterIds] : [],
+    createdAt: input.createdAt || new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   };
 }
