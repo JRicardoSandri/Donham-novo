@@ -4,6 +4,7 @@ import CompanionScreen from './src/screens/CompanionScreen';
 import GroupsScreen from './src/screens/GroupsScreen';
 import ResourcesScreen from './src/screens/ResourcesScreen';
 import CombatScreen from './src/screens/CombatScreen';
+import InventoryScreen from './src/screens/InventoryScreen';
 import { colors } from './src/theme';
 
 export default function App() {
@@ -27,11 +28,13 @@ export default function App() {
         {area === 'groups' && <GroupsScreen onOpenLegacy={() => setArea('legacy')} />}
         {area === 'resources' && <ResourcesScreen />}
         {area === 'combat' && <CombatScreen />}
+        {area === 'inventory' && <InventoryScreen />}
       </View>
       <View style={styles.navigation}>
         <NavButton label="Grupos" active={area === 'groups'} onPress={() => setArea('groups')} />
         <NavButton label="Recursos" active={area === 'resources'} onPress={() => setArea('resources')} />
         <NavButton label="Combate" active={area === 'combat'} onPress={() => setArea('combat')} />
+        <NavButton label="Itens" active={area === 'inventory'} onPress={() => setArea('inventory')} />
       </View>
     </SafeAreaView>
   );
