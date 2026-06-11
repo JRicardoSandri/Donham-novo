@@ -5,9 +5,18 @@ import GroupsScreen from './src/screens/GroupsScreen';
 import ResourcesScreen from './src/screens/ResourcesScreen';
 import CombatScreen from './src/screens/CombatScreen';
 import InventoryScreen from './src/screens/InventoryScreen';
+import { CampaignProvider } from './src/services/CampaignContext';
 import { colors, shadows } from './src/theme';
 
 export default function App() {
+  return (
+    <CampaignProvider>
+      <AppContent />
+    </CampaignProvider>
+  );
+}
+
+function AppContent() {
   const [area, setArea] = useState('groups');
 
   if (area === 'legacy') {

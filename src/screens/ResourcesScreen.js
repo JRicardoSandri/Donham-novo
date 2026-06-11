@@ -1,29 +1,13 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { RECOVERY } from '../data/classProgression';
-import { loadCampaignState, saveCampaignState } from '../services/campaignService';
-import { recoverResources, resourcesForCharacter, spendResource } from '../services/resourceService';
+import { useCampaign } from '../services/CampaignContext';
+import { recoverResources, spendResource } from '../services/resourceService';
 import { levelFromXp } from '../services/rulesService';
 import { colors, radii, spacing } from '../theme';
 
 export default function ResourcesScreen() {
-  const [state, setState] = useState(null);
-
-  useEffect(() => {
-    loadCampaignState().then((saved) => {
-      setState({
-        ...saved,
-        characters: saved.characters.map((character) => ({
-          ...character,
-          resources: resourcesForCharacter(character),
-        })),
-      });
-    });
-  }, []);
-
-  useEffect(() => {
-    if (state) saveCampaignState(state);
-  }, [state]);
+  const { state, setState } = useCampaign();
 
   const characters = useMemo(() => state?.characters || [], [state]);
 
@@ -33,6 +17,17 @@ export default function ResourcesScreen() {
       characters: old.characters.map((character) =>
         character.id === characterId
           ? { ...character, resources: updater(character.resources || []) }
+          : character
+      ),
+    }));
+  }
+
+  function changeToken(characterId, key, delta) {
+    setState((old) => ({
+      ...old,
+      characters: old.characters.map((character) =>
+        character.id === characterId
+          ? { ...character, [key]: Math.max(0, Math.min(10, (Number(character[key]) || 0) + delta)) }
           : character
       ),
     }));
@@ -57,6 +52,11 @@ export default function ResourcesScreen() {
         <View key={character.id} style={styles.card}>
           <Text style={styles.cardTitle}>{character.name}</Text>
           <Text style={styles.muted}>{character.classKey} · nível {levelFromXp(character.xp)} · {character.xp} XP</Text>
+
+          <View style={styles.tokenRow}>
+            <Token label="Inspiração" value={character.inspiration || 0} onMinus={() => changeToken(character.id, 'inspiration', -1)} onPlus={() => changeToken(character.id, 'inspiration', 1)} />
+            <Token label="Pontos de Enredo" value={character.plotPoints || 0} onMinus={() => changeToken(character.id, 'plotPoints', -1)} onPlus={() => changeToken(character.id, 'plotPoints', 1)} />
+          </View>
 
           {(character.resources || []).length === 0 ? (
             <Text style={styles.noResources}>Esta classe não possui recursos automáticos neste nível.</Text>
@@ -90,6 +90,19 @@ export default function ResourcesScreen() {
   );
 }
 
+function Token({ label, value, onMinus, onPlus }) {
+  return (
+    <View style={styles.token}>
+      <Text style={styles.tokenLabel}>{label}</Text>
+      <View style={styles.tokenControls}>
+        <TouchableOpacity style={styles.control} onPress={onMinus}><Text style={styles.controlText}>−</Text></TouchableOpacity>
+        <Text style={styles.count}>{value}/10</Text>
+        <TouchableOpacity style={styles.control} onPress={onPlus}><Text style={styles.controlText}>+</Text></TouchableOpacity>
+      </View>
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
   content: { padding: spacing.lg, paddingBottom: 48 },
   loading: { flex: 1, color: colors.text, backgroundColor: colors.background, padding: spacing.lg },
@@ -101,6 +114,10 @@ const styles = StyleSheet.create({
   cardTitle: { color: colors.text, fontSize: 17, fontWeight: '900' },
   muted: { color: colors.textMuted, fontSize: 12, lineHeight: 18 },
   noResources: { color: colors.textMuted, marginTop: spacing.md },
+  tokenRow: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.md },
+  token: { flex: 1, backgroundColor: colors.primarySoft, borderRadius: radii.md, padding: spacing.sm },
+  tokenLabel: { color: colors.primary, fontSize: 11, fontWeight: '900', textAlign: 'center' },
+  tokenControls: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: spacing.sm, marginTop: spacing.sm },
   resource: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, borderTopColor: colors.border, borderTopWidth: 1, marginTop: spacing.md, paddingTop: spacing.md },
   flex: { flex: 1 },
   resourceName: { color: colors.text, fontSize: 13, fontWeight: '800' },

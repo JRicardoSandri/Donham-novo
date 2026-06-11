@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Modal, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { CONDITIONS } from '../data/conditions';
-import { loadCampaignState, saveCampaignState } from '../services/campaignService';
+import { useCampaign } from '../services/CampaignContext';
 import {
   advanceTurn,
   applyParticipantHp,
@@ -18,19 +18,14 @@ import { colors, radii, shadows, spacing } from '../theme';
 const EMPTY_ENEMY = { name: '', hpMax: '10', armorClass: '10', initiative: '0' };
 
 export default function CombatScreen() {
-  const [state, setState] = useState(null);
+  const { state, setState } = useCampaign();
   const [enemy, setEnemy] = useState(EMPTY_ENEMY);
   const [conditionTarget, setConditionTarget] = useState(null);
 
   useEffect(() => {
-    loadCampaignState().then((saved) =>
-      setState({ ...saved, combats: saved.combats?.length ? saved.combats : [createCombat()] })
-    );
-  }, []);
-
-  useEffect(() => {
-    if (state) saveCampaignState(state);
-  }, [state]);
+    if (!state || state.combats?.length) return;
+    setState((old) => ({ ...old, combats: [createCombat()] }));
+  }, [state, setState]);
 
   const combat = state?.combats?.[0] || createCombat();
   const activeParticipant = combat.participants[combat.activeIndex];

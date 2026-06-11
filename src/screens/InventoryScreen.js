@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { ScrollView, StyleSheet, Switch, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import { loadCampaignState, saveCampaignState } from '../services/campaignService';
+import { useCampaign } from '../services/CampaignContext';
 import {
   inventoryCapacity,
   removeInventoryItem,
@@ -20,16 +20,8 @@ const EMPTY_ITEM = {
 };
 
 export default function InventoryScreen() {
-  const [state, setState] = useState(null);
+  const { state, setState } = useCampaign();
   const [form, setForm] = useState(EMPTY_ITEM);
-
-  useEffect(() => {
-    loadCampaignState().then(setState);
-  }, []);
-
-  useEffect(() => {
-    if (state) saveCampaignState(state);
-  }, [state]);
 
   function saveItem() {
     if (!form.characterId || !form.name.trim()) return;
