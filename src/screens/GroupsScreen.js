@@ -10,6 +10,7 @@ import {
   View,
 } from 'react-native';
 import { ATTRIBUTE_FIELDS, CLASSES } from '../data/dnd5e';
+import { progressionFor } from '../data/classFeatures';
 import { createCharacter } from '../models/Character';
 import { createGroup } from '../models/Group';
 import { useCampaign } from '../services/CampaignContext';
@@ -17,9 +18,9 @@ import {
   abilityModifier,
   carryingCapacity,
   initiativeFromAttributes,
-  levelFromXp,
   proficiencyBonus,
   signedModifier,
+  xpProgress,
 } from '../services/rulesService';
 import { colors, radii, spacing } from '../theme';
 
@@ -36,6 +37,7 @@ const EMPTY_CHARACTER = {
   hp: { current: '1', max: '1', temporary: '0' },
   inspiration: 0,
   plotPoints: 0,
+  coins: { pc: '0', pp: '0', pe: '0', po: '0', pl: '0' },
   attributes: {
     strength: '10',
     dexterity: '10',
@@ -46,7 +48,7 @@ const EMPTY_CHARACTER = {
   },
 };
 
-export default function GroupsScreen({ onOpenLegacy }) {
+export default function GroupsScreen() {
   const { state, setState, saveError } = useCampaign();
   const [groupName, setGroupName] = useState('');
   const [editingGroup, setEditingGroup] = useState(null);
@@ -118,6 +120,9 @@ export default function GroupsScreen({ onOpenLegacy }) {
               max: String(character.hp?.max ?? 1),
               temporary: String(character.hp?.temporary ?? 0),
             },
+            coins: Object.fromEntries(
+              ['pc', 'pp', 'pe', 'po', 'pl'].map((coin) => [coin, String(character.coins?.[coin] ?? 0)])
+            ),
             attributes: Object.fromEntries(
               ATTRIBUTE_FIELDS.map(([key]) => [key, String(character.attributes?.[key] ?? 10)])
             ),
@@ -142,6 +147,21 @@ export default function GroupsScreen({ onOpenLegacy }) {
             ? { ...group, characterIds: [...group.characterIds, character.id] }
             : group
         ),
+        combats: old.combats.map((combat) => ({
+          ...combat,
+          participants: combat.participants.map((participant) =>
+            participant.sourceId === character.id
+              ? {
+                  ...participant,
+                  name: character.name,
+                  armorClass: character.armorClass,
+                  initiative: character.initiative,
+                  hp: { ...character.hp },
+                  conditions: [...character.conditions],
+                }
+              : participant
+          ),
+        })),
       };
     });
     setCharacterDraft(null);
@@ -242,8 +262,10 @@ export default function GroupsScreen({ onOpenLegacy }) {
             </View>
 
             {groupCharacters.map((character) => {
-              const level = levelFromXp(character.xp);
-              const initiative = initiativeFromAttributes(character.attributes);
+              const progress = xpProgress(character.xp);
+              const level = progress.level;
+              const progression = progressionFor(character.classKey, level);
+              const initiative = character.initiative ?? initiativeFromAttributes(character.attributes);
               const capacity = carryingCapacity(character.attributes);
               return (
                 <View key={character.id} style={styles.characterCard}>
@@ -273,6 +295,34 @@ export default function GroupsScreen({ onOpenLegacy }) {
                     <Stat label="Carga" value={`${capacity} lb`} />
                     <Stat label="XP" value={character.xp} />
                   </View>
+
+                  <View style={styles.progressHeader}>
+                    <Text style={styles.muted}>
+                      {progress.nextXp
+                        ? `Próximo nível: ${progress.nextXp} XP · faltam ${progress.missing}`
+                        : 'Nível máximo'}
+                    </Text>
+                    <Text style={styles.progressPercent}>{progress.percent}%</Text>
+                  </View>
+                  <View style={styles.progressTrack}>
+                    <View style={[styles.progressFill, { width: `${progress.percent}%` }]} />
+                  </View>
+
+                  {progression.unlocked.length > 0 && (
+                    <View style={styles.featurePanel}>
+                      <Text style={styles.featureTitle}>Habilidades por nível</Text>
+                      {progression.unlocked.slice(-4).map(([featureLevel, text]) => (
+                        <Text key={`${character.id}-feature-${featureLevel}`} style={styles.featureText}>
+                          Nível {featureLevel}: {text}
+                        </Text>
+                      ))}
+                      {progression.upcoming.length > 0 && (
+                        <Text style={styles.nextFeature}>
+                          Próximo: nível {progression.upcoming[0][0]} · {progression.upcoming[0][1]}
+                        </Text>
+                      )}
+                    </View>
+                  )}
 
                   <View style={styles.tokenRow}>
                     <TokenCounter
@@ -327,10 +377,6 @@ export default function GroupsScreen({ onOpenLegacy }) {
           </>
         )}
 
-        <TouchableOpacity style={styles.legacyButton} onPress={onOpenLegacy}>
-          <Text style={styles.legacyTitle}>Abrir campanha legada</Text>
-          <Text style={styles.muted}>Recursos, combate, XP e moedas continuam disponíveis.</Text>
-        </TouchableOpacity>
       </ScrollView>
 
       <GroupModal draft={editingGroup} onChange={setEditingGroup} onSave={saveGroupName} onClose={() => setEditingGroup(null)} />
@@ -459,6 +505,19 @@ function CharacterModal({ draft, onChange, onSave, onClose }) {
                 );
               })}
             </View>
+            <Text style={styles.fieldLabel}>Moedas</Text>
+            <View style={styles.coinGrid}>
+              {['pc', 'pp', 'pe', 'po', 'pl'].map((coin) => (
+                <View key={coin} style={styles.coinField}>
+                  <Field
+                    label={coin.toUpperCase()}
+                    value={draft?.coins?.[coin]}
+                    keyboardType="numeric"
+                    onChangeText={(value) => update({ coins: { ...draft.coins, [coin]: value } })}
+                  />
+                </View>
+              ))}
+            </View>
             <ModalActions onClose={onClose} onSave={onSave} />
           </ScrollView>
         </View>
@@ -551,11 +610,17 @@ const styles = StyleSheet.create({
   tokenButton: { width: 32, height: 32, borderRadius: radii.sm, backgroundColor: colors.surfaceHighlight, alignItems: 'center', justifyContent: 'center' },
   tokenButtonText: { color: colors.text, fontSize: 19, fontWeight: '900' },
   tokenValue: { minWidth: 42, color: colors.text, fontWeight: '900', textAlign: 'center' },
+  progressHeader: { flexDirection: 'row', justifyContent: 'space-between', marginTop: spacing.md },
+  progressPercent: { color: colors.primary, fontSize: 11, fontWeight: '900' },
+  progressTrack: { height: 7, backgroundColor: colors.surfaceMuted, borderRadius: radii.pill, overflow: 'hidden', marginTop: 6 },
+  progressFill: { height: '100%', backgroundColor: colors.primary, borderRadius: radii.pill },
+  featurePanel: { backgroundColor: colors.surfaceMuted, borderRadius: radii.md, marginTop: spacing.md, padding: spacing.md },
+  featureTitle: { color: colors.text, fontWeight: '900', marginBottom: 6 },
+  featureText: { color: colors.textMuted, fontSize: 11, lineHeight: 17 },
+  nextFeature: { color: colors.primary, fontSize: 11, fontWeight: '800', marginTop: 7 },
   actions: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.lg },
   secondaryButton: { flex: 1, borderColor: colors.border, borderWidth: 1, borderRadius: radii.md, alignItems: 'center', padding: 12 },
   secondaryText: { color: colors.text, fontWeight: '800' },
-  legacyButton: { backgroundColor: colors.surfaceMuted, borderColor: colors.border, borderWidth: 1, borderRadius: radii.lg, marginTop: spacing.xl, padding: spacing.lg },
-  legacyTitle: { color: colors.primary, fontWeight: '900', marginBottom: 4 },
   availableSection: { backgroundColor: colors.surfaceMuted, borderColor: colors.border, borderWidth: 1, borderRadius: radii.lg, marginTop: spacing.lg, padding: spacing.lg },
   availableCharacter: { flexDirection: 'row', alignItems: 'center', borderTopColor: colors.border, borderTopWidth: 1, marginTop: spacing.md, paddingTop: spacing.md },
   addText: { color: colors.primary, fontWeight: '900' },
@@ -571,6 +636,8 @@ const styles = StyleSheet.create({
   classText: { color: colors.textMuted, fontWeight: '800' },
   classTextActive: { color: colors.background },
   attributeGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm, marginTop: spacing.sm },
+  coinGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
+  coinField: { width: '18%' },
   attributeCard: { width: '31%', backgroundColor: colors.surfaceMuted, borderRadius: radii.md, alignItems: 'center', padding: 10 },
   attributeLabel: { color: colors.textMuted, fontSize: 11, fontWeight: '900' },
   attributeInput: { color: colors.text, fontSize: 20, fontWeight: '900', textAlign: 'center', width: '100%', paddingVertical: 4 },

@@ -33,6 +33,22 @@ export default function ResourcesScreen() {
     }));
   }
 
+  function restCharacter(characterId, restType) {
+    setState((old) => ({
+      ...old,
+      characters: old.characters.map((character) => {
+        if (characterId && character.id !== characterId) return character;
+        return {
+          ...character,
+          hp: restType === RECOVERY.LONG
+            ? { ...character.hp, current: character.hp.max }
+            : character.hp,
+          resources: recoverResources(character.resources || [], restType),
+        };
+      }),
+    }));
+  }
+
   if (!state) return <Text style={styles.loading}>Carregando recursos...</Text>;
 
   return (
@@ -40,6 +56,14 @@ export default function ResourcesScreen() {
       <Text style={styles.eyebrow}>PROGRESSÃO AUTOMÁTICA</Text>
       <Text style={styles.title}>Recursos e magias</Text>
       <Text style={styles.subtitle}>Classe e XP determinam automaticamente recursos e espaços de magia.</Text>
+      <View style={styles.globalActions}>
+        <TouchableOpacity style={styles.globalRest} onPress={() => restCharacter(null, RECOVERY.SHORT)}>
+          <Text style={styles.restText}>Descanso curto para todos</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.globalRest} onPress={() => restCharacter(null, RECOVERY.LONG)}>
+          <Text style={styles.restText}>Descanso longo para todos</Text>
+        </TouchableOpacity>
+      </View>
 
       {characters.length === 0 && (
         <View style={styles.empty}>
@@ -66,21 +90,29 @@ export default function ResourcesScreen() {
                 <Text style={styles.resourceName}>{item.name}</Text>
                 <Text style={styles.muted}>Recupera em descanso {item.recovery === RECOVERY.SHORT ? 'curto' : 'longo'}</Text>
               </View>
-              <TouchableOpacity style={styles.control} onPress={() => updateResources(character.id, (items) => spendResource(items, item.id, -1))}>
-                <Text style={styles.controlText}>−</Text>
-              </TouchableOpacity>
-              <Text style={[styles.count, item.current === 0 && styles.emptyCount]}>{item.current}/{item.max}</Text>
-              <TouchableOpacity style={styles.control} onPress={() => updateResources(character.id, (items) => spendResource(items, item.id, 1))}>
-                <Text style={styles.controlText}>+</Text>
-              </TouchableOpacity>
+              <View style={styles.resourceControls}>
+                <TouchableOpacity style={styles.control} onPress={() => updateResources(character.id, (items) => spendResource(items, item.id, -1))}>
+                  <Text style={styles.controlText}>−</Text>
+                </TouchableOpacity>
+                <Text style={[styles.count, item.current === 0 && styles.emptyCount]}>{item.current}/{item.max}</Text>
+                <TouchableOpacity style={styles.control} onPress={() => updateResources(character.id, (items) => spendResource(items, item.id, 1))}>
+                  <Text style={styles.controlText}>+</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.textControl} onPress={() => updateResources(character.id, (items) => items.map((resource) => resource.id === item.id ? { ...resource, current: 0 } : resource))}>
+                  <Text style={styles.textControlLabel}>Usou</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.textControl} onPress={() => updateResources(character.id, (items) => items.map((resource) => resource.id === item.id ? { ...resource, current: resource.max } : resource))}>
+                  <Text style={styles.textControlLabel}>Cheio</Text>
+                </TouchableOpacity>
+              </View>
             </View>
           ))}
 
           <View style={styles.actions}>
-            <TouchableOpacity style={styles.rest} onPress={() => updateResources(character.id, (items) => recoverResources(items, RECOVERY.SHORT))}>
+            <TouchableOpacity style={styles.rest} onPress={() => restCharacter(character.id, RECOVERY.SHORT)}>
               <Text style={styles.restText}>Descanso curto</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.rest} onPress={() => updateResources(character.id, (items) => recoverResources(items, RECOVERY.LONG))}>
+            <TouchableOpacity style={styles.rest} onPress={() => restCharacter(character.id, RECOVERY.LONG)}>
               <Text style={styles.restText}>Descanso longo</Text>
             </TouchableOpacity>
           </View>
@@ -114,15 +146,20 @@ const styles = StyleSheet.create({
   cardTitle: { color: colors.text, fontSize: 17, fontWeight: '900' },
   muted: { color: colors.textMuted, fontSize: 12, lineHeight: 18 },
   noResources: { color: colors.textMuted, marginTop: spacing.md },
+  globalActions: { flexDirection: 'row', gap: spacing.sm, marginBottom: spacing.lg },
+  globalRest: { flex: 1, backgroundColor: colors.surface, borderColor: colors.border, borderWidth: 1, borderRadius: radii.md, alignItems: 'center', padding: 12 },
   tokenRow: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.md },
   token: { flex: 1, backgroundColor: colors.primarySoft, borderRadius: radii.md, padding: spacing.sm },
   tokenLabel: { color: colors.primary, fontSize: 11, fontWeight: '900', textAlign: 'center' },
   tokenControls: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: spacing.sm, marginTop: spacing.sm },
-  resource: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, borderTopColor: colors.border, borderTopWidth: 1, marginTop: spacing.md, paddingTop: spacing.md },
+  resource: { borderTopColor: colors.border, borderTopWidth: 1, marginTop: spacing.md, paddingTop: spacing.md },
+  resourceControls: { flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end', gap: spacing.sm, marginTop: spacing.sm },
   flex: { flex: 1 },
   resourceName: { color: colors.text, fontSize: 13, fontWeight: '800' },
   control: { width: 36, height: 36, borderRadius: radii.sm, backgroundColor: colors.surfaceMuted, alignItems: 'center', justifyContent: 'center' },
   controlText: { color: colors.text, fontSize: 22, fontWeight: '900' },
+  textControl: { backgroundColor: colors.surfaceMuted, borderRadius: radii.sm, paddingHorizontal: 8, paddingVertical: 10 },
+  textControlLabel: { color: colors.textMuted, fontSize: 9, fontWeight: '900' },
   count: { color: colors.primary, minWidth: 46, textAlign: 'center', fontWeight: '900' },
   emptyCount: { color: colors.danger },
   actions: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.lg },

@@ -24,6 +24,7 @@ export function createCharacter(input = {}) {
   );
   const attributes = { ...DEFAULT_ATTRIBUTES, ...(input.attributes || {}) };
   const level = levelFromXp(xp);
+  const calculatedInitiative = initiativeFromAttributes(attributes);
 
   const character = {
     id: input.id || `character-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
@@ -37,7 +38,9 @@ export function createCharacter(input = {}) {
     attributes,
     level,
     proficiencyBonus: proficiencyBonus(level),
-    initiative: initiativeFromAttributes(attributes),
+    initiative: Number.isFinite(Number(input.initiative))
+      ? Number(input.initiative)
+      : calculatedInitiative,
     carryCapacity: carryingCapacity(attributes),
     armorClass: Math.max(0, Number(input.armorClass) || 10),
     speed: Math.max(0, Number(input.speed) || 30),
@@ -64,6 +67,14 @@ export function createCharacter(input = {}) {
 
   const automaticResources = resourcesForCharacter(character);
   const automaticIds = new Set(automaticResources.map((item) => item.id));
-  const customResources = character.resources.filter((item) => !automaticIds.has(item.id));
+  const automaticNames = new Set(automaticResources.map((item) =>
+    String(item.name || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
+  ));
+  const customResources = character.resources.filter((item) => {
+    const name = String(item.name || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+    if (automaticIds.has(item.id) || automaticNames.has(name)) return false;
+    if (item.type === 'Magia' && automaticResources.some((resource) => resource.name.includes('magia'))) return false;
+    return true;
+  });
   return { ...character, resources: [...customResources, ...automaticResources] };
 }

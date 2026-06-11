@@ -5,7 +5,13 @@ export const RECOVERY = {
 
 export const CLASS_RESOURCES = {
   Bárbaro: [{ id: 'rage', name: 'Fúria', unlock: 1, recovery: RECOVERY.LONG, max: (level) => (level < 3 ? 2 : level < 6 ? 3 : level < 12 ? 4 : level < 17 ? 5 : 6) }],
-  Bardo: [{ id: 'bardic-inspiration', name: 'Inspiração de Bardo', unlock: 1, recovery: RECOVERY.LONG, max: () => 3 }],
+  Bardo: [{
+    id: 'bardic-inspiration',
+    name: 'Inspiração de Bardo',
+    unlock: 1,
+    recovery: (level) => level >= 5 ? RECOVERY.SHORT : RECOVERY.LONG,
+    max: (_level, character) => Math.max(1, Math.floor(((Number(character.attributes?.charisma) || 10) - 10) / 2)),
+  }],
   Clérigo: [{ id: 'channel-divinity', name: 'Canalizar Divindade', unlock: 2, recovery: RECOVERY.SHORT, max: (level) => (level < 6 ? 1 : level < 18 ? 2 : 3) }],
   Druida: [{ id: 'wild-shape', name: 'Forma Selvagem', unlock: 2, recovery: RECOVERY.SHORT, max: () => 2 }],
   Guerreiro: [
@@ -51,4 +57,11 @@ export function warlockPactFor(level) {
   const slots = level === 1 ? 1 : level < 11 ? 2 : level < 17 ? 3 : 4;
   const circle = level < 3 ? 1 : level < 5 ? 2 : level < 7 ? 3 : level < 9 ? 4 : 5;
   return { slots, circle };
+}
+
+export function mysticArcanumFor(level) {
+  const unlocks = { 6: 11, 7: 13, 8: 15, 9: 17 };
+  return [6, 7, 8, 9]
+    .filter((circle) => level >= unlocks[circle])
+    .map((circle) => ({ circle, slots: 1 }));
 }

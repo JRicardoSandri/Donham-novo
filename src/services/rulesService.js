@@ -16,6 +16,25 @@ export function levelFromXp(xp) {
   return level;
 }
 
+export function xpProgress(xp) {
+  const value = Math.max(0, numberValue(xp));
+  const level = levelFromXp(value);
+  const currentXp = XP_TABLE[level - 1];
+  const nextXp = XP_TABLE[level] ?? null;
+
+  if (nextXp === null) {
+    return { level, currentXp, nextXp: null, missing: 0, percent: 100 };
+  }
+
+  return {
+    level,
+    currentXp,
+    nextXp,
+    missing: Math.max(0, nextXp - value),
+    percent: Math.max(0, Math.min(100, Math.round(((value - currentXp) / (nextXp - currentXp)) * 100))),
+  };
+}
+
 export function proficiencyBonus(level) {
   return 2 + Math.floor((Math.max(1, numberValue(level, 1)) - 1) / 4);
 }
