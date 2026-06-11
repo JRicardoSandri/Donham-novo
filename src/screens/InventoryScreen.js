@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { ScrollView, StyleSheet, Switch, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { useCampaign } from '../services/CampaignContext';
 import {
@@ -22,6 +22,18 @@ const EMPTY_ITEM = {
 export default function InventoryScreen() {
   const { state, setState } = useCampaign();
   const [form, setForm] = useState(EMPTY_ITEM);
+  const activeGroup = useMemo(
+    () => state?.groups.find((group) => group.id === state.activeGroupId) || null,
+    [state?.groups, state?.activeGroupId]
+  );
+  const activeCharacterIds = useMemo(
+    () => new Set(activeGroup?.characterIds || []),
+    [activeGroup]
+  );
+  const characters = useMemo(
+    () => (state?.characters || []).filter((character) => activeCharacterIds.has(character.id)),
+    [state?.characters, activeCharacterIds]
+  );
 
   function saveItem() {
     if (!form.characterId || !form.name.trim()) return;
@@ -65,14 +77,14 @@ export default function InventoryScreen() {
       <Text style={styles.title}>Equipamento e carga</Text>
       <Text style={styles.subtitle}>O peso considera quantidade e a capacidade usa Forca x 15 libras.</Text>
 
-      {state.characters.length === 0 && (
+      {characters.length === 0 && (
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Nenhum personagem criado</Text>
           <Text style={styles.muted}>Crie um personagem na aba Grupos para montar o inventario.</Text>
         </View>
       )}
 
-      {state.characters.map((character) => {
+      {characters.map((character) => {
         const inventory = character.inventory || [];
         const currentWeight = totalInventoryWeight(inventory);
         const capacity = inventoryCapacity(character);
@@ -118,7 +130,7 @@ export default function InventoryScreen() {
         );
       })}
 
-      {!!form.characterId && (
+      {!!form.characterId && activeCharacterIds.has(form.characterId) && (
         <View style={styles.form}>
           <Text style={styles.cardTitle}>{form.id ? 'Editar item' : 'Adicionar item'}</Text>
           <TextInput

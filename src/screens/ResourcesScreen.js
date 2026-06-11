@@ -9,7 +9,18 @@ import { colors, radii, spacing } from '../theme';
 export default function ResourcesScreen() {
   const { state, setState } = useCampaign();
 
-  const characters = useMemo(() => state?.characters || [], [state]);
+  const activeGroup = useMemo(
+    () => state?.groups.find((group) => group.id === state.activeGroupId) || null,
+    [state?.groups, state?.activeGroupId]
+  );
+  const activeCharacterIds = useMemo(
+    () => new Set(activeGroup?.characterIds || []),
+    [activeGroup]
+  );
+  const characters = useMemo(
+    () => (state?.characters || []).filter((character) => activeCharacterIds.has(character.id)),
+    [state?.characters, activeCharacterIds]
+  );
 
   function updateResources(characterId, updater) {
     setState((old) => ({
@@ -37,6 +48,7 @@ export default function ResourcesScreen() {
     setState((old) => ({
       ...old,
       characters: old.characters.map((character) => {
+        if (!activeCharacterIds.has(character.id)) return character;
         if (characterId && character.id !== characterId) return character;
         return {
           ...character,
