@@ -174,7 +174,7 @@ export default function GroupsScreen({ onOpenLegacy }) {
       ...old,
       characters: old.characters.map((character) =>
         character.id === characterId
-          ? { ...character, [key]: Math.max(0, Math.min(10, (Number(character[key]) || 0) + delta) }
+          ? { ...character, [key]: Math.max(0, Math.min(10, (Number(character[key]) || 0) + delta)) }
           : character
       ),
     }));
