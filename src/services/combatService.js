@@ -6,6 +6,7 @@ export function createCombat() {
 
 export function heroParticipant(character) {
   const hpMax = Math.max(1, Number(character.hp?.max) || 1);
+  const hpCurrent = Number(character.hp?.current ?? hpMax);
   return {
     id: `hero-${character.id}`,
     sourceId: character.id,
@@ -13,7 +14,11 @@ export function heroParticipant(character) {
     name: character.name,
     armorClass: Number(character.armorClass) || 10,
     initiative: 0,
-    hp: { current: Math.min(Number(character.hp?.current) || hpMax, hpMax), max: hpMax, temporary: Number(character.hp?.temporary) || 0 },
+    hp: {
+      current: Math.min(Number.isFinite(hpCurrent) ? Math.max(0, hpCurrent) : hpMax, hpMax),
+      max: hpMax,
+      temporary: Math.max(0, Number(character.hp?.temporary) || 0),
+    },
     conditions: Array.isArray(character.conditions) ? character.conditions : [],
     deathSaves: { successes: 0, failures: 0, stable: false, dead: false },
     concentrationDc: null,

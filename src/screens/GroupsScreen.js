@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   Alert,
   Modal,
@@ -12,7 +12,7 @@ import {
 import { ATTRIBUTE_FIELDS, CLASSES } from '../data/dnd5e';
 import { createCharacter } from '../models/Character';
 import { createGroup } from '../models/Group';
-import { loadCampaignState, saveCampaignState } from '../services/campaignService';
+import { useCampaign } from '../services/CampaignContext';
 import {
   abilityModifier,
   carryingCapacity,
@@ -31,6 +31,11 @@ const EMPTY_CHARACTER = {
   xp: '0',
   background: '',
   alignment: '',
+  armorClass: '10',
+  speed: '30',
+  hp: { current: '1', max: '1', temporary: '0' },
+  inspiration: 0,
+  plotPoints: 0,
   attributes: {
     strength: '10',
     dexterity: '10',
@@ -42,44 +47,22 @@ const EMPTY_CHARACTER = {
 };
 
 export default function GroupsScreen({ onOpenLegacy }) {
-  const [state, setState] = useState({
-    schemaVersion: 2,
-    groups: [],
-    characters: [],
-    combats: [],
-    settings: {},
-    activeGroupId: null,
-  });
-  const [loaded, setLoaded] = useState(false);
+  const { state, setState, saveError } = useCampaign();
   const [groupName, setGroupName] = useState('');
   const [editingGroup, setEditingGroup] = useState(null);
   const [characterDraft, setCharacterDraft] = useState(null);
-  const [saveError, setSaveError] = useState(false);
 
-  useEffect(() => {
-    loadCampaignState().then((saved) => {
-      setState(saved);
-      setLoaded(true);
-    });
-  }, []);
-
-  useEffect(() => {
-    if (!loaded) return;
-
-    saveCampaignState(state).then((saved) => setSaveError(!saved));
-  }, [loaded, state]);
-
-  const activeGroup = state.groups.find((group) => group.id === state.activeGroupId) || null;
+  const activeGroup = state?.groups.find((group) => group.id === state.activeGroupId) || null;
   const groupCharacters = useMemo(() => {
     if (!activeGroup) return [];
     return activeGroup.characterIds
       .map((id) => state.characters.find((character) => character.id === id))
       .filter(Boolean);
-  }, [activeGroup, state.characters]);
+  }, [activeGroup, state?.characters]);
   const availableCharacters = useMemo(() => {
     if (!activeGroup) return [];
     return state.characters.filter((character) => !activeGroup.characterIds.includes(character.id));
-  }, [activeGroup, state.characters]);
+  }, [activeGroup, state?.characters]);
 
   function addGroup() {
     const name = groupName.trim();
@@ -128,6 +111,13 @@ export default function GroupsScreen({ onOpenLegacy }) {
         ? {
             ...character,
             xp: String(character.xp),
+            armorClass: String(character.armorClass ?? 10),
+            speed: String(character.speed ?? 30),
+            hp: {
+              current: String(character.hp?.current ?? 1),
+              max: String(character.hp?.max ?? 1),
+              temporary: String(character.hp?.temporary ?? 0),
+            },
             attributes: Object.fromEntries(
               ATTRIBUTE_FIELDS.map(([key]) => [key, String(character.attributes?.[key] ?? 10)])
             ),
@@ -178,6 +168,19 @@ export default function GroupsScreen({ onOpenLegacy }) {
       ),
     }));
   }
+
+  function changeToken(characterId, key, delta) {
+    setState((old) => ({
+      ...old,
+      characters: old.characters.map((character) =>
+        character.id === characterId
+          ? { ...character, [key]: Math.max(0, Math.min(10, (Number(character[key]) || 0) + delta) }
+          : character
+      ),
+    }));
+  }
+
+  if (!state) return <Text style={styles.loading}>Carregando campanhas...</Text>;
 
   return (
     <View style={styles.screen}>
@@ -261,8 +264,29 @@ export default function GroupsScreen({ onOpenLegacy }) {
                   <View style={styles.statsRow}>
                     <Stat label="Prof." value={signedModifier(proficiencyBonus(level))} />
                     <Stat label="Iniciativa" value={signedModifier(initiative)} />
+                    <Stat label="CA" value={character.armorClass || 10} />
+                    <Stat label="Desloc." value={`${character.speed || 30} ft`} />
+                  </View>
+                  <View style={styles.statsRow}>
+                    <Stat label="PV" value={`${character.hp?.current || 0}/${character.hp?.max || 1}`} />
+                    <Stat label="Temp." value={character.hp?.temporary || 0} />
                     <Stat label="Carga" value={`${capacity} lb`} />
                     <Stat label="XP" value={character.xp} />
+                  </View>
+
+                  <View style={styles.tokenRow}>
+                    <TokenCounter
+                      label="Inspiração"
+                      value={character.inspiration || 0}
+                      onMinus={() => changeToken(character.id, 'inspiration', -1)}
+                      onPlus={() => changeToken(character.id, 'inspiration', 1)}
+                    />
+                    <TokenCounter
+                      label="Pontos de Enredo"
+                      value={character.plotPoints || 0}
+                      onMinus={() => changeToken(character.id, 'plotPoints', -1)}
+                      onPlus={() => changeToken(character.id, 'plotPoints', 1)}
+                    />
                   </View>
 
                   <View style={styles.actions}>
@@ -329,6 +353,23 @@ function Stat({ label, value }) {
   );
 }
 
+function TokenCounter({ label, value, onMinus, onPlus }) {
+  return (
+    <View style={styles.token}>
+      <Text style={styles.tokenLabel}>{label}</Text>
+      <View style={styles.tokenControls}>
+        <TouchableOpacity style={styles.tokenButton} onPress={onMinus}>
+          <Text style={styles.tokenButtonText}>−</Text>
+        </TouchableOpacity>
+        <Text style={styles.tokenValue}>{value}/10</Text>
+        <TouchableOpacity style={styles.tokenButton} onPress={onPlus}>
+          <Text style={styles.tokenButtonText}>+</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+}
+
 function GroupModal({ draft, onChange, onSave, onClose }) {
   return (
     <Modal visible={Boolean(draft)} transparent animationType="fade" onRequestClose={onClose}>
@@ -366,6 +407,26 @@ function CharacterModal({ draft, onChange, onSave, onClose }) {
             <Field label="XP" value={draft?.xp} keyboardType="numeric" onChangeText={(xp) => update({ xp })} />
             <Field label="Antecedente" value={draft?.background} onChangeText={(background) => update({ background })} />
             <Field label="Alinhamento" value={draft?.alignment} onChangeText={(alignment) => update({ alignment })} />
+            <View style={styles.fieldRow}>
+              <View style={styles.flex}>
+                <Field label="CA" value={draft?.armorClass} keyboardType="numeric" onChangeText={(armorClass) => update({ armorClass })} />
+              </View>
+              <View style={styles.flex}>
+                <Field label="Deslocamento (ft)" value={draft?.speed} keyboardType="numeric" onChangeText={(speed) => update({ speed })} />
+              </View>
+            </View>
+            <Text style={styles.fieldLabel}>Pontos de Vida</Text>
+            <View style={styles.fieldRow}>
+              <View style={styles.flex}>
+                <Field label="Atual" value={draft?.hp?.current} keyboardType="numeric" onChangeText={(current) => update({ hp: { ...draft.hp, current } })} />
+              </View>
+              <View style={styles.flex}>
+                <Field label="Máximo" value={draft?.hp?.max} keyboardType="numeric" onChangeText={(max) => update({ hp: { ...draft.hp, max } })} />
+              </View>
+              <View style={styles.flex}>
+                <Field label="Temporário" value={draft?.hp?.temporary} keyboardType="numeric" onChangeText={(temporary) => update({ hp: { ...draft.hp, temporary } })} />
+              </View>
+            </View>
 
             <Text style={styles.fieldLabel}>Classe</Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.classStrip}>
@@ -429,6 +490,7 @@ function ModalActions({ onClose, onSave }) {
 }
 
 const styles = StyleSheet.create({
+  loading: { flex: 1, color: colors.text, backgroundColor: colors.background, padding: spacing.lg },
   screen: { flex: 1, backgroundColor: colors.background },
   content: { padding: spacing.lg, paddingBottom: 48 },
   eyebrow: { color: colors.primary, fontSize: 12, fontWeight: '900', letterSpacing: 2 },
@@ -482,6 +544,13 @@ const styles = StyleSheet.create({
   stat: { flex: 1, backgroundColor: colors.surfaceMuted, borderRadius: radii.sm, alignItems: 'center', paddingVertical: 9 },
   statLabel: { color: colors.textMuted, fontSize: 9 },
   statValue: { color: colors.text, fontWeight: '900', marginTop: 2 },
+  tokenRow: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.md },
+  token: { flex: 1, backgroundColor: colors.primarySoft, borderRadius: radii.md, padding: spacing.sm },
+  tokenLabel: { color: colors.primary, fontSize: 11, fontWeight: '900', textAlign: 'center' },
+  tokenControls: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: spacing.sm, marginTop: 6 },
+  tokenButton: { width: 32, height: 32, borderRadius: radii.sm, backgroundColor: colors.surfaceHighlight, alignItems: 'center', justifyContent: 'center' },
+  tokenButtonText: { color: colors.text, fontSize: 19, fontWeight: '900' },
+  tokenValue: { minWidth: 42, color: colors.text, fontWeight: '900', textAlign: 'center' },
   actions: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.lg },
   secondaryButton: { flex: 1, borderColor: colors.border, borderWidth: 1, borderRadius: radii.md, alignItems: 'center', padding: 12 },
   secondaryText: { color: colors.text, fontWeight: '800' },
@@ -495,6 +564,7 @@ const styles = StyleSheet.create({
   sheet: { maxHeight: '92%', backgroundColor: colors.surface, borderRadius: radii.lg },
   sheetContent: { padding: spacing.lg, paddingBottom: 36 },
   fieldLabel: { color: colors.textMuted, fontSize: 12, fontWeight: '800', marginTop: spacing.md },
+  fieldRow: { flexDirection: 'row', gap: spacing.sm },
   classStrip: { gap: spacing.sm, paddingVertical: spacing.sm },
   classChip: { borderColor: colors.border, borderWidth: 1, borderRadius: radii.pill, paddingHorizontal: 12, paddingVertical: 8 },
   classChipActive: { backgroundColor: colors.primary, borderColor: colors.primary },
