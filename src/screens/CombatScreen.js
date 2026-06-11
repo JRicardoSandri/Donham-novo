@@ -39,17 +39,42 @@ export default function CombatScreen() {
   }
 
   function updateParticipant(id, updater) {
-    setCombat((old) => ({
-      ...old,
-      participants: old.participants.map((item) => item.id === id ? updater(item) : item),
-    }));
+    setState((old) => {
+      const currentCombat = old.combats?.[0] || createCombat();
+      let updatedParticipant = null;
+      const participants = currentCombat.participants.map((item) => {
+        if (item.id !== id) return item;
+        updatedParticipant = updater(item);
+        return updatedParticipant;
+      });
+      return {
+        ...old,
+        combats: [{ ...currentCombat, participants }],
+        characters: updatedParticipant?.sourceId
+          ? old.characters.map((character) =>
+              character.id === updatedParticipant.sourceId
+                ? {
+                    ...character,
+                    initiative: updatedParticipant.initiative,
+                    hp: { ...updatedParticipant.hp },
+                    conditions: [...(updatedParticipant.conditions || [])],
+                  }
+                : character
+            )
+          : old.characters,
+      };
+    });
   }
 
   function addHeroes() {
     setCombat((old) => {
       const existing = new Set(old.participants.map((item) => item.sourceId));
-      const heroes = state.characters.filter((character) => !existing.has(character.id)).map(heroParticipant);
-      return { ...old, participants: sortedParticipants([...old.participants, ...heroes]), activeIndex: 0 };
+      const activeGroup = state.groups.find((group) => group.id === state.activeGroupId);
+      const groupIds = new Set(activeGroup?.characterIds || []);
+      const heroes = state.characters
+        .filter((character) => groupIds.has(character.id) && !existing.has(character.id))
+        .map(heroParticipant);
+      return { ...old, participants: sortedParticipants([...old.participants, ...heroes]), activeIndex: 0, turnsTaken: 0 };
     });
   }
 
@@ -59,18 +84,33 @@ export default function CombatScreen() {
       ...old,
       participants: sortedParticipants([...old.participants, enemyParticipant(enemy)]),
       activeIndex: 0,
+      turnsTaken: 0,
     }));
     setEnemy(EMPTY_ENEMY);
   }
 
   function changeInitiative(id, initiative) {
-    setCombat((old) => ({
-      ...old,
-      participants: sortedParticipants(old.participants.map((item) =>
-        item.id === id ? { ...item, initiative: Number(initiative) || 0 } : item
-      )),
-      activeIndex: 0,
-    }));
+    const value = Number(initiative) || 0;
+    setState((old) => {
+      const currentCombat = old.combats?.[0] || createCombat();
+      const changed = currentCombat.participants.find((item) => item.id === id);
+      return {
+        ...old,
+        combats: [{
+          ...currentCombat,
+          participants: sortedParticipants(currentCombat.participants.map((item) =>
+            item.id === id ? { ...item, initiative: value } : item
+          )),
+          activeIndex: 0,
+          turnsTaken: 0,
+        }],
+        characters: changed?.sourceId
+          ? old.characters.map((character) =>
+              character.id === changed.sourceId ? { ...character, initiative: value } : character
+            )
+          : old.characters,
+      };
+    });
   }
 
   if (!state) return <Text style={styles.loading}>Carregando combate...</Text>;
@@ -141,6 +181,24 @@ export default function CombatScreen() {
                 <View style={styles.hpHeader}>
                   <Text style={styles.hpValue}>{participant.hp.current} / {participant.hp.max} PV</Text>
                   <Text style={styles.tempValue}>+{participant.hp.temporary || 0} temporarios</Text>
+                </View>
+                <View style={styles.hpEditor}>
+                  <Text style={styles.miniLabel}>PV máximo</Text>
+                  <TextInput
+                    style={styles.hpMaxInput}
+                    keyboardType="numeric"
+                    value={String(participant.hp.max)}
+                    onChangeText={(value) => updateParticipant(participant.id, (item) => {
+                      const max = Math.max(1, Number(value) || 1);
+                      return { ...item, hp: { ...item.hp, max, current: Math.min(item.hp.current, max) } };
+                    })}
+                  />
+                  <TouchableOpacity style={styles.hpPreset} onPress={() => updateParticipant(participant.id, (item) => applyParticipantHp(item, -item.hp.current))}>
+                    <Text style={styles.actionText}>Zerar PV</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity style={styles.hpPreset} onPress={() => updateParticipant(participant.id, (item) => applyParticipantHp(item, item.hp.max - item.hp.current))}>
+                    <Text style={styles.actionText}>PV cheio</Text>
+                  </TouchableOpacity>
                 </View>
                 <View style={styles.hpTrack}>
                   <View style={[styles.hpFill, {
@@ -296,6 +354,9 @@ const styles = StyleSheet.create({
   initiativeInput: { color: colors.primary, fontSize: 19, fontWeight: '900', textAlign: 'center', padding: 0, width: '100%' },
   hpBlock: { marginTop: spacing.md },
   hpHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  hpEditor: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginTop: spacing.sm },
+  hpMaxInput: { width: 54, backgroundColor: colors.surfaceMuted, borderRadius: radii.sm, color: colors.text, textAlign: 'center', padding: 8 },
+  hpPreset: { backgroundColor: colors.surfaceMuted, borderRadius: radii.sm, paddingHorizontal: 10, paddingVertical: 9 },
   hpValue: { color: colors.text, fontWeight: '900' },
   tempValue: { color: colors.info, fontSize: 11, fontWeight: '800' },
   hpTrack: { height: 7, backgroundColor: colors.surfaceMuted, borderRadius: radii.pill, overflow: 'hidden', marginTop: 7 },

@@ -1,7 +1,7 @@
 import { INCAPACITATING_CONDITIONS } from '../data/conditions.js';
 
 export function createCombat() {
-  return { id: 'active-combat', round: 1, activeIndex: 0, participants: [], log: [] };
+  return { id: 'active-combat', round: 1, activeIndex: 0, turnsTaken: 0, participants: [], log: [] };
 }
 
 export function heroParticipant(character) {
@@ -13,7 +13,7 @@ export function heroParticipant(character) {
     type: 'hero',
     name: character.name,
     armorClass: Number(character.armorClass) || 10,
-    initiative: 0,
+    initiative: Number(character.initiative) || 0,
     hp: {
       current: Math.min(Number.isFinite(hpCurrent) ? Math.max(0, hpCurrent) : hpMax, hpMax),
       max: hpMax,
@@ -134,8 +134,14 @@ export function sortedParticipants(participants) {
 
 export function advanceTurn(combat) {
   if (!combat.participants.length) return combat;
-  const next = combat.activeIndex + 1;
-  return next >= combat.participants.length
-    ? { ...combat, activeIndex: 0, round: combat.round + 1 }
-    : { ...combat, activeIndex: next };
+  const [current, ...waiting] = combat.participants;
+  const nextTurnsTaken = (combat.turnsTaken || 0) + 1;
+  const roundComplete = nextTurnsTaken >= combat.participants.length;
+  return {
+    ...combat,
+    participants: [...waiting, current],
+    activeIndex: 0,
+    turnsTaken: roundComplete ? 0 : nextTurnsTaken,
+    round: roundComplete ? combat.round + 1 : combat.round,
+  };
 }
