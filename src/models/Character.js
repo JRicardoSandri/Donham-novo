@@ -1,4 +1,5 @@
 import { resourcesForCharacter } from '../services/resourceService.js';
+import { CLASS_RESOURCES } from '../data/classProgression.js';
 import {
   carryingCapacity,
   initiativeFromAttributes,
@@ -38,12 +39,14 @@ export function createCharacter(input = {}) {
     attributes,
     level,
     proficiencyBonus: proficiencyBonus(level),
-    initiative: Number.isFinite(Number(input.initiative))
+    initiative: input.initiative !== '' && input.initiative !== null && input.initiative !== undefined
+      && Number.isFinite(Number(input.initiative))
       ? Number(input.initiative)
       : calculatedInitiative,
-    carryCapacity: carryingCapacity(attributes),
+    size: input.size === 'large' ? 'large' : 'medium',
+    carryCapacity: carryingCapacity(attributes, input.size),
     armorClass: Math.max(0, Number(input.armorClass) || 10),
-    speed: Math.max(0, Number(input.speed) || 30),
+    speed: Math.max(0, Number(input.speed) || 9),
     hp: {
       current: Math.min(hpMax, Math.max(0, Number.isFinite(hpCurrentInput) ? hpCurrentInput : hpMax)),
       max: hpMax,
@@ -70,8 +73,21 @@ export function createCharacter(input = {}) {
   const automaticNames = new Set(automaticResources.map((item) =>
     String(item.name || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
   ));
+  const classResourceIds = new Set((CLASS_RESOURCES[character.classKey] || []).map((item) => item.id));
+  const classResourceNames = new Set((CLASS_RESOURCES[character.classKey] || []).map((item) =>
+    String(item.name || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
+  ));
   const customResources = character.resources.filter((item) => {
     const name = String(item.name || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+    const automaticId = classResourceIds.has(item.id)
+      || String(item.id || '').startsWith('spell-')
+      || String(item.id || '').startsWith('mystic-')
+      || String(item.id || '').startsWith('pact-');
+    const automaticName = classResourceNames.has(name)
+      || name.includes('espacos de magia')
+      || name.includes('magia de pacto')
+      || name.includes('arcano mistico');
+    if (item.automatic || automaticId || automaticName) return false;
     if (automaticIds.has(item.id) || automaticNames.has(name)) return false;
     if (item.type === 'Magia' && automaticResources.some((resource) => resource.name.includes('magia'))) return false;
     return true;

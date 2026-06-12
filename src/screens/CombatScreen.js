@@ -55,7 +55,6 @@ export default function CombatScreen() {
               character.id === updatedParticipant.sourceId
                 ? {
                     ...character,
-                    initiative: updatedParticipant.initiative,
                     hp: { ...updatedParticipant.hp },
                     conditions: [...(updatedParticipant.conditions || [])],
                   }
@@ -91,26 +90,14 @@ export default function CombatScreen() {
 
   function changeInitiative(id, initiative) {
     const value = Number(initiative) || 0;
-    setState((old) => {
-      const currentCombat = old.combats?.[0] || createCombat();
-      const changed = currentCombat.participants.find((item) => item.id === id);
-      return {
-        ...old,
-        combats: [{
-          ...currentCombat,
-          participants: sortedParticipants(currentCombat.participants.map((item) =>
-            item.id === id ? { ...item, initiative: value } : item
-          )),
-          activeIndex: 0,
-          turnsTaken: 0,
-        }],
-        characters: changed?.sourceId
-          ? old.characters.map((character) =>
-              character.id === changed.sourceId ? { ...character, initiative: value } : character
-            )
-          : old.characters,
-      };
-    });
+    setCombat((old) => ({
+      ...old,
+      participants: sortedParticipants(old.participants.map((item) =>
+        item.id === id ? { ...item, initiative: value } : item
+      )),
+      activeIndex: 0,
+      turnsTaken: 0,
+    }));
   }
 
   if (!state) return <Text style={styles.loading}>Carregando combate...</Text>;
@@ -259,10 +246,13 @@ export default function CombatScreen() {
                   <Text style={styles.actionText}>Condicoes</Text>
                 </TouchableOpacity>
                 {[1, 5, 10].map((value) => (
-                  <TouchableOpacity key={`temp-${value}`} style={styles.actionButton} onPress={() => updateParticipant(participant.id, (item) => ({ ...item, hp: { ...item.hp, temporary: Math.max(item.hp.temporary || 0, value) } }))}>
-                    <Text style={styles.actionText}>Temp {value}</Text>
+                  <TouchableOpacity key={`temp-${value}`} style={styles.actionButton} onPress={() => updateParticipant(participant.id, (item) => ({ ...item, hp: { ...item.hp, temporary: (item.hp.temporary || 0) + value } }))}>
+                    <Text style={styles.actionText}>Temp +{value}</Text>
                   </TouchableOpacity>
                 ))}
+                <TouchableOpacity style={styles.actionButton} onPress={() => updateParticipant(participant.id, (item) => ({ ...item, hp: { ...item.hp, temporary: 0 } }))}>
+                  <Text style={styles.actionText}>Limpar Temp</Text>
+                </TouchableOpacity>
                 <TouchableOpacity style={styles.removeButton} onPress={() => setCombat((old) => ({ ...old, participants: old.participants.filter((item) => item.id !== participant.id), activeIndex: 0 }))}>
                   <Text style={styles.removeText}>Remover</Text>
                 </TouchableOpacity>

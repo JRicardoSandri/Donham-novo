@@ -47,8 +47,9 @@ export function initiativeFromAttributes(attributes = {}) {
   return abilityModifier(attributes.dexterity);
 }
 
-export function carryingCapacity(attributes = {}) {
-  return Math.max(0, numberValue(attributes.strength, 10)) * 15;
+export function carryingCapacity(attributes = {}, size = 'medium') {
+  const multiplier = size === 'large' ? 15 : 7.5;
+  return Math.max(0, numberValue(attributes.strength, 10)) * multiplier;
 }
 
 export function signedModifier(value) {

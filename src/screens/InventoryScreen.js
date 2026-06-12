@@ -75,7 +75,7 @@ export default function InventoryScreen() {
     <ScrollView contentContainerStyle={styles.content}>
       <Text style={styles.eyebrow}>INVENTARIO</Text>
       <Text style={styles.title}>Equipamento e carga</Text>
-      <Text style={styles.subtitle}>O peso considera quantidade e a capacidade usa Forca x 15 libras.</Text>
+      <Text style={styles.subtitle}>A capacidade usa Força × 7,5 kg para porte Médio e × 15 kg para porte Grande.</Text>
 
       {characters.length === 0 && (
         <View style={styles.card}>
@@ -96,7 +96,7 @@ export default function InventoryScreen() {
               <View style={styles.flex}>
                 <Text style={styles.cardTitle}>{character.name}</Text>
                 <Text style={[styles.weight, overloaded && styles.overloaded]}>
-                  {currentWeight.toFixed(1)} / {capacity} lb
+                  {currentWeight.toFixed(1)} / {capacity} kg
                 </Text>
               </View>
               <TouchableOpacity
@@ -114,7 +114,7 @@ export default function InventoryScreen() {
                 <View style={styles.flex}>
                   <Text style={styles.itemName}>{item.equipped ? '[E] ' : ''}{item.name}</Text>
                   <Text style={styles.muted}>
-                    {item.quantity} x {item.weight} lb = {(item.quantity * item.weight).toFixed(1)} lb
+                    {item.quantity} × {item.weight} kg = {(item.quantity * item.weight).toFixed(1)} kg
                   </Text>
                   {!!item.description && <Text style={styles.description}>{item.description}</Text>}
                 </View>
@@ -142,7 +142,7 @@ export default function InventoryScreen() {
           />
           <View style={styles.row}>
             <Field label="Quantidade" value={form.quantity} onChangeText={(quantity) => setForm((old) => ({ ...old, quantity }))} />
-            <Field label="Peso (lb)" value={form.weight} onChangeText={(weight) => setForm((old) => ({ ...old, weight }))} />
+            <Field label="Peso (kg)" value={form.weight} onChangeText={(weight) => setForm((old) => ({ ...old, weight }))} />
           </View>
           <TextInput
             style={[styles.input, styles.multiline]}

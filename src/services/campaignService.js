@@ -2,7 +2,7 @@ import { createCharacter } from '../models/Character.js';
 import { createCombat, heroParticipant, sortedParticipants } from './combatService.js';
 import { STORAGE_KEYS, loadJson, saveJson } from './storageService';
 
-export const SCHEMA_VERSION = 4;
+export const SCHEMA_VERSION = 5;
 
 const EMPTY_STATE = {
   schemaVersion: SCHEMA_VERSION,
@@ -41,6 +41,7 @@ function normalizeConditions(conditions) {
 }
 
 function normalizeState(saved = {}) {
+  const convertSpeedToMeters = Number(saved.schemaVersion) < 5;
   return {
     schemaVersion: SCHEMA_VERSION,
     groups: Array.isArray(saved.groups) ? saved.groups : [],
@@ -50,6 +51,15 @@ function normalizeState(saved = {}) {
             ...character,
             classKey: normalizeClassKey(character.classKey),
             conditions: normalizeConditions(character.conditions),
+            speed: convertSpeedToMeters && Number(character.speed) > 0
+              ? Math.round(Number(character.speed) * 0.3048 * 2) / 2
+              : character.speed,
+            inventory: convertSpeedToMeters && Array.isArray(character.inventory)
+              ? character.inventory.map((item) => ({
+                  ...item,
+                  weight: Math.round((Number(item.weight) || 0) * 0.453592 * 100) / 100,
+                }))
+              : character.inventory,
           })
         )
       : [],
@@ -97,6 +107,7 @@ function characterFromLegacy(item, index) {
     classKey: normalizeClassKey(item.classKey),
     race: String(item.build || '').split(' ')[0],
     background: item.build || '',
+    size: item.size,
     xp: item.xp,
     initiative: item.initiative,
     hpCurrent: item.hpCurrent,

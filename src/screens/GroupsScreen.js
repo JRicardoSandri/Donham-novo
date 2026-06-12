@@ -33,7 +33,9 @@ const EMPTY_CHARACTER = {
   background: '',
   alignment: '',
   armorClass: '10',
-  speed: '30',
+  speed: '9',
+  initiative: '',
+  size: 'medium',
   hp: { current: '1', max: '1', temporary: '0' },
   inspiration: 0,
   plotPoints: 0,
@@ -114,7 +116,9 @@ export default function GroupsScreen() {
             ...character,
             xp: String(character.xp),
             armorClass: String(character.armorClass ?? 10),
-            speed: String(character.speed ?? 30),
+            speed: String(character.speed ?? 9),
+            initiative: String(character.initiative ?? 0),
+            size: character.size || 'medium',
             hp: {
               current: String(character.hp?.current ?? 1),
               max: String(character.hp?.max ?? 1),
@@ -155,7 +159,6 @@ export default function GroupsScreen() {
                   ...participant,
                   name: character.name,
                   armorClass: character.armorClass,
-                  initiative: character.initiative,
                   hp: { ...character.hp },
                   conditions: [...character.conditions],
                 }
@@ -266,7 +269,7 @@ export default function GroupsScreen() {
               const level = progress.level;
               const progression = progressionFor(character.classKey, level);
               const initiative = character.initiative ?? initiativeFromAttributes(character.attributes);
-              const capacity = carryingCapacity(character.attributes);
+              const capacity = carryingCapacity(character.attributes, character.size);
               return (
                 <View key={character.id} style={styles.characterCard}>
                   <View style={styles.characterHeader}>
@@ -287,12 +290,12 @@ export default function GroupsScreen() {
                     <Stat label="Prof." value={signedModifier(proficiencyBonus(level))} />
                     <Stat label="Iniciativa" value={signedModifier(initiative)} />
                     <Stat label="CA" value={character.armorClass || 10} />
-                    <Stat label="Desloc." value={`${character.speed || 30} ft`} />
+                    <Stat label="Desloc." value={`${character.speed || 9} m`} />
                   </View>
                   <View style={styles.statsRow}>
                     <Stat label="PV" value={`${character.hp?.current || 0}/${character.hp?.max || 1}`} />
                     <Stat label="Temp." value={character.hp?.temporary || 0} />
-                    <Stat label="Carga" value={`${capacity} lb`} />
+                    <Stat label="Carga" value={`${capacity} kg`} />
                     <Stat label="XP" value={character.xp} />
                   </View>
 
@@ -311,7 +314,7 @@ export default function GroupsScreen() {
                   {progression.unlocked.length > 0 && (
                     <View style={styles.featurePanel}>
                       <Text style={styles.featureTitle}>Habilidades por nível</Text>
-                      {progression.unlocked.slice(-4).map(([featureLevel, text]) => (
+                      {progression.unlocked.map(([featureLevel, text]) => (
                         <Text key={`${character.id}-feature-${featureLevel}`} style={styles.featureText}>
                           Nível {featureLevel}: {text}
                         </Text>
@@ -458,8 +461,26 @@ function CharacterModal({ draft, onChange, onSave, onClose }) {
                 <Field label="CA" value={draft?.armorClass} keyboardType="numeric" onChangeText={(armorClass) => update({ armorClass })} />
               </View>
               <View style={styles.flex}>
-                <Field label="Deslocamento (ft)" value={draft?.speed} keyboardType="numeric" onChangeText={(speed) => update({ speed })} />
+                <Field label="Deslocamento (m)" value={draft?.speed} keyboardType="numeric" onChangeText={(speed) => update({ speed })} />
               </View>
+              <View style={styles.flex}>
+                <Field label="Mod. iniciativa" value={draft?.initiative} keyboardType="numeric" onChangeText={(initiative) => update({ initiative })} />
+              </View>
+            </View>
+            <Text style={styles.fieldLabel}>Porte</Text>
+            <View style={styles.sizeRow}>
+              {[
+                ['medium', 'Médio · FOR × 7,5 kg'],
+                ['large', 'Grande · FOR × 15 kg'],
+              ].map(([size, label]) => (
+                <TouchableOpacity
+                  key={size}
+                  style={[styles.sizeButton, draft?.size === size && styles.sizeButtonActive]}
+                  onPress={() => update({ size })}
+                >
+                  <Text style={[styles.sizeText, draft?.size === size && styles.sizeTextActive]}>{label}</Text>
+                </TouchableOpacity>
+              ))}
             </View>
             <Text style={styles.fieldLabel}>Pontos de Vida</Text>
             <View style={styles.fieldRow}>
@@ -630,6 +651,11 @@ const styles = StyleSheet.create({
   sheetContent: { padding: spacing.lg, paddingBottom: 36 },
   fieldLabel: { color: colors.textMuted, fontSize: 12, fontWeight: '800', marginTop: spacing.md },
   fieldRow: { flexDirection: 'row', gap: spacing.sm },
+  sizeRow: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.sm },
+  sizeButton: { flex: 1, borderColor: colors.border, borderWidth: 1, borderRadius: radii.md, padding: 11 },
+  sizeButtonActive: { backgroundColor: colors.primarySoft, borderColor: colors.primary },
+  sizeText: { color: colors.textMuted, fontSize: 11, fontWeight: '800', textAlign: 'center' },
+  sizeTextActive: { color: colors.primary },
   classStrip: { gap: spacing.sm, paddingVertical: spacing.sm },
   classChip: { borderColor: colors.border, borderWidth: 1, borderRadius: radii.pill, paddingHorizontal: 12, paddingVertical: 8 },
   classChipActive: { backgroundColor: colors.primary, borderColor: colors.primary },

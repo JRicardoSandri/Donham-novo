@@ -17,7 +17,8 @@ export function totalInventoryWeight(items = []) {
 }
 
 export function inventoryCapacity(character) {
-  return Math.max(0, Number(character?.attributes?.strength) || 0) * 15;
+  const multiplier = character?.size === 'large' ? 15 : 7.5;
+  return Math.max(0, Number(character?.attributes?.strength) || 0) * multiplier;
 }
 
 export function upsertInventoryItem(items = [], input) {

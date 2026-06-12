@@ -22,7 +22,7 @@ function resource(id, name, max, recovery, previous, matcher = null) {
     (matcher ? matcher(item) : false)
   );
   const spent = old ? Math.max(0, old.max - old.current) : 0;
-  return { id, name, max, current: Math.max(0, max - spent), recovery };
+  return { id, name, max, current: Math.max(0, max - spent), recovery, automatic: true };
 }
 
 export function resourcesForCharacter(character) {
