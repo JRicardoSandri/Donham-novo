@@ -5,10 +5,10 @@ import { useCampaign } from '../services/CampaignContext';
 import {
   advanceTurn,
   applyParticipantHp,
-  breakHeroInitiativeTies,
   createCombat,
   enemyParticipant,
   heroParticipant,
+  prioritizeTiedParticipant,
   recordDeathSave,
   sortedParticipants,
   stabilizeParticipant,
@@ -101,10 +101,10 @@ export default function CombatScreen() {
     }));
   }
 
-  function breakTies() {
+  function prioritizeParticipant(participantId) {
     setCombat((old) => ({
       ...old,
-      participants: breakHeroInitiativeTies(old.participants, state.characters),
+      participants: prioritizeTiedParticipant(old.participants, participantId),
       activeIndex: 0,
       turnsTaken: 0,
     }));
@@ -138,9 +138,6 @@ export default function CombatScreen() {
           <TouchableOpacity style={styles.secondary} onPress={() => setCombat(() => createCombat())}>
             <Text style={styles.secondaryText}>Novo combate</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.secondary} onPress={breakTies}>
-            <Text style={styles.secondaryText}>Desempatar INIT</Text>
-          </TouchableOpacity>
         </View>
 
         <View style={styles.enemyForm}>
@@ -159,6 +156,9 @@ export default function CombatScreen() {
         {combat.participants.map((participant, index) => {
           const active = index === combat.activeIndex;
           const atZero = participant.hp.current === 0 && participant.type === 'hero';
+          const tied = combat.participants.some(
+            (other) => other.id !== participant.id && other.initiative === participant.initiative
+          );
           return (
             <View key={participant.id} style={[styles.card, active && styles.activeCard]}>
               <View style={styles.cardHeader}>
@@ -175,6 +175,11 @@ export default function CombatScreen() {
                   <Text style={styles.miniLabel}>INIT</Text>
                   <TextInput style={styles.initiativeInput} keyboardType="numeric" value={String(participant.initiative)} onChangeText={(value) => changeInitiative(participant.id, value)} />
                 </View>
+                {tied && (
+                  <TouchableOpacity style={styles.priorityButton} onPress={() => prioritizeParticipant(participant.id)}>
+                    <Text style={styles.priorityText}>Prioridade</Text>
+                  </TouchableOpacity>
+                )}
               </View>
 
               <View style={styles.hpBlock}>
@@ -355,6 +360,8 @@ const styles = StyleSheet.create({
   muted: { color: colors.textMuted, fontSize: 12, lineHeight: 17 },
   initiativeBox: { width: 54, backgroundColor: colors.surfaceMuted, borderRadius: radii.md, alignItems: 'center', padding: 6 },
   initiativeInput: { color: colors.primary, fontSize: 19, fontWeight: '900', textAlign: 'center', padding: 0, width: '100%' },
+  priorityButton: { backgroundColor: colors.primarySoft, borderColor: colors.primaryDark, borderWidth: 1, borderRadius: radii.sm, paddingHorizontal: 8, paddingVertical: 10 },
+  priorityText: { color: colors.primary, fontSize: 9, fontWeight: '900' },
   hpBlock: { marginTop: spacing.md },
   hpHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   hpEditor: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginTop: spacing.sm },

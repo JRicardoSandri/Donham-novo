@@ -132,26 +132,20 @@ export function sortedParticipants(participants) {
   return [...participants].sort((a, b) => b.initiative - a.initiative);
 }
 
-export function breakHeroInitiativeTies(participants, characters) {
-  const modifiers = new Map(
-    characters.map((character) => [character.id, Number(character.initiative) || 0])
-  );
+export function prioritizeTiedParticipant(participants, participantId) {
+  const selectedIndex = participants.findIndex((participant) => participant.id === participantId);
+  if (selectedIndex < 0) return participants;
 
-  return participants
-    .map((participant, index) => ({ participant, index }))
-    .sort((left, right) => {
-      const initiativeDifference = right.participant.initiative - left.participant.initiative;
-      if (initiativeDifference !== 0) return initiativeDifference;
+  const selected = participants[selectedIndex];
+  const tiedIndexes = participants
+    .map((participant, index) => participant.initiative === selected.initiative ? index : -1)
+    .filter((index) => index >= 0);
+  if (tiedIndexes.length < 2) return participants;
 
-      const bothHeroes = left.participant.type === 'hero' && right.participant.type === 'hero';
-      if (!bothHeroes) return left.index - right.index;
-
-      const modifierDifference =
-        (modifiers.get(right.participant.sourceId) || 0) -
-        (modifiers.get(left.participant.sourceId) || 0);
-      return modifierDifference || left.index - right.index;
-    })
-    .map(({ participant }) => participant);
+  const firstTiedIndex = Math.min(...tiedIndexes);
+  const reordered = participants.filter((participant) => participant.id !== participantId);
+  reordered.splice(firstTiedIndex, 0, selected);
+  return reordered;
 }
 
 export function advanceTurn(combat) {
