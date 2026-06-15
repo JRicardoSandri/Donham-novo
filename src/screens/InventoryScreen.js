@@ -28,6 +28,7 @@ export default function InventoryScreen() {
   const [catalogOpen, setCatalogOpen] = useState(false);
   const [catalogQuery, setCatalogQuery] = useState('');
   const [catalogCategory, setCatalogCategory] = useState('Todos');
+  const [selectedCharacterId, setSelectedCharacterId] = useState(null);
   const activeGroup = useMemo(
     () => state?.groups.find((group) => group.id === state.activeGroupId) || null,
     [state?.groups, state?.activeGroupId]
@@ -39,6 +40,10 @@ export default function InventoryScreen() {
   const characters = useMemo(
     () => (state?.characters || []).filter((character) => activeCharacterIds.has(character.id)),
     [state?.characters, activeCharacterIds]
+  );
+  const selectedCharacter = useMemo(
+    () => characters.find((character) => character.id === selectedCharacterId) || null,
+    [characters, selectedCharacterId]
   );
 
   function saveItem() {
@@ -92,24 +97,64 @@ export default function InventoryScreen() {
         </View>
       )}
 
-      {characters.map((character) => {
+      {!selectedCharacter && characters.map((character) => {
         const inventory = character.inventory || [];
         const currentWeight = totalInventoryWeight(inventory);
         const capacity = inventoryCapacity(character);
         const overloaded = currentWeight > capacity;
 
         return (
-          <View key={character.id} style={styles.card}>
+          <TouchableOpacity
+            key={character.id}
+            style={styles.characterSummary}
+            onPress={() => {
+              setSelectedCharacterId(character.id);
+              setForm(EMPTY_ITEM);
+            }}
+          >
+            <View style={[styles.avatar, overloaded && styles.avatarOverloaded]}>
+              <Text style={styles.avatarText}>{character.name.slice(0, 1).toUpperCase()}</Text>
+            </View>
+            <View style={styles.flex}>
+              <Text style={styles.cardTitle}>{character.name}</Text>
+              <Text style={[styles.weight, overloaded && styles.overloaded]}>
+                {currentWeight.toFixed(1)} / {capacity} kg · {inventory.length} {inventory.length === 1 ? 'item' : 'itens'}
+              </Text>
+              {overloaded && <Text style={styles.overloadLabel}>SOBRECARGA</Text>}
+            </View>
+            <Text style={styles.openArrow}>›</Text>
+          </TouchableOpacity>
+        );
+      })}
+
+      {selectedCharacter && (() => {
+        const inventory = selectedCharacter.inventory || [];
+        const currentWeight = totalInventoryWeight(inventory);
+        const capacity = inventoryCapacity(selectedCharacter);
+        const overloaded = currentWeight > capacity;
+
+        return (
+          <View style={styles.card}>
+            <TouchableOpacity
+              style={styles.backButton}
+              onPress={() => {
+                setSelectedCharacterId(null);
+                setForm(EMPTY_ITEM);
+              }}
+            >
+              <Text style={styles.backText}>‹ Todos os personagens</Text>
+            </TouchableOpacity>
             <View style={styles.cardHeader}>
               <View style={styles.flex}>
-                <Text style={styles.cardTitle}>{character.name}</Text>
+                <Text style={styles.cardTitle}>{selectedCharacter.name}</Text>
                 <Text style={[styles.weight, overloaded && styles.overloaded]}>
                   {currentWeight.toFixed(1)} / {capacity} kg
                 </Text>
+                <Text style={styles.muted}>{inventory.length} {inventory.length === 1 ? 'item' : 'itens'} no inventário</Text>
               </View>
               <TouchableOpacity
                 style={styles.primary}
-                onPress={() => setForm({ ...EMPTY_ITEM, characterId: character.id })}
+                onPress={() => setForm({ ...EMPTY_ITEM, characterId: selectedCharacter.id })}
               >
                 <Text style={styles.primaryText}>Novo item</Text>
               </TouchableOpacity>
@@ -127,17 +172,17 @@ export default function InventoryScreen() {
                   {!!item.value && <Text style={styles.value}>{item.value} · {item.category || 'Personalizado'}</Text>}
                   {!!item.description && <Text style={styles.description}>{item.description}</Text>}
                 </View>
-                <TouchableOpacity style={styles.action} onPress={() => editItem(character.id, item)}>
+                <TouchableOpacity style={styles.action} onPress={() => editItem(selectedCharacter.id, item)}>
                   <Text style={styles.actionText}>Editar</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.danger} onPress={() => removeItem(character.id, item.id)}>
+                <TouchableOpacity style={styles.danger} onPress={() => removeItem(selectedCharacter.id, item.id)}>
                   <Text style={styles.dangerText}>X</Text>
                 </TouchableOpacity>
               </View>
             ))}
           </View>
         );
-      })}
+      })()}
 
       {!!form.characterId && activeCharacterIds.has(form.characterId) && (
         <View style={styles.form}>
@@ -265,6 +310,14 @@ const styles = StyleSheet.create({
   title: { color: colors.text, fontSize: 28, fontWeight: '900', marginTop: 6 },
   subtitle: { color: colors.textMuted, lineHeight: 20, marginTop: 6, marginBottom: spacing.lg },
   card: { backgroundColor: colors.surface, borderColor: colors.border, borderWidth: 1, borderRadius: radii.lg, padding: spacing.lg, marginBottom: spacing.md },
+  characterSummary: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, backgroundColor: colors.surface, borderColor: colors.border, borderWidth: 1, borderRadius: radii.lg, padding: spacing.lg, marginBottom: spacing.md },
+  avatar: { width: 46, height: 46, borderRadius: 15, backgroundColor: colors.primarySoft, alignItems: 'center', justifyContent: 'center' },
+  avatarOverloaded: { backgroundColor: colors.dangerSoft },
+  avatarText: { color: colors.text, fontSize: 19, fontWeight: '900' },
+  openArrow: { color: colors.primary, fontSize: 30, fontWeight: '900' },
+  overloadLabel: { color: colors.danger, fontSize: 9, fontWeight: '900', letterSpacing: 1, marginTop: 3 },
+  backButton: { alignSelf: 'flex-start', marginBottom: spacing.md, paddingVertical: 4 },
+  backText: { color: colors.primary, fontWeight: '900' },
   cardHeader: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, marginBottom: spacing.md },
   cardTitle: { color: colors.text, fontSize: 17, fontWeight: '900' },
   weight: { color: colors.success, fontWeight: '800', marginTop: 3 },
