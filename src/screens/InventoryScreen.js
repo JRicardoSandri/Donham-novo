@@ -160,6 +160,59 @@ export default function InventoryScreen() {
               </TouchableOpacity>
             </View>
 
+            {!!form.characterId && form.characterId === selectedCharacter.id && (
+              <View style={styles.form}>
+                <Text style={styles.cardTitle}>{form.id ? 'Editar item' : 'Adicionar item'}</Text>
+                <TouchableOpacity style={styles.catalogButton} onPress={() => setCatalogOpen(true)}>
+                  <Text style={styles.catalogButtonText}>Escolher no catálogo</Text>
+                  <Text style={styles.catalogButtonText}>⌕</Text>
+                </TouchableOpacity>
+                <TextInput
+                  style={styles.input}
+                  value={form.name}
+                  onChangeText={(name) => setForm((old) => ({ ...old, name }))}
+                  placeholder="Nome"
+                  placeholderTextColor={colors.textMuted}
+                />
+                <View style={styles.row}>
+                  <Field label="Quantidade" value={form.quantity} onChangeText={(quantity) => setForm((old) => ({ ...old, quantity }))} />
+                  <Field label="Peso (kg)" value={form.weight} onChangeText={(weight) => setForm((old) => ({ ...old, weight }))} />
+                </View>
+                <TextInput
+                  style={styles.input}
+                  value={form.value}
+                  onChangeText={(value) => setForm((old) => ({ ...old, value }))}
+                  placeholder="Valor (ex.: 10 po)"
+                  placeholderTextColor={colors.textMuted}
+                />
+                <TextInput
+                  style={[styles.input, styles.multiline]}
+                  value={form.description}
+                  onChangeText={(description) => setForm((old) => ({ ...old, description }))}
+                  placeholder="Descrição"
+                  placeholderTextColor={colors.textMuted}
+                  multiline
+                />
+                <View style={styles.equippedRow}>
+                  <Text style={styles.itemName}>Equipado</Text>
+                  <Switch
+                    value={form.equipped}
+                    onValueChange={(equipped) => setForm((old) => ({ ...old, equipped }))}
+                    trackColor={{ false: colors.border, true: colors.primaryDark }}
+                    thumbColor={form.equipped ? colors.primary : colors.textMuted}
+                  />
+                </View>
+                <View style={styles.row}>
+                  <TouchableOpacity style={styles.secondary} onPress={() => setForm(EMPTY_ITEM)}>
+                    <Text style={styles.actionText}>Cancelar</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity style={styles.primaryWide} onPress={saveItem}>
+                    <Text style={styles.primaryText}>Salvar item</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            )}
+
             {inventory.length === 0 && <Text style={styles.muted}>Inventario vazio.</Text>}
 
             {inventory.map((item) => (
@@ -183,59 +236,6 @@ export default function InventoryScreen() {
           </View>
         );
       })()}
-
-      {!!form.characterId && activeCharacterIds.has(form.characterId) && (
-        <View style={styles.form}>
-          <Text style={styles.cardTitle}>{form.id ? 'Editar item' : 'Adicionar item'}</Text>
-          <TouchableOpacity style={styles.catalogButton} onPress={() => setCatalogOpen(true)}>
-            <Text style={styles.catalogButtonText}>Escolher no catálogo</Text>
-            <Text style={styles.catalogButtonText}>⌕</Text>
-          </TouchableOpacity>
-          <TextInput
-            style={styles.input}
-            value={form.name}
-            onChangeText={(name) => setForm((old) => ({ ...old, name }))}
-            placeholder="Nome"
-            placeholderTextColor={colors.textMuted}
-          />
-          <View style={styles.row}>
-            <Field label="Quantidade" value={form.quantity} onChangeText={(quantity) => setForm((old) => ({ ...old, quantity }))} />
-            <Field label="Peso (kg)" value={form.weight} onChangeText={(weight) => setForm((old) => ({ ...old, weight }))} />
-          </View>
-          <TextInput
-            style={styles.input}
-            value={form.value}
-            onChangeText={(value) => setForm((old) => ({ ...old, value }))}
-            placeholder="Valor (ex.: 10 po)"
-            placeholderTextColor={colors.textMuted}
-          />
-          <TextInput
-            style={[styles.input, styles.multiline]}
-            value={form.description}
-            onChangeText={(description) => setForm((old) => ({ ...old, description }))}
-            placeholder="Descricao"
-            placeholderTextColor={colors.textMuted}
-            multiline
-          />
-          <View style={styles.equippedRow}>
-            <Text style={styles.itemName}>Equipado</Text>
-            <Switch
-              value={form.equipped}
-              onValueChange={(equipped) => setForm((old) => ({ ...old, equipped }))}
-              trackColor={{ false: colors.border, true: colors.primaryDark }}
-              thumbColor={form.equipped ? colors.primary : colors.textMuted}
-            />
-          </View>
-          <View style={styles.row}>
-            <TouchableOpacity style={styles.secondary} onPress={() => setForm(EMPTY_ITEM)}>
-              <Text style={styles.actionText}>Cancelar</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.primaryWide} onPress={saveItem}>
-              <Text style={styles.primaryText}>Salvar item</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      )}
 
       <Modal visible={catalogOpen} transparent animationType="slide" onRequestClose={() => setCatalogOpen(false)}>
         <View style={styles.modalBackground}>
@@ -335,7 +335,7 @@ const styles = StyleSheet.create({
   actionText: { color: colors.text, fontWeight: '800' },
   danger: { borderColor: '#5B2B2B', borderWidth: 1, borderRadius: radii.sm, padding: 9 },
   dangerText: { color: '#FFB0B0', fontWeight: '900' },
-  form: { backgroundColor: colors.surface, borderColor: colors.primaryDark, borderWidth: 1, borderRadius: radii.lg, padding: spacing.lg, marginTop: spacing.md },
+  form: { backgroundColor: colors.surfaceMuted, borderColor: colors.primaryDark, borderWidth: 1, borderRadius: radii.lg, padding: spacing.lg, marginBottom: spacing.md },
   input: { backgroundColor: colors.surfaceMuted, borderRadius: radii.md, color: colors.text, padding: 12, marginTop: spacing.sm },
   multiline: { minHeight: 72, textAlignVertical: 'top' },
   row: { flexDirection: 'row', gap: spacing.sm, alignItems: 'center' },
