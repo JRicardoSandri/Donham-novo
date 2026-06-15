@@ -1,6 +1,7 @@
 import { resourcesForCharacter } from '../services/resourceService.js';
 import { CLASS_RESOURCES } from '../data/classProgression.js';
 import { ALL_RACE_RESOURCE_IDS, ALL_RACE_RESOURCE_NAMES } from '../data/raceProgression.js';
+import { normalizeSpellcasting } from '../services/spellService.js';
 import {
   carryingCapacity,
   initiativeFromAttributes,
@@ -33,6 +34,7 @@ export function createCharacter(input = {}) {
     name: String(input.name || '').trim(),
     player: String(input.player || '').trim(),
     classKey: input.classKey || 'Guerreiro',
+    subclassKey: input.subclassKey || null,
     race: String(input.race || '').trim(),
     xp,
     background: String(input.background || '').trim(),
@@ -65,6 +67,19 @@ export function createCharacter(input = {}) {
     conditions: Array.isArray(input.conditions) ? input.conditions : [],
     resources: Array.isArray(input.resources) ? input.resources : [],
     inventory: Array.isArray(input.inventory) ? input.inventory : [],
+    proficiencies: {
+      savingThrows: Array.isArray(input.proficiencies?.savingThrows) ? input.proficiencies.savingThrows : [],
+      skills: Array.isArray(input.proficiencies?.skills) ? input.proficiencies.skills : [],
+      expertise: Array.isArray(input.proficiencies?.expertise) ? input.proficiencies.expertise : [],
+      armor: Array.isArray(input.proficiencies?.armor) ? input.proficiencies.armor : [],
+      weapons: Array.isArray(input.proficiencies?.weapons) ? input.proficiencies.weapons : [],
+      tools: Array.isArray(input.proficiencies?.tools) ? input.proficiencies.tools : [],
+      languages: Array.isArray(input.proficiencies?.languages) ? input.proficiencies.languages : [],
+    },
+    spellcasting: normalizeSpellcasting(input.spellcasting),
+    featureChoices: input.featureChoices && typeof input.featureChoices === 'object'
+      ? input.featureChoices
+      : {},
     createdAt: input.createdAt || new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   };

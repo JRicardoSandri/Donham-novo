@@ -2,7 +2,7 @@ import { createCharacter } from '../models/Character.js';
 import { createCombat, heroParticipant, sortedParticipants } from './combatService.js';
 import { STORAGE_KEYS, loadJson, saveJson } from './storageService';
 
-export const SCHEMA_VERSION = 5;
+export const SCHEMA_VERSION = 6;
 
 const EMPTY_STATE = {
   schemaVersion: SCHEMA_VERSION,
