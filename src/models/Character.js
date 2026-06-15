@@ -1,5 +1,6 @@
 import { resourcesForCharacter } from '../services/resourceService.js';
 import { CLASS_RESOURCES } from '../data/classProgression.js';
+import { ALL_RACE_RESOURCE_IDS, ALL_RACE_RESOURCE_NAMES } from '../data/raceProgression.js';
 import {
   carryingCapacity,
   initiativeFromAttributes,
@@ -80,10 +81,12 @@ export function createCharacter(input = {}) {
   const customResources = character.resources.filter((item) => {
     const name = String(item.name || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
     const automaticId = classResourceIds.has(item.id)
+      || ALL_RACE_RESOURCE_IDS.has(item.id)
       || String(item.id || '').startsWith('spell-')
       || String(item.id || '').startsWith('mystic-')
       || String(item.id || '').startsWith('pact-');
     const automaticName = classResourceNames.has(name)
+      || ALL_RACE_RESOURCE_NAMES.has(name)
       || name.includes('espacos de magia')
       || name.includes('magia de pacto')
       || name.includes('arcano mistico');

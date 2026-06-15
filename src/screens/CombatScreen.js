@@ -5,6 +5,7 @@ import { useCampaign } from '../services/CampaignContext';
 import {
   advanceTurn,
   applyParticipantHp,
+  breakHeroInitiativeTies,
   createCombat,
   enemyParticipant,
   heroParticipant,
@@ -100,6 +101,15 @@ export default function CombatScreen() {
     }));
   }
 
+  function breakTies() {
+    setCombat((old) => ({
+      ...old,
+      participants: breakHeroInitiativeTies(old.participants, state.characters),
+      activeIndex: 0,
+      turnsTaken: 0,
+    }));
+  }
+
   if (!state) return <Text style={styles.loading}>Carregando combate...</Text>;
 
   return (
@@ -127,6 +137,9 @@ export default function CombatScreen() {
           </TouchableOpacity>
           <TouchableOpacity style={styles.secondary} onPress={() => setCombat(() => createCombat())}>
             <Text style={styles.secondaryText}>Novo combate</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.secondary} onPress={breakTies}>
+            <Text style={styles.secondaryText}>Desempatar INIT</Text>
           </TouchableOpacity>
         </View>
 
@@ -320,7 +333,7 @@ const styles = StyleSheet.create({
   nextLabel: { color: colors.background, fontSize: 9, fontWeight: '900' },
   nextArrow: { color: colors.background, fontSize: 32, lineHeight: 32 },
   flex: { flex: 1 },
-  toolbar: { flexDirection: 'row', gap: spacing.sm, marginVertical: spacing.md },
+  toolbar: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm, marginVertical: spacing.md },
   secondary: { flex: 1, backgroundColor: colors.surface, borderColor: colors.border, borderWidth: 1, borderRadius: radii.md, alignItems: 'center', padding: 12 },
   secondaryText: { color: colors.text, fontWeight: '800' },
   enemyForm: { backgroundColor: colors.surface, borderColor: colors.border, borderWidth: 1, borderRadius: radii.lg, padding: spacing.lg, marginBottom: spacing.lg },

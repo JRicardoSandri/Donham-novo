@@ -5,7 +5,8 @@ import {
   spellSlotsFor,
   warlockPactFor,
 } from '../data/classProgression.js';
-import { levelFromXp } from './rulesService.js';
+import { raceResourcesFor } from '../data/raceProgression.js';
+import { levelFromXp, proficiencyBonus } from './rulesService.js';
 
 function normalizedName(value) {
   return String(value || '')
@@ -27,6 +28,7 @@ function resource(id, name, max, recovery, previous, matcher = null) {
 
 export function resourcesForCharacter(character) {
   const level = levelFromXp(character.xp);
+  const proficiency = proficiencyBonus(level);
   const previous = Array.isArray(character.resources) ? character.resources : [];
   const generated = (CLASS_RESOURCES[character.classKey] || [])
     .filter((definition) => level >= definition.unlock)
@@ -39,6 +41,18 @@ export function resourcesForCharacter(character) {
         previous
       )
     );
+
+  raceResourcesFor(character.race, level).forEach((definition) => {
+    generated.push(
+      resource(
+        definition.id,
+        definition.name,
+        definition.max(level, proficiency, character),
+        definition.recovery,
+        previous
+      )
+    );
+  });
 
   if (character.classKey === 'Bruxo') {
     const pact = warlockPactFor(level);
@@ -86,10 +100,23 @@ export function spendResource(resources, resourceId, delta) {
 }
 
 export function recoverResources(resources, restType) {
+  const normalizedRest = normalizeRecovery(restType);
   return resources.map((item) => {
-    const recovers = restType === RECOVERY.SHORT
-      ? item.recovery === RECOVERY.SHORT
-      : item.recovery === RECOVERY.SHORT || item.recovery === RECOVERY.LONG;
+    const recovery = normalizeRecovery(item.recovery);
+    const recovers = normalizedRest === RECOVERY.SHORT
+      ? recovery === RECOVERY.SHORT
+      : recovery === RECOVERY.SHORT || recovery === RECOVERY.LONG;
     return recovers ? { ...item, current: item.max } : item;
   });
+}
+
+export function normalizeRecovery(value) {
+  const recovery = normalizedName(value);
+  if (recovery === RECOVERY.SHORT || recovery.includes('curto') || recovery.includes('short')) {
+    return RECOVERY.SHORT;
+  }
+  if (recovery === RECOVERY.LONG || recovery.includes('longo') || recovery.includes('long')) {
+    return RECOVERY.LONG;
+  }
+  return recovery;
 }

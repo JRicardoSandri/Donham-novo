@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { ATTRIBUTE_FIELDS, CLASSES } from '../data/dnd5e';
 import { progressionFor } from '../data/classFeatures';
+import { RACE_OPTIONS, raceProgressionFor } from '../data/raceProgression';
 import { createCharacter } from '../models/Character';
 import { createGroup } from '../models/Group';
 import { useCampaign } from '../services/CampaignContext';
@@ -268,6 +269,7 @@ export default function GroupsScreen() {
               const progress = xpProgress(character.xp);
               const level = progress.level;
               const progression = progressionFor(character.classKey, level);
+              const raceProgression = raceProgressionFor(character.race, level);
               const initiative = character.initiative ?? initiativeFromAttributes(character.attributes);
               const capacity = carryingCapacity(character.attributes, character.size);
               return (
@@ -322,6 +324,22 @@ export default function GroupsScreen() {
                       {progression.upcoming.length > 0 && (
                         <Text style={styles.nextFeature}>
                           Próximo: nível {progression.upcoming[0][0]} · {progression.upcoming[0][1]}
+                        </Text>
+                      )}
+                    </View>
+                  )}
+
+                  {raceProgression.unlocked.length > 0 && (
+                    <View style={styles.featurePanel}>
+                      <Text style={styles.featureTitle}>Habilidades raciais</Text>
+                      {raceProgression.unlocked.map(([featureLevel, text]) => (
+                        <Text key={`${character.id}-race-${featureLevel}`} style={styles.featureText}>
+                          Nível {featureLevel}: {text}
+                        </Text>
+                      ))}
+                      {raceProgression.upcoming.length > 0 && (
+                        <Text style={styles.nextFeature}>
+                          Próximo: nível {raceProgression.upcoming[0][0]} · {raceProgression.upcoming[0][1]}
                         </Text>
                       )}
                     </View>
@@ -440,6 +458,8 @@ function GroupModal({ draft, onChange, onSave, onClose }) {
 }
 
 function CharacterModal({ draft, onChange, onSave, onClose }) {
+  const [racePickerOpen, setRacePickerOpen] = useState(false);
+  const [raceQuery, setRaceQuery] = useState('');
   const update = (patch) => onChange((old) => ({ ...old, ...patch }));
   const updateAttribute = (key, value) =>
     onChange((old) => ({ ...old, attributes: { ...old.attributes, [key]: value } }));
@@ -452,7 +472,13 @@ function CharacterModal({ draft, onChange, onSave, onClose }) {
             <Text style={styles.sectionTitle}>{draft?.id ? 'Editar personagem' : 'Novo personagem'}</Text>
             <Field label="Nome" value={draft?.name} onChangeText={(name) => update({ name })} />
             <Field label="Jogador" value={draft?.player} onChangeText={(player) => update({ player })} />
-            <Field label="Raça" value={draft?.race} onChangeText={(race) => update({ race })} />
+            <Text style={styles.fieldLabel}>Raça</Text>
+            <TouchableOpacity style={styles.selectInput} onPress={() => setRacePickerOpen(true)}>
+              <Text style={draft?.race ? styles.selectText : styles.selectPlaceholder}>
+                {draft?.race || 'Escolher raça'}
+              </Text>
+              <Text style={styles.selectArrow}>⌄</Text>
+            </TouchableOpacity>
             <Field label="XP" value={draft?.xp} keyboardType="numeric" onChangeText={(xp) => update({ xp })} />
             <Field label="Antecedente" value={draft?.background} onChangeText={(background) => update({ background })} />
             <Field label="Alinhamento" value={draft?.alignment} onChangeText={(alignment) => update({ alignment })} />
@@ -543,6 +569,46 @@ function CharacterModal({ draft, onChange, onSave, onClose }) {
           </ScrollView>
         </View>
       </View>
+      <Modal visible={racePickerOpen} transparent animationType="fade" onRequestClose={() => setRacePickerOpen(false)}>
+        <View style={styles.modalBackground}>
+          <View style={styles.racePicker}>
+            <Text style={styles.sectionTitle}>Escolher raça</Text>
+            <TextInput
+              style={styles.input}
+              value={raceQuery}
+              onChangeText={setRaceQuery}
+              placeholder="Filtrar raças"
+              placeholderTextColor={colors.textMuted}
+            />
+            <ScrollView style={styles.raceList}>
+              {RACE_OPTIONS
+                .filter((option) => option.name.toLowerCase().includes(raceQuery.trim().toLowerCase()))
+                .map((option, index, filtered) => (
+                  <View key={option.name}>
+                    {(index === 0 || filtered[index - 1].group !== option.group) && (
+                      <Text style={styles.raceGroup}>{option.group}</Text>
+                    )}
+                    <TouchableOpacity
+                      style={[styles.raceOption, draft?.race === option.name && styles.raceOptionActive]}
+                      onPress={() => {
+                        update({ race: option.name });
+                        setRacePickerOpen(false);
+                        setRaceQuery('');
+                      }}
+                    >
+                      <Text style={[styles.raceOptionText, draft?.race === option.name && styles.raceOptionTextActive]}>
+                        {option.name}
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                ))}
+            </ScrollView>
+            <TouchableOpacity style={styles.secondaryButton} onPress={() => setRacePickerOpen(false)}>
+              <Text style={styles.secondaryText}>Fechar</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </Modal>
   );
 }
@@ -598,6 +664,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 12,
   },
+  selectInput: { flexDirection: 'row', alignItems: 'center', backgroundColor: colors.surfaceMuted, borderColor: colors.border, borderWidth: 1, borderRadius: radii.md, marginTop: 6, paddingHorizontal: 14, paddingVertical: 14 },
+  selectText: { flex: 1, color: colors.text },
+  selectPlaceholder: { flex: 1, color: colors.textMuted },
+  selectArrow: { color: colors.primary, fontSize: 20, fontWeight: '900' },
   primaryButton: { backgroundColor: colors.primary, borderRadius: radii.md, justifyContent: 'center', paddingHorizontal: 18, paddingVertical: 12 },
   primaryWide: { backgroundColor: colors.primary, borderRadius: radii.md, alignItems: 'center', marginTop: spacing.md, padding: 14 },
   primaryText: { color: colors.background, fontWeight: '900' },
@@ -649,6 +719,13 @@ const styles = StyleSheet.create({
   modalCard: { backgroundColor: colors.surface, borderRadius: radii.lg, padding: spacing.lg },
   sheet: { maxHeight: '92%', backgroundColor: colors.surface, borderRadius: radii.lg },
   sheetContent: { padding: spacing.lg, paddingBottom: 36 },
+  racePicker: { maxHeight: '82%', backgroundColor: colors.surface, borderRadius: radii.lg, padding: spacing.lg },
+  raceList: { marginVertical: spacing.md },
+  raceGroup: { color: colors.primary, fontSize: 11, fontWeight: '900', letterSpacing: 1, marginTop: spacing.md, marginBottom: 6 },
+  raceOption: { borderColor: colors.border, borderWidth: 1, borderRadius: radii.md, marginBottom: spacing.sm, padding: 13 },
+  raceOptionActive: { backgroundColor: colors.primarySoft, borderColor: colors.primary },
+  raceOptionText: { color: colors.text, fontWeight: '800' },
+  raceOptionTextActive: { color: colors.primary },
   fieldLabel: { color: colors.textMuted, fontSize: 12, fontWeight: '800', marginTop: spacing.md },
   fieldRow: { flexDirection: 'row', gap: spacing.sm },
   sizeRow: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.sm },

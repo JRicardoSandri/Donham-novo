@@ -132,6 +132,28 @@ export function sortedParticipants(participants) {
   return [...participants].sort((a, b) => b.initiative - a.initiative);
 }
 
+export function breakHeroInitiativeTies(participants, characters) {
+  const modifiers = new Map(
+    characters.map((character) => [character.id, Number(character.initiative) || 0])
+  );
+
+  return participants
+    .map((participant, index) => ({ participant, index }))
+    .sort((left, right) => {
+      const initiativeDifference = right.participant.initiative - left.participant.initiative;
+      if (initiativeDifference !== 0) return initiativeDifference;
+
+      const bothHeroes = left.participant.type === 'hero' && right.participant.type === 'hero';
+      if (!bothHeroes) return left.index - right.index;
+
+      const modifierDifference =
+        (modifiers.get(right.participant.sourceId) || 0) -
+        (modifiers.get(left.participant.sourceId) || 0);
+      return modifierDifference || left.index - right.index;
+    })
+    .map(({ participant }) => participant);
+}
+
 export function advanceTurn(combat) {
   if (!combat.participants.length) return combat;
   const [current, ...waiting] = combat.participants;

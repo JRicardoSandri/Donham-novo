@@ -4,6 +4,8 @@ export function createInventoryItem(input = {}) {
     name: String(input.name || '').trim(),
     quantity: Math.max(1, Number(input.quantity) || 1),
     weight: Math.max(0, Number(input.weight) || 0),
+    value: String(input.value || '').trim(),
+    category: String(input.category || 'Personalizado').trim(),
     equipped: Boolean(input.equipped),
     description: String(input.description || '').trim(),
   };

@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { RECOVERY } from '../data/classProgression';
 import { useCampaign } from '../services/CampaignContext';
-import { recoverResources, spendResource } from '../services/resourceService';
+import { normalizeRecovery, recoverResources, spendResource } from '../services/resourceService';
 import { levelFromXp } from '../services/rulesService';
 import { colors, radii, spacing } from '../theme';
 
@@ -100,7 +100,7 @@ export default function ResourcesScreen() {
             <View key={item.id} style={styles.resource}>
               <View style={styles.flex}>
                 <Text style={styles.resourceName}>{item.name}</Text>
-                <Text style={styles.muted}>Recupera em descanso {item.recovery === RECOVERY.SHORT ? 'curto' : 'longo'}</Text>
+                <Text style={styles.muted}>Recupera em descanso {normalizeRecovery(item.recovery) === RECOVERY.SHORT ? 'curto' : 'longo'}</Text>
               </View>
               <View style={styles.resourceControls}>
                 <TouchableOpacity style={styles.control} onPress={() => updateResources(character.id, (items) => spendResource(items, item.id, -1))}>

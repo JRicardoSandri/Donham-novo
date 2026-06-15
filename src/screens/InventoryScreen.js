@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
-import { ScrollView, StyleSheet, Switch, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Modal, ScrollView, StyleSheet, Switch, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { EQUIPMENT_CATALOG, EQUIPMENT_CATEGORIES } from '../data/equipmentCatalog';
 import { useCampaign } from '../services/CampaignContext';
 import {
   inventoryCapacity,
@@ -15,6 +16,8 @@ const EMPTY_ITEM = {
   name: '',
   quantity: '1',
   weight: '0',
+  value: '',
+  category: 'Personalizado',
   equipped: false,
   description: '',
 };
@@ -22,6 +25,9 @@ const EMPTY_ITEM = {
 export default function InventoryScreen() {
   const { state, setState } = useCampaign();
   const [form, setForm] = useState(EMPTY_ITEM);
+  const [catalogOpen, setCatalogOpen] = useState(false);
+  const [catalogQuery, setCatalogQuery] = useState('');
+  const [catalogCategory, setCatalogCategory] = useState('Todos');
   const activeGroup = useMemo(
     () => state?.groups.find((group) => group.id === state.activeGroupId) || null,
     [state?.groups, state?.activeGroupId]
@@ -54,6 +60,8 @@ export default function InventoryScreen() {
       characterId,
       quantity: String(item.quantity),
       weight: String(item.weight),
+      value: String(item.value || ''),
+      category: item.category || 'Personalizado',
     });
   }
 
@@ -116,6 +124,7 @@ export default function InventoryScreen() {
                   <Text style={styles.muted}>
                     {item.quantity} × {item.weight} kg = {(item.quantity * item.weight).toFixed(1)} kg
                   </Text>
+                  {!!item.value && <Text style={styles.value}>{item.value} · {item.category || 'Personalizado'}</Text>}
                   {!!item.description && <Text style={styles.description}>{item.description}</Text>}
                 </View>
                 <TouchableOpacity style={styles.action} onPress={() => editItem(character.id, item)}>
@@ -133,6 +142,10 @@ export default function InventoryScreen() {
       {!!form.characterId && activeCharacterIds.has(form.characterId) && (
         <View style={styles.form}>
           <Text style={styles.cardTitle}>{form.id ? 'Editar item' : 'Adicionar item'}</Text>
+          <TouchableOpacity style={styles.catalogButton} onPress={() => setCatalogOpen(true)}>
+            <Text style={styles.catalogButtonText}>Escolher no catálogo</Text>
+            <Text style={styles.catalogButtonText}>⌕</Text>
+          </TouchableOpacity>
           <TextInput
             style={styles.input}
             value={form.name}
@@ -144,6 +157,13 @@ export default function InventoryScreen() {
             <Field label="Quantidade" value={form.quantity} onChangeText={(quantity) => setForm((old) => ({ ...old, quantity }))} />
             <Field label="Peso (kg)" value={form.weight} onChangeText={(weight) => setForm((old) => ({ ...old, weight }))} />
           </View>
+          <TextInput
+            style={styles.input}
+            value={form.value}
+            onChangeText={(value) => setForm((old) => ({ ...old, value }))}
+            placeholder="Valor (ex.: 10 po)"
+            placeholderTextColor={colors.textMuted}
+          />
           <TextInput
             style={[styles.input, styles.multiline]}
             value={form.description}
@@ -171,6 +191,60 @@ export default function InventoryScreen() {
           </View>
         </View>
       )}
+
+      <Modal visible={catalogOpen} transparent animationType="slide" onRequestClose={() => setCatalogOpen(false)}>
+        <View style={styles.modalBackground}>
+          <View style={styles.catalogSheet}>
+            <Text style={styles.cardTitle}>Catálogo de equipamentos</Text>
+            <TextInput
+              style={styles.input}
+              value={catalogQuery}
+              onChangeText={setCatalogQuery}
+              placeholder="Digite para filtrar itens"
+              placeholderTextColor={colors.textMuted}
+            />
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.categoryStrip}>
+              {EQUIPMENT_CATEGORIES.map((category) => (
+                <TouchableOpacity key={category} style={[styles.categoryChip, catalogCategory === category && styles.categoryChipActive]} onPress={() => setCatalogCategory(category)}>
+                  <Text style={[styles.categoryText, catalogCategory === category && styles.categoryTextActive]}>{category}</Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+            <ScrollView style={styles.catalogList}>
+              {EQUIPMENT_CATALOG
+                .filter((item) => catalogCategory === 'Todos' || item.category === catalogCategory)
+                .filter((item) => `${item.name} ${item.description}`.toLowerCase().includes(catalogQuery.trim().toLowerCase()))
+                .map((item) => (
+                  <TouchableOpacity
+                    key={`${item.category}-${item.name}`}
+                    style={styles.catalogItem}
+                    onPress={() => {
+                      setForm((old) => ({
+                        ...old,
+                        name: item.name,
+                        weight: String(item.weight),
+                        value: item.value,
+                        category: item.category,
+                        description: item.description,
+                      }));
+                      setCatalogOpen(false);
+                      setCatalogQuery('');
+                    }}
+                  >
+                    <View style={styles.flex}>
+                      <Text style={styles.itemName}>{item.name}</Text>
+                      <Text style={styles.muted}>{item.category} · {item.value} · {item.weight} kg</Text>
+                      <Text style={styles.description}>{item.description}</Text>
+                    </View>
+                  </TouchableOpacity>
+                ))}
+            </ScrollView>
+            <TouchableOpacity style={styles.secondary} onPress={() => setCatalogOpen(false)}>
+              <Text style={styles.actionText}>Fechar</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </ScrollView>
   );
 }
@@ -199,6 +273,7 @@ const styles = StyleSheet.create({
   item: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, borderTopColor: colors.border, borderTopWidth: 1, paddingTop: spacing.md, marginTop: spacing.md },
   itemName: { color: colors.text, fontWeight: '800' },
   description: { color: colors.textMuted, fontSize: 12, marginTop: 4 },
+  value: { color: colors.primary, fontSize: 11, fontWeight: '800', marginTop: 3 },
   flex: { flex: 1 },
   primary: { backgroundColor: colors.primary, borderRadius: radii.md, padding: 10 },
   primaryWide: { flex: 1, backgroundColor: colors.primary, borderRadius: radii.md, alignItems: 'center', padding: 12 },
@@ -214,4 +289,15 @@ const styles = StyleSheet.create({
   label: { color: colors.textMuted, fontSize: 11, marginTop: spacing.md },
   equippedRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginVertical: spacing.md },
   secondary: { flex: 1, borderColor: colors.border, borderWidth: 1, borderRadius: radii.md, alignItems: 'center', padding: 12 },
+  catalogButton: { flexDirection: 'row', justifyContent: 'space-between', backgroundColor: colors.primarySoft, borderColor: colors.primaryDark, borderWidth: 1, borderRadius: radii.md, marginTop: spacing.md, padding: 13 },
+  catalogButtonText: { color: colors.primary, fontWeight: '900' },
+  modalBackground: { flex: 1, backgroundColor: 'rgba(0,0,0,0.78)', justifyContent: 'flex-end' },
+  catalogSheet: { maxHeight: '90%', backgroundColor: colors.surface, borderTopLeftRadius: radii.xl, borderTopRightRadius: radii.xl, padding: spacing.lg },
+  categoryStrip: { gap: spacing.sm, paddingVertical: spacing.md },
+  categoryChip: { borderColor: colors.border, borderWidth: 1, borderRadius: radii.pill, paddingHorizontal: 13, paddingVertical: 8 },
+  categoryChipActive: { backgroundColor: colors.primary, borderColor: colors.primary },
+  categoryText: { color: colors.textMuted, fontWeight: '800' },
+  categoryTextActive: { color: colors.background },
+  catalogList: { marginBottom: spacing.md },
+  catalogItem: { borderTopColor: colors.border, borderTopWidth: 1, paddingVertical: spacing.md },
 });
