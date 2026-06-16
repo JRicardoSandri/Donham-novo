@@ -108,5 +108,117 @@ const gear = gearRows.map(([name, value, weight]) => ({
   description: descriptions[name] || 'Equipamento de aventura do Livro do Jogador.',
 }));
 
-export const EQUIPMENT_CATEGORIES = ['Todos', 'Armas', 'Armaduras', 'Equipamento'];
-export const EQUIPMENT_CATALOG = [...weapons, ...armor, ...gear].sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'));
+const toolRows = [
+  ['Ferramentas de Carpinteiro', '8 po', 3, 'Ferramenta de artesao para madeira.'],
+  ['Ferramentas de Cartografo', '15 po', 3, 'Instrumentos para mapas e rotas.'],
+  ['Ferramentas de Costureiro', '1 po', 2.5, 'Kit para costura e reparos em roupas.'],
+  ['Ferramentas de Coureiro', '5 po', 2.5, 'Kit para trabalhar couro.'],
+  ['Ferramentas de Entalhador', '1 po', 2.5, 'Ferramentas para entalhe em madeira.'],
+  ['Ferramentas de Ferreiro', '20 po', 4, 'Ferramentas para forja e reparo de metal.'],
+  ['Ferramentas de Funileiro', '50 po', 5, 'Ferramentas para pequenos consertos.'],
+  ['Ferramentas de Joalheiro', '25 po', 1, 'Ferramentas para avaliar e reparar joias.'],
+  ['Ferramentas de Oleiro', '10 po', 1.5, 'Ferramentas para ceramica.'],
+  ['Ferramentas de Pedreiro', '10 po', 4, 'Ferramentas para pedra e alvenaria.'],
+  ['Ferramentas de Pintor', '10 po', 2.5, 'Suprimentos para pintura.'],
+  ['Ferramentas de Sapateiro', '5 po', 2.5, 'Ferramentas para calçados.'],
+  ['Ferramentas de Vidreiro', '30 po', 2.5, 'Ferramentas para vidro.'],
+  ['Suprimentos de Alquimista', '50 po', 4, 'Kit para praticas alquimicas.'],
+  ['Suprimentos de Cervejeiro', '20 po', 4.5, 'Kit para fermentacao e bebidas.'],
+  ['Suprimentos de Caligrafia', '10 po', 2.5, 'Penas, tintas e materiais de escrita.'],
+  ['Utensilios de Cozinheiro', '1 po', 4, 'Utensilios para preparo de comida.'],
+  ['Ferramentas de Navegacao', '25 po', 1, 'Instrumentos para orientacao e cartas.'],
+  ['Ferramentas de Ladrao', '25 po', 0.5, 'Gazuas e ferramentas para mecanismos.'],
+  ['Alaude', '35 po', 1, 'Instrumento musical.'],
+  ['Flauta', '2 po', 0.5, 'Instrumento musical.'],
+  ['Flauta de Pa', '12 po', 1, 'Instrumento musical.'],
+  ['Gaita de Foles', '30 po', 3, 'Instrumento musical.'],
+  ['Lira', '30 po', 1, 'Instrumento musical.'],
+  ['Oboe', '2 po', 0.5, 'Instrumento musical.'],
+  ['Tambor', '6 po', 1.5, 'Instrumento musical.'],
+  ['Trombeta', '3 po', 1, 'Instrumento musical.'],
+  ['Violino', '30 po', 3, 'Instrumento musical.'],
+  ['Xilofone', '25 po', 5, 'Instrumento musical.'],
+  ['Kit de Disfarce', '25 po', 1.5, 'Cosmeticos e acessorios para disfarces.'],
+  ['Kit de Falsificacao', '15 po', 2.5, 'Ferramentas para documentos e selos falsos.'],
+  ['Kit de Herbalismo', '5 po', 1.5, 'Kit para identificar e preparar ervas.'],
+  ['Baralho de Cartas', '5 pp', 0, 'Conjunto de jogo.'],
+  ['Conjunto de Dados', '1 pp', 0, 'Conjunto de jogo.'],
+  ['Jogo dos Tres Dragoes', '5 po', 0, 'Conjunto de jogo.'],
+  ['Xadrez do Dragao', '1 po', 0.25, 'Conjunto de jogo estrategico.'],
+  ['Kit de Venenos', '50 po', 1, 'Kit para manipular e aplicar venenos.'],
+];
+
+const mountRows = [
+  ['Burro ou Mula', '8 po', 0, 'Montaria: deslocamento 12 m; carga aproximada 210 kg.'],
+  ['Camelo', '50 po', 0, 'Montaria: deslocamento 15 m; carga aproximada 240 kg.'],
+  ['Cavalo de Guerra', '400 po', 0, 'Montaria: deslocamento 18 m; carga aproximada 270 kg.'],
+  ['Cavalo de Montaria', '75 po', 0, 'Montaria: deslocamento 18 m; carga aproximada 220 kg.'],
+  ['Cavalo Pesado', '50 po', 0, 'Montaria: deslocamento 12 m; carga aproximada 270 kg.'],
+  ['Elefante', '200 po', 0, 'Montaria: deslocamento 12 m; carga aproximada 660 kg.'],
+  ['Mastim', '25 po', 0, 'Animal treinado: deslocamento 12 m; carga aproximada 100 kg.'],
+  ['Ponei', '30 po', 0, 'Montaria: deslocamento 12 m; carga aproximada 115 kg.'],
+  ['Alforje', '4 po', 4, 'Bolsas de carga para montaria.'],
+  ['Armadura de Montaria', 'Especial', 0, 'Custo x4 e peso x2 da armadura equivalente.'],
+  ['Estabulo (1 dia)', '5 pp', 0, 'Servico de acomodacao para montaria.'],
+  ['Freio e Redea', '2 po', 0.5, 'Controle basico para montaria.'],
+  ['Racao de Montaria (1 dia)', '5 pc', 5, 'Alimento diario para uma montaria.'],
+  ['Sela Compacta', '5 po', 7.5, 'Sela simples para montaria.'],
+  ['Sela Exotica', '60 po', 20, 'Sela para montarias incomuns.'],
+  ['Sela Militar', '20 po', 15, 'Sela preparada para combate montado.'],
+  ['Sela de Viagem', '10 po', 12.5, 'Sela confortavel para longas jornadas.'],
+];
+
+const vehicleRows = [
+  ['Biga', '250 po', 50, 'Veiculo terrestre leve.'],
+  ['Carroca', '15 po', 100, 'Veiculo terrestre de carga.'],
+  ['Carruagem', '100 po', 300, 'Veiculo terrestre para passageiros.'],
+  ['Treno', '20 po', 150, 'Veiculo terrestre para neve ou gelo.'],
+  ['Barco de Quilha', '3.000 po', 0, 'Veiculo aquatico; velocidade aproximada 1,5 km/h.'],
+  ['Barco a Remo', '50 po', 45, 'Veiculo aquatico pequeno; velocidade aproximada 2 km/h.'],
+  ['Dracar', '10.000 po', 0, 'Grande embarcacao de guerra ou exploracao.'],
+  ['Galera', '30.000 po', 0, 'Grande embarcacao movida a remos e velas.'],
+  ['Navio de Guerra', '25.000 po', 0, 'Embarcacao militar.'],
+  ['Veleiro', '10.000 po', 0, 'Embarcacao de viagem movida a velas.'],
+];
+
+const tradeRows = [
+  ['0,5 kg de Trigo', '1 pc', 0.5, 'Bem comercial.'],
+  ['0,5 kg de Farinha', '2 pc', 0.5, 'Bem comercial.'],
+  ['Galinha', '2 pc', 0, 'Animal comum de comercio.'],
+  ['0,5 kg de Sal', '5 pc', 0.5, 'Bem comercial.'],
+  ['0,5 kg de Ferro', '1 pp', 0.5, 'Bem comercial.'],
+  ['1 m2 de Lona', '1 pp', 0, 'Bem comercial.'],
+  ['0,5 kg de Cobre', '5 pp', 0.5, 'Bem comercial.'],
+  ['1 m2 de Tecido de Algodao', '5 pp', 0, 'Bem comercial.'],
+  ['0,5 kg de Gengibre', '1 po', 0.5, 'Bem comercial.'],
+  ['Cabra', '1 po', 0, 'Animal comum de comercio.'],
+  ['0,5 kg de Canela', '2 po', 0.5, 'Bem comercial.'],
+  ['0,5 kg de Pimenta', '2 po', 0.5, 'Bem comercial.'],
+  ['Ovelha', '2 po', 0, 'Animal comum de comercio.'],
+  ['0,5 kg de Cravos', '3 po', 0.5, 'Bem comercial.'],
+  ['Porco', '3 po', 0, 'Animal comum de comercio.'],
+  ['0,5 kg de Prata', '5 po', 0.5, 'Bem comercial.'],
+  ['1 m2 de Linho', '5 po', 0, 'Bem comercial.'],
+  ['1 m2 de Seda', '10 po', 0, 'Bem comercial.'],
+  ['Vaca', '10 po', 0, 'Animal comum de comercio.'],
+  ['0,5 kg de Acafrao', '15 po', 0.5, 'Bem comercial.'],
+  ['Boi', '15 po', 0, 'Animal comum de comercio.'],
+  ['0,5 kg de Ouro', '50 po', 0.5, 'Bem comercial.'],
+  ['0,5 kg de Platina', '500 po', 0.5, 'Bem comercial.'],
+];
+
+const tools = toolRows.map(([name, value, weight, description]) => ({ category: 'Ferramentas', name, value, weight, description }));
+const mounts = mountRows.map(([name, value, weight, description]) => ({ category: 'Montarias', name, value, weight, description }));
+const vehicles = vehicleRows.map(([name, value, weight, description]) => ({ category: 'Veiculos', name, value, weight, description }));
+const tradeGoods = tradeRows.map(([name, value, weight, description]) => ({ category: 'Bens', name, value, weight, description }));
+
+export const EQUIPMENT_CATEGORIES = ['Todos', 'Armas', 'Armaduras', 'Equipamento', 'Ferramentas', 'Montarias', 'Veiculos', 'Bens'];
+export const EQUIPMENT_CATALOG = [
+  ...weapons,
+  ...armor,
+  ...gear,
+  ...tools,
+  ...mounts,
+  ...vehicles,
+  ...tradeGoods,
+].sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'));

@@ -1,5 +1,5 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { Modal, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { Alert, Modal, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { CONDITIONS } from '../data/conditions';
 import { useCampaign } from '../services/CampaignContext';
 import {
@@ -22,6 +22,7 @@ export default function CombatScreen() {
   const { state, setState } = useCampaign();
   const [enemy, setEnemy] = useState(EMPTY_ENEMY);
   const [conditionTarget, setConditionTarget] = useState(null);
+  const alertedConcentration = useRef({});
 
   useEffect(() => {
     if (!state || state.combats?.length) return;
@@ -34,6 +35,24 @@ export default function CombatScreen() {
     () => combat.participants.find((item) => item.id === conditionTarget),
     [combat.participants, conditionTarget]
   );
+
+  useEffect(() => {
+    const activeAlerts = {};
+    combat.participants.forEach((participant) => {
+      if (!participant.concentrationDc) return;
+      const alertKey = `${participant.id}-${participant.concentrationDc}`;
+      activeAlerts[participant.id] = alertKey;
+      if (alertedConcentration.current[participant.id] === alertKey) return;
+      alertedConcentration.current[participant.id] = alertKey;
+      Alert.alert(
+        'Teste de concentracao',
+        `${participant.name} sofreu dano enquanto concentrava. Role CON CD ${participant.concentrationDc} para manter a magia.`
+      );
+    });
+    Object.keys(alertedConcentration.current).forEach((participantId) => {
+      if (!activeAlerts[participantId]) delete alertedConcentration.current[participantId];
+    });
+  }, [combat.participants]);
 
   function setCombat(updater) {
     setState((old) => ({ ...old, combats: [updater(old.combats?.[0] || createCombat())] }));
