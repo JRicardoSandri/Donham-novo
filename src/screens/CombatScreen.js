@@ -22,6 +22,8 @@ export default function CombatScreen() {
   const { state, setState } = useCampaign();
   const [enemy, setEnemy] = useState(EMPTY_ENEMY);
   const [conditionTarget, setConditionTarget] = useState(null);
+  const [damageDrafts, setDamageDrafts] = useState({});
+  const [initiativeDrafts, setInitiativeDrafts] = useState({});
   const alertedConcentration = useRef({});
 
   useEffect(() => {
@@ -118,6 +120,16 @@ export default function CombatScreen() {
       activeIndex: 0,
       turnsTaken: 0,
     }));
+    setInitiativeDrafts((old) => {
+      const next = { ...old };
+      delete next[id];
+      return next;
+    });
+  }
+
+  function changeInitiativeDraft(id, initiative) {
+    const value = initiative.replace(/[^\d-]/g, '').replace(/(?!^)-/g, '');
+    setInitiativeDrafts((old) => ({ ...old, [id]: value }));
   }
 
   function prioritizeParticipant(participantId) {
@@ -127,6 +139,32 @@ export default function CombatScreen() {
       activeIndex: 0,
       turnsTaken: 0,
     }));
+  }
+
+  function changeDamageDraft(participantId, value) {
+    setDamageDrafts((old) => ({ ...old, [participantId]: value.replace(/[^\d]/g, '') }));
+  }
+
+  function addDamageDraft(participantId, amount) {
+    setDamageDrafts((old) => {
+      const current = Number(old[participantId]) || 0;
+      return { ...old, [participantId]: String(current + amount) };
+    });
+  }
+
+  function clearDamageDraft(participantId) {
+    setDamageDrafts((old) => {
+      const next = { ...old };
+      delete next[participantId];
+      return next;
+    });
+  }
+
+  function applyDamageDraft(participantId) {
+    const damage = Number(damageDrafts[participantId]) || 0;
+    if (damage <= 0) return;
+    updateParticipant(participantId, (item) => applyParticipantHp(item, -damage));
+    clearDamageDraft(participantId);
   }
 
   if (!state) return <Text style={styles.loading}>Carregando combate...</Text>;
@@ -154,7 +192,14 @@ export default function CombatScreen() {
           <TouchableOpacity style={styles.secondary} onPress={addHeroes}>
             <Text style={styles.secondaryText}>+ Personagens</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.secondary} onPress={() => setCombat(() => createCombat())}>
+          <TouchableOpacity
+            style={styles.secondary}
+            onPress={() => {
+              setInitiativeDrafts({});
+              setDamageDrafts({});
+              setCombat(() => createCombat());
+            }}
+          >
             <Text style={styles.secondaryText}>Novo combate</Text>
           </TouchableOpacity>
         </View>
@@ -192,7 +237,15 @@ export default function CombatScreen() {
                 </View>
                 <View style={styles.initiativeBox}>
                   <Text style={styles.miniLabel}>INIT</Text>
-                  <TextInput style={styles.initiativeInput} keyboardType="numeric" value={String(participant.initiative)} onChangeText={(value) => changeInitiative(participant.id, value)} />
+                  <TextInput
+                    style={styles.initiativeInput}
+                    keyboardType="numeric"
+                    value={initiativeDrafts[participant.id] ?? String(participant.initiative)}
+                    onChangeText={(value) => changeInitiativeDraft(participant.id, value)}
+                  />
+                  <TouchableOpacity style={styles.initiativeApply} onPress={() => changeInitiative(participant.id, initiativeDrafts[participant.id] ?? participant.initiative)}>
+                    <Text style={styles.initiativeApplyText}>OK</Text>
+                  </TouchableOpacity>
                 </View>
                 {tied && (
                   <TouchableOpacity style={styles.priorityButton} onPress={() => prioritizeParticipant(participant.id)}>
@@ -251,10 +304,37 @@ export default function CombatScreen() {
                 </View>
               )}
 
+              <View style={styles.damagePanel}>
+                <Text style={styles.miniLabel}>Dano total</Text>
+                <View style={styles.damageRow}>
+                  <TextInput
+                    style={styles.damageInput}
+                    keyboardType="numeric"
+                    value={damageDrafts[participant.id] || ''}
+                    onChangeText={(value) => changeDamageDraft(participant.id, value)}
+                    placeholder="0"
+                    placeholderTextColor={colors.textMuted}
+                  />
+                  {[1, 5, 10, 25].map((value) => (
+                    <TouchableOpacity key={value} style={[styles.quick, styles.damageQuick]} onPress={() => addDamageDraft(participant.id, value)}>
+                      <Text style={styles.quickText}>+{value}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+                <View style={styles.damageRow}>
+                  <TouchableOpacity style={styles.applyDamageButton} onPress={() => applyDamageDraft(participant.id)}>
+                    <Text style={styles.applyDamageText}>Aplicar dano</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity style={styles.hpPreset} onPress={() => clearDamageDraft(participant.id)}>
+                    <Text style={styles.actionText}>Limpar</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+
               <View style={styles.quickRow}>
-                {[-10, -5, -1, 1, 5, 10].map((value) => (
-                  <TouchableOpacity key={value} style={[styles.quick, value < 0 ? styles.damageQuick : styles.healQuick]} onPress={() => updateParticipant(participant.id, (item) => applyParticipantHp(item, value))}>
-                    <Text style={styles.quickText}>{value > 0 ? `+${value}` : value}</Text>
+                {[1, 5, 10].map((value) => (
+                  <TouchableOpacity key={value} style={[styles.quick, styles.healQuick]} onPress={() => updateParticipant(participant.id, (item) => applyParticipantHp(item, value))}>
+                    <Text style={styles.quickText}>Cura +{value}</Text>
                   </TouchableOpacity>
                 ))}
               </View>
@@ -377,8 +457,10 @@ const styles = StyleSheet.create({
   avatarText: { color: colors.text, fontSize: 19, fontWeight: '900' },
   cardTitle: { color: colors.text, fontSize: 18, fontWeight: '900' },
   muted: { color: colors.textMuted, fontSize: 12, lineHeight: 17 },
-  initiativeBox: { width: 54, backgroundColor: colors.surfaceMuted, borderRadius: radii.md, alignItems: 'center', padding: 6 },
+  initiativeBox: { width: 62, backgroundColor: colors.surfaceMuted, borderRadius: radii.md, alignItems: 'center', padding: 6 },
   initiativeInput: { color: colors.primary, fontSize: 19, fontWeight: '900', textAlign: 'center', padding: 0, width: '100%' },
+  initiativeApply: { backgroundColor: colors.primarySoft, borderRadius: radii.sm, marginTop: 4, paddingHorizontal: 8, paddingVertical: 4 },
+  initiativeApplyText: { color: colors.primary, fontSize: 9, fontWeight: '900' },
   priorityButton: { backgroundColor: colors.primarySoft, borderColor: colors.primaryDark, borderWidth: 1, borderRadius: radii.sm, paddingHorizontal: 8, paddingVertical: 10 },
   priorityText: { color: colors.primary, fontSize: 9, fontWeight: '900' },
   hpBlock: { marginTop: spacing.md },
@@ -396,6 +478,11 @@ const styles = StyleSheet.create({
   conditionList: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: spacing.md },
   conditionBadge: { backgroundColor: colors.primarySoft, borderRadius: radii.pill, paddingHorizontal: 9, paddingVertical: 5 },
   conditionBadgeText: { color: colors.primary, fontSize: 10, fontWeight: '900' },
+  damagePanel: { backgroundColor: colors.surfaceMuted, borderRadius: radii.md, padding: spacing.sm, marginTop: spacing.md },
+  damageRow: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: spacing.sm, marginTop: spacing.sm },
+  damageInput: { width: 78, backgroundColor: colors.backgroundRaised, borderColor: colors.border, borderWidth: 1, borderRadius: radii.sm, color: colors.text, fontSize: 18, fontWeight: '900', textAlign: 'center', padding: 9 },
+  applyDamageButton: { flex: 1, minWidth: 132, backgroundColor: colors.dangerSoft, borderColor: colors.danger, borderWidth: 1, borderRadius: radii.sm, alignItems: 'center', padding: 10 },
+  applyDamageText: { color: colors.danger, fontWeight: '900', fontSize: 11 },
   quickRow: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm, marginTop: spacing.md },
   quick: { minWidth: 44, borderRadius: radii.sm, alignItems: 'center', paddingHorizontal: 11, paddingVertical: 9 },
   damageQuick: { backgroundColor: colors.dangerSoft },

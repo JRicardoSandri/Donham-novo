@@ -13,7 +13,7 @@ export function heroParticipant(character) {
     type: 'hero',
     name: character.name,
     armorClass: Number(character.armorClass) || 10,
-    initiative: Number(character.initiative) || 0,
+    initiative: 0,
     hp: {
       current: Math.min(Number.isFinite(hpCurrent) ? Math.max(0, hpCurrent) : hpMax, hpMax),
       max: hpMax,

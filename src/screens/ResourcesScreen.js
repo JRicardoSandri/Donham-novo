@@ -1,11 +1,11 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Alert, Modal, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { RECOVERY } from '../data/classProgression';
 import { SPELL_CIRCLES, SPELL_SCHOOLS, SPELLS, spellById } from '../data/spells';
 import { useCampaign } from '../services/CampaignContext';
 import { normalizeRecovery, recoverResources, spendResource } from '../services/resourceService';
 import { levelFromXp } from '../services/rulesService';
-import { castSpell, toggleKnownSpell, togglePreparedSpell } from '../services/spellService';
+import { castSpell, maxAvailableSpellCircle, toggleKnownSpell, togglePreparedSpell } from '../services/spellService';
 import { colors, radii, spacing } from '../theme';
 
 export default function ResourcesScreen() {
@@ -45,17 +45,28 @@ export default function ResourcesScreen() {
       ? [selectedResourceCharacter]
       : [];
   const spellDetail = spellById(spellDetailId);
+  const spellLimit = spellbookCharacter ? maxAvailableSpellCircle(spellbookCharacter) : 0;
+  const availableSpellCircles = useMemo(
+    () => SPELL_CIRCLES.filter((circle) => circle === 'Todos' || Number(circle) <= spellLimit),
+    [spellLimit]
+  );
+  useEffect(() => {
+    if (spellCircle !== 'Todos' && Number(spellCircle) > spellLimit) {
+      setSpellCircle('Todos');
+    }
+  }, [spellCircle, spellLimit]);
   const visibleSpells = useMemo(() => {
     if (!spellbookCharacter) return [];
     const known = new Set(spellbookCharacter.spellcasting?.knownSpellIds || []);
     return SPELLS
       .filter((spell) => spell.classes.includes(spellbookCharacter.classKey))
+      .filter((spell) => spell.circle <= spellLimit)
       .filter((spell) => spellbookView === 'catalog' || known.has(spell.id))
       .filter((spell) => spellCircle === 'Todos' || spell.circle === Number(spellCircle))
       .filter((spell) => spellSchool === 'Todas' || spell.school === spellSchool)
       .filter((spell) => !concentrationOnly || spell.concentration)
       .filter((spell) => `${spell.name} ${spell.summary}`.toLowerCase().includes(spellQuery.trim().toLowerCase()));
-  }, [spellbookCharacter, spellbookView, spellQuery, spellCircle, spellSchool, concentrationOnly]);
+  }, [spellbookCharacter, spellLimit, spellbookView, spellQuery, spellCircle, spellSchool, concentrationOnly]);
 
   function updateResources(characterId, updater) {
     setState((old) => ({
@@ -253,7 +264,9 @@ export default function ResourcesScreen() {
             <View style={styles.sheetHeader}>
               <View style={styles.flex}>
                 <Text style={styles.cardTitle}>Grimório de {spellbookCharacter?.name}</Text>
-                <Text style={styles.muted}>{spellbookCharacter?.classKey} · regras 5e 2014</Text>
+                <Text style={styles.muted}>
+                  {spellbookCharacter?.classKey} · {spellLimit > 0 ? `liberado ate ${spellLimit}º circulo` : 'sem magias liberadas neste nivel'}
+                </Text>
               </View>
               <TouchableOpacity style={styles.closeIcon} onPress={closeSpellbook}>
                 <Text style={styles.closeIconText}>×</Text>
@@ -277,7 +290,7 @@ export default function ResourcesScreen() {
               placeholderTextColor={colors.textMuted}
             />
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterStrip}>
-              {SPELL_CIRCLES.map((circle) => (
+              {availableSpellCircles.map((circle) => (
                 <TouchableOpacity key={circle} style={[styles.filterChip, spellCircle === circle && styles.filterChipActive]} onPress={() => setSpellCircle(circle)}>
                   <Text style={[styles.filterText, spellCircle === circle && styles.filterTextActive]}>{circle === 'Todos' ? 'Todos' : circle === 0 ? 'Truques' : `${circle}º`}</Text>
                 </TouchableOpacity>
@@ -297,7 +310,9 @@ export default function ResourcesScreen() {
             <ScrollView style={styles.spellList}>
               {visibleSpells.length === 0 && (
                 <Text style={styles.noResources}>
-                  {spellbookView === 'mine' ? 'Nenhuma magia adicionada. Abra “Adicionar magia”.' : 'Nenhuma magia encontrada neste filtro.'}
+                  {spellbookView === 'mine'
+                    ? 'Nenhuma magia disponivel neste nivel. Abra Adicionar magia quando liberar novos circulos.'
+                    : 'Nenhuma magia encontrada para os circulos liberados deste personagem.'}
                 </Text>
               )}
               {visibleSpells.map((spell) => {

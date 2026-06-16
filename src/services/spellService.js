@@ -1,4 +1,6 @@
+import { mysticArcanumFor, spellSlotsFor, warlockPactFor } from '../data/classProgression.js';
 import { spellById } from '../data/spells.js';
+import { levelFromXp } from './rulesService.js';
 
 export function toggleKnownSpell(spellcasting, spellId) {
   const current = normalizeSpellcasting(spellcasting);
@@ -38,15 +40,50 @@ export function normalizeSpellcasting(value = {}) {
 function spellCircleFromResource(resource) {
   const idMatch = String(resource.id || '').match(/^spell-(\d+)$/);
   if (idMatch) return Number(idMatch[1]);
+
+  const mysticMatch = String(resource.id || '').match(/^mystic-(\d+)$/);
+  if (mysticMatch) return Number(mysticMatch[1]);
+
   const nameMatch = String(resource.name || '').match(/(\d+)[º°]/);
   return nameMatch ? Number(nameMatch[1]) : null;
 }
 
+export function maxAvailableSpellCircle(character) {
+  const resources = Array.isArray(character?.resources) ? character.resources : [];
+  const resourceCircle = resources.reduce((max, resource) => {
+    const circle = spellCircleFromResource(resource);
+    return Number.isFinite(circle) && Number(resource.max) > 0 ? Math.max(max, circle) : max;
+  }, 0);
+  if (resourceCircle > 0) return resourceCircle;
+
+  const level = levelFromXp(character?.xp);
+  if (character?.classKey === 'Bruxo') {
+    return Math.max(warlockPactFor(level).circle, ...mysticArcanumFor(level).map((item) => item.circle));
+  }
+  return spellSlotsFor(character?.classKey, level).length;
+}
+
+export function canUseSpell(character, spell) {
+  if (!spell) return false;
+  if (!spell.classes.includes(character?.classKey)) return false;
+  return spell.circle <= maxAvailableSpellCircle(character);
+}
+
 export function castSpell(character, spellId) {
   const selectedSpell = spellById(spellId);
-  if (!selectedSpell) return { character, success: false, reason: 'Magia não encontrada.' };
-  const spellcasting = normalizeSpellcasting(character.spellcasting);
+  if (!selectedSpell) return { character, success: false, reason: 'Magia nao encontrada.' };
+  if (!canUseSpell(character, selectedSpell)) {
+    const maxCircle = maxAvailableSpellCircle(character);
+    return {
+      character,
+      success: false,
+      reason: maxCircle > 0
+        ? `Esta magia ainda nao foi desbloqueada. Limite atual: ${maxCircle}º circulo.`
+        : 'Este personagem ainda nao possui circulos de magia desbloqueados.',
+    };
+  }
 
+  const spellcasting = normalizeSpellcasting(character.spellcasting);
   if (selectedSpell.circle === 0) {
     return {
       character: {
@@ -57,7 +94,7 @@ export function castSpell(character, spellId) {
         },
       },
       success: true,
-      reason: 'Truque conjurado sem gastar espaço.',
+      reason: 'Truque conjurado sem gastar espaco.',
     };
   }
 
@@ -77,7 +114,7 @@ export function castSpell(character, spellId) {
     .filter(({ resource, circle }) => circle >= selectedSpell.circle && Number(resource.current) > 0)
     .sort((a, b) => a.circle - b.circle);
   if (!candidates.length) {
-    return { character, success: false, reason: 'Nenhum espaço compatível disponível.' };
+    return { character, success: false, reason: 'Nenhum espaco compativel disponivel.' };
   }
   return spendAt(character, spellcasting, selectedSpell, candidates[0].index, candidates[0].circle);
 }
@@ -95,6 +132,6 @@ function spendAt(character, spellcasting, selectedSpell, resourceIndex, slotCirc
       },
     },
     success: true,
-    reason: `${selectedSpell.name} conjurada usando espaço de ${slotCircle}º círculo.`,
+    reason: `${selectedSpell.name} conjurada usando espaco de ${slotCircle}º circulo.`,
   };
 }
