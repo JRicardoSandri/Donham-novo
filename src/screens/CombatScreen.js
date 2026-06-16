@@ -220,6 +220,7 @@ export default function CombatScreen() {
         {combat.participants.map((participant, index) => {
           const active = index === combat.activeIndex;
           const atZero = participant.hp.current === 0 && participant.type === 'hero';
+          const isConcentrating = (participant.conditions || []).includes('concentrating');
           const tied = combat.participants.some(
             (other) => other.id !== participant.id && other.initiative === participant.initiative
           );
@@ -304,32 +305,42 @@ export default function CombatScreen() {
                 </View>
               )}
 
-              <View style={styles.damagePanel}>
-                <Text style={styles.miniLabel}>Dano total</Text>
-                <View style={styles.damageRow}>
-                  <TextInput
-                    style={styles.damageInput}
-                    keyboardType="numeric"
-                    value={damageDrafts[participant.id] || ''}
-                    onChangeText={(value) => changeDamageDraft(participant.id, value)}
-                    placeholder="0"
-                    placeholderTextColor={colors.textMuted}
-                  />
-                  {[1, 5, 10, 25].map((value) => (
-                    <TouchableOpacity key={value} style={[styles.quick, styles.damageQuick]} onPress={() => addDamageDraft(participant.id, value)}>
-                      <Text style={styles.quickText}>+{value}</Text>
+              {isConcentrating ? (
+                <View style={styles.damagePanel}>
+                  <Text style={styles.miniLabel}>Dano total para concentracao</Text>
+                  <View style={styles.damageRow}>
+                    <TextInput
+                      style={styles.damageInput}
+                      keyboardType="numeric"
+                      value={damageDrafts[participant.id] || ''}
+                      onChangeText={(value) => changeDamageDraft(participant.id, value)}
+                      placeholder="0"
+                      placeholderTextColor={colors.textMuted}
+                    />
+                    {[1, 5, 10, 25].map((value) => (
+                      <TouchableOpacity key={value} style={[styles.quick, styles.damageQuick]} onPress={() => addDamageDraft(participant.id, value)}>
+                        <Text style={styles.quickText}>+{value}</Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                  <View style={styles.damageRow}>
+                    <TouchableOpacity style={styles.applyDamageButton} onPress={() => applyDamageDraft(participant.id)}>
+                      <Text style={styles.applyDamageText}>Aplicar dano</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.hpPreset} onPress={() => clearDamageDraft(participant.id)}>
+                      <Text style={styles.actionText}>Limpar</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              ) : (
+                <View style={styles.quickRow}>
+                  {[-10, -5, -1].map((value) => (
+                    <TouchableOpacity key={value} style={[styles.quick, styles.damageQuick]} onPress={() => updateParticipant(participant.id, (item) => applyParticipantHp(item, value))}>
+                      <Text style={styles.quickText}>{value}</Text>
                     </TouchableOpacity>
                   ))}
                 </View>
-                <View style={styles.damageRow}>
-                  <TouchableOpacity style={styles.applyDamageButton} onPress={() => applyDamageDraft(participant.id)}>
-                    <Text style={styles.applyDamageText}>Aplicar dano</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity style={styles.hpPreset} onPress={() => clearDamageDraft(participant.id)}>
-                    <Text style={styles.actionText}>Limpar</Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
+              )}
 
               <View style={styles.quickRow}>
                 {[1, 5, 10].map((value) => (
