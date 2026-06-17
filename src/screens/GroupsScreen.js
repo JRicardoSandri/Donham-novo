@@ -204,6 +204,35 @@ export default function GroupsScreen() {
     }));
   }
 
+  function deleteCharacter(character) {
+    Alert.alert(
+      'Excluir personagem?',
+      `Isso remove "${character.name}" de todos os grupos e combates. Essa acao nao pode ser desfeita.`,
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Excluir',
+          style: 'destructive',
+          onPress: () =>
+            setState((old) => ({
+              ...old,
+              characters: old.characters.filter((item) => item.id !== character.id),
+              groups: old.groups.map((group) => ({
+                ...group,
+                characterIds: group.characterIds.filter((id) => id !== character.id),
+              })),
+              combats: old.combats.map((combat) => ({
+                ...combat,
+                participants: combat.participants.filter((participant) => participant.sourceId !== character.id),
+                activeIndex: 0,
+                turnsTaken: 0,
+              })),
+            })),
+        },
+      ]
+    );
+  }
+
   if (!state) return <Text style={styles.loading}>Carregando campanhas...</Text>;
 
   return (
@@ -366,6 +395,9 @@ export default function GroupsScreen() {
                     </TouchableOpacity>
                     <TouchableOpacity style={styles.secondaryButton} onPress={() => removeCharacterFromGroup(character)}>
                       <Text style={styles.dangerText}>Remover do grupo</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.deleteButton} onPress={() => deleteCharacter(character)}>
+                      <Text style={styles.deleteText}>Excluir personagem</Text>
                     </TouchableOpacity>
                   </View>
                 </View>
@@ -709,9 +741,11 @@ const styles = StyleSheet.create({
   featureTitle: { color: colors.text, fontWeight: '900', marginBottom: 6 },
   featureText: { color: colors.textMuted, fontSize: 11, lineHeight: 17 },
   nextFeature: { color: colors.primary, fontSize: 11, fontWeight: '800', marginTop: 7 },
-  actions: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.lg },
-  secondaryButton: { flex: 1, borderColor: colors.border, borderWidth: 1, borderRadius: radii.md, alignItems: 'center', padding: 12 },
+  actions: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm, marginTop: spacing.lg },
+  secondaryButton: { flex: 1, minWidth: 120, borderColor: colors.border, borderWidth: 1, borderRadius: radii.md, alignItems: 'center', padding: 12 },
   secondaryText: { color: colors.text, fontWeight: '800' },
+  deleteButton: { flex: 1, minWidth: 150, backgroundColor: colors.dangerSoft, borderColor: '#5B2B2B', borderWidth: 1, borderRadius: radii.md, alignItems: 'center', padding: 12 },
+  deleteText: { color: colors.danger, fontWeight: '900' },
   availableSection: { backgroundColor: colors.surfaceMuted, borderColor: colors.border, borderWidth: 1, borderRadius: radii.lg, marginTop: spacing.lg, padding: spacing.lg },
   availableCharacter: { flexDirection: 'row', alignItems: 'center', borderTopColor: colors.border, borderTopWidth: 1, marginTop: spacing.md, paddingTop: spacing.md },
   addText: { color: colors.primary, fontWeight: '900' },
