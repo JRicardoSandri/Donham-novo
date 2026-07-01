@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Alert, Modal, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { CONDITIONS } from '../data/conditions';
+import { CRITICAL_ERROR_TABLES, criticalErrorTableById } from '../data/criticalErrors';
 import { useCampaign } from '../services/CampaignContext';
 import {
   advanceTurn,
@@ -24,6 +25,9 @@ export default function CombatScreen() {
   const [conditionTarget, setConditionTarget] = useState(null);
   const [damageDrafts, setDamageDrafts] = useState({});
   const [initiativeDrafts, setInitiativeDrafts] = useState({});
+  const [criticalModalOpen, setCriticalModalOpen] = useState(false);
+  const [criticalTableId, setCriticalTableId] = useState(CRITICAL_ERROR_TABLES[0].id);
+  const [criticalResult, setCriticalResult] = useState(null);
   const alertedConcentration = useRef({});
 
   useEffect(() => {
@@ -167,6 +171,12 @@ export default function CombatScreen() {
     clearDamageDraft(participantId);
   }
 
+  function rollCriticalError(tableId = criticalTableId) {
+    const table = criticalErrorTableById(tableId);
+    const roll = Math.floor(Math.random() * table.effects.length) + 1;
+    setCriticalResult({ tableId: table.id, tableName: table.name, die: table.die, roll, effect: table.effects[roll - 1] });
+  }
+
   if (!state) return <Text style={styles.loading}>Carregando combate...</Text>;
 
   return (
@@ -201,6 +211,9 @@ export default function CombatScreen() {
             }}
           >
             <Text style={styles.secondaryText}>Novo combate</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.secondary} onPress={() => setCriticalModalOpen(true)}>
+            <Text style={styles.secondaryText}>Erro critico</Text>
           </TouchableOpacity>
         </View>
 
@@ -391,7 +404,60 @@ export default function CombatScreen() {
       </ScrollView>
 
       <ConditionModal participant={conditionParticipant} onToggle={(conditionId) => updateParticipant(conditionTarget, (item) => toggleCondition(item, conditionId))} onClose={() => setConditionTarget(null)} />
+      <CriticalErrorModal
+        visible={criticalModalOpen}
+        selectedTableId={criticalTableId}
+        result={criticalResult}
+        onSelect={(tableId) => {
+          setCriticalTableId(tableId);
+          setCriticalResult(null);
+        }}
+        onRoll={rollCriticalError}
+        onClose={() => setCriticalModalOpen(false)}
+      />
     </View>
+  );
+}
+
+function CriticalErrorModal({ visible, selectedTableId, result, onSelect, onRoll, onClose }) {
+  const selectedTable = criticalErrorTableById(selectedTableId);
+  return (
+    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
+      <View style={styles.modalBackdrop}>
+        <View style={styles.conditionSheet}>
+          <View style={styles.sheetHandle} />
+          <Text style={styles.sectionTitle}>Gerador de erro critico</Text>
+          <Text style={styles.subtitle}>Escolha o tipo do ataque que tirou 1 natural e sorteie o efeito.</Text>
+          <View style={styles.criticalGrid}>
+            {CRITICAL_ERROR_TABLES.map((table) => {
+              const selected = table.id === selectedTableId;
+              return (
+                <TouchableOpacity
+                  key={table.id}
+                  style={[styles.criticalOption, selected && styles.criticalOptionActive]}
+                  onPress={() => onSelect(table.id)}
+                >
+                  <Text style={[styles.criticalOptionText, selected && styles.criticalOptionTextActive]}>{table.name}</Text>
+                  <Text style={styles.muted}>{table.die}</Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+          <TouchableOpacity style={styles.rollButton} onPress={() => onRoll(selectedTable.id)}>
+            <Text style={styles.rollButtonText}>Sortear efeito ({selectedTable.die})</Text>
+          </TouchableOpacity>
+          {result && (
+            <View style={styles.criticalResult}>
+              <Text style={styles.criticalRoll}>{result.tableName} - resultado {result.roll}</Text>
+              <Text style={styles.criticalEffect}>{result.effect}</Text>
+            </View>
+          )}
+          <TouchableOpacity style={styles.closeButton} onPress={onClose}>
+            <Text style={styles.primaryText}>Concluir</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </Modal>
   );
 }
 
@@ -518,5 +584,15 @@ const styles = StyleSheet.create({
   conditionNameActive: { color: colors.primary },
   check: { color: colors.textMuted, fontSize: 20, fontWeight: '900' },
   checkActive: { color: colors.primary },
+  criticalGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm, marginVertical: spacing.md },
+  criticalOption: { width: '48%', backgroundColor: colors.surface, borderColor: colors.border, borderWidth: 1, borderRadius: radii.md, padding: spacing.md },
+  criticalOptionActive: { backgroundColor: colors.primarySoft, borderColor: colors.primary },
+  criticalOptionText: { color: colors.text, fontWeight: '900' },
+  criticalOptionTextActive: { color: colors.primary },
+  rollButton: { backgroundColor: colors.dangerSoft, borderColor: colors.danger, borderWidth: 1, borderRadius: radii.md, alignItems: 'center', padding: 14 },
+  rollButtonText: { color: colors.danger, fontWeight: '900' },
+  criticalResult: { backgroundColor: colors.surface, borderColor: colors.borderStrong, borderWidth: 1, borderRadius: radii.md, marginTop: spacing.md, padding: spacing.md },
+  criticalRoll: { color: colors.primary, fontSize: 12, fontWeight: '900', marginBottom: 6 },
+  criticalEffect: { color: colors.text, fontSize: 16, fontWeight: '800', lineHeight: 22 },
   closeButton: { backgroundColor: colors.primarySoft, borderColor: colors.primaryDark, borderWidth: 1, borderRadius: radii.md, alignItems: 'center', marginTop: spacing.sm, padding: 14 },
 });
