@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Alert, Modal, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { CONDITIONS } from '../data/conditions';
-import { CRITICAL_ERROR_TABLES, criticalErrorTableById } from '../data/criticalErrors';
+import { CRITICAL_ERROR_TABLES, criticalErrorTableById, rollCriticalError as rollCriticalErrorFromTable } from '../data/criticalErrors';
 import { useCampaign } from '../services/CampaignContext';
 import {
   advanceTurn,
@@ -172,9 +172,7 @@ export default function CombatScreen() {
   }
 
   function rollCriticalError(tableId = criticalTableId) {
-    const table = criticalErrorTableById(tableId);
-    const roll = Math.floor(Math.random() * table.effects.length) + 1;
-    setCriticalResult({ tableId: table.id, tableName: table.name, die: table.die, roll, effect: table.effects[roll - 1] });
+    setCriticalResult(rollCriticalErrorFromTable(tableId));
   }
 
   if (!state) return <Text style={styles.loading}>Carregando combate...</Text>;
@@ -449,6 +447,7 @@ function CriticalErrorModal({ visible, selectedTableId, result, onSelect, onRoll
           {result && (
             <View style={styles.criticalResult}>
               <Text style={styles.criticalRoll}>{result.tableName} - resultado {result.roll}</Text>
+              <Text style={styles.criticalMeta}>Faixa {result.range} - {result.severity} ({result.chance})</Text>
               <Text style={styles.criticalEffect}>{result.effect}</Text>
             </View>
           )}
@@ -593,6 +592,7 @@ const styles = StyleSheet.create({
   rollButtonText: { color: colors.danger, fontWeight: '900' },
   criticalResult: { backgroundColor: colors.surface, borderColor: colors.borderStrong, borderWidth: 1, borderRadius: radii.md, marginTop: spacing.md, padding: spacing.md },
   criticalRoll: { color: colors.primary, fontSize: 12, fontWeight: '900', marginBottom: 6 },
+  criticalMeta: { color: colors.textMuted, fontSize: 12, fontWeight: '800', marginBottom: 8 },
   criticalEffect: { color: colors.text, fontSize: 16, fontWeight: '800', lineHeight: 22 },
   closeButton: { backgroundColor: colors.primarySoft, borderColor: colors.primaryDark, borderWidth: 1, borderRadius: radii.md, alignItems: 'center', marginTop: spacing.sm, padding: 14 },
 });
