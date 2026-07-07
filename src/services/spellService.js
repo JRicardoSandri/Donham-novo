@@ -60,12 +60,25 @@ export function maxAvailableSpellCircle(character) {
   if (character?.classKey === 'Bruxo') {
     return Math.max(warlockPactFor(level).circle, ...mysticArcanumFor(level).map((item) => item.circle));
   }
-  return spellSlotsFor(character?.classKey, level).length;
+  return spellSlotsFor(character?.classKey, level, character?.subclassKey).length;
+}
+
+export function spellClassesForCharacter(character) {
+  const classes = new Set([character?.classKey]);
+  if (character?.subclassKey === 'eldritch-knight' || character?.subclassKey === 'arcane-trickster') {
+    classes.add('Mago');
+  }
+  if (character?.subclassKey === 'divine-soul') {
+    classes.add('ClÃ©rigo');
+    classes.add('Clérigo');
+  }
+  return classes;
 }
 
 export function canUseSpell(character, spell) {
   if (!spell) return false;
-  if (!spell.classes.includes(character?.classKey)) return false;
+  const allowedClasses = spellClassesForCharacter(character);
+  if (!spell.classes.some((classKey) => allowedClasses.has(classKey))) return false;
   return spell.circle <= maxAvailableSpellCircle(character);
 }
 

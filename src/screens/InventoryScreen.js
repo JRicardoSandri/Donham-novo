@@ -4,6 +4,7 @@ import { EQUIPMENT_CATALOG, EQUIPMENT_CATEGORIES } from '../data/equipmentCatalo
 import { useCampaign } from '../services/CampaignContext';
 import {
   inventoryCapacity,
+  normalizeCoins,
   removeInventoryItem,
   totalInventoryWeight,
   upsertInventoryItem,
@@ -18,9 +19,21 @@ const EMPTY_ITEM = {
   weight: '0',
   value: '',
   category: 'Personalizado',
+  rarity: '',
+  requiresAttunement: false,
+  attuned: false,
+  charges: { current: '0', max: '0' },
   equipped: false,
   description: '',
 };
+
+const COIN_FIELDS = [
+  ['pl', 'Platina'],
+  ['po', 'Ouro'],
+  ['pe', 'Eletro'],
+  ['pp', 'Prata'],
+  ['pc', 'Cobre'],
+];
 
 export default function InventoryScreen() {
   const { state, setState } = useCampaign();
@@ -45,11 +58,37 @@ export default function InventoryScreen() {
     () => characters.find((character) => character.id === selectedCharacterId) || null,
     [characters, selectedCharacterId]
   );
+  const catalogItems = useMemo(
+    () => [...EQUIPMENT_CATALOG, ...(state?.customItems || [])],
+    [state?.customItems]
+  );
+  const catalogCategories = useMemo(
+    () => EQUIPMENT_CATEGORIES.filter((category) =>
+      category === 'Todos' || catalogItems.some((item) => (item.category || 'Personalizado') === category)
+    ),
+    [catalogItems]
+  );
+  const visibleCatalogItems = useMemo(
+    () => catalogItems
+      .filter((item) => catalogCategory === 'Todos' || item.category === catalogCategory)
+      .filter((item) => `${item.name} ${item.description} ${item.rarity || ''}`.toLowerCase().includes(catalogQuery.trim().toLowerCase())),
+    [catalogItems, catalogCategory, catalogQuery]
+  );
 
   function saveItem() {
     if (!form.characterId || !form.name.trim()) return;
+    const libraryItem = {
+      ...form,
+      source: 'custom',
+      quantity: 1,
+      equipped: false,
+      attuned: false,
+    };
     setState((old) => ({
       ...old,
+      customItems: catalogItems.some((item) => item.name.trim().toLowerCase() === form.name.trim().toLowerCase())
+        ? old.customItems || []
+        : [...(old.customItems || []), libraryItem],
       characters: old.characters.map((character) =>
         character.id === form.characterId
           ? { ...character, inventory: upsertInventoryItem(character.inventory, form) }
@@ -67,6 +106,13 @@ export default function InventoryScreen() {
       weight: String(item.weight),
       value: String(item.value || ''),
       category: item.category || 'Personalizado',
+      rarity: String(item.rarity || ''),
+      requiresAttunement: Boolean(item.requiresAttunement),
+      attuned: Boolean(item.attuned),
+      charges: {
+        current: String(item.charges?.current ?? 0),
+        max: String(item.charges?.max ?? 0),
+      },
     });
   }
 
@@ -80,6 +126,17 @@ export default function InventoryScreen() {
       ),
     }));
     if (form.id === itemId) setForm(EMPTY_ITEM);
+  }
+
+  function updateCoins(characterId, coin, value) {
+    setState((old) => ({
+      ...old,
+      characters: old.characters.map((character) =>
+        character.id === characterId
+          ? { ...character, coins: normalizeCoins({ ...character.coins, [coin]: value }) }
+          : character
+      ),
+    }));
   }
 
   if (!state) return <Text style={styles.loading}>Carregando inventario...</Text>;
@@ -160,6 +217,25 @@ export default function InventoryScreen() {
               </TouchableOpacity>
             </View>
 
+            <View style={styles.coinsPanel}>
+              <Text style={styles.itemName}>Moedas</Text>
+              <View style={styles.coinGrid}>
+                {COIN_FIELDS.map(([coin, label]) => (
+                  <View key={coin} style={styles.coinField}>
+                    <Text style={styles.label}>{label}</Text>
+                    <TextInput
+                      style={styles.coinInput}
+                      keyboardType="numeric"
+                      value={String(selectedCharacter.coins?.[coin] ?? 0)}
+                      onChangeText={(value) => updateCoins(selectedCharacter.id, coin, value)}
+                      placeholder="0"
+                      placeholderTextColor={colors.textMuted}
+                    />
+                  </View>
+                ))}
+              </View>
+            </View>
+
             {!!form.characterId && form.characterId === selectedCharacter.id && (
               <View style={styles.form}>
                 <Text style={styles.cardTitle}>{form.id ? 'Editar item' : 'Adicionar item'}</Text>
@@ -185,6 +261,50 @@ export default function InventoryScreen() {
                   placeholder="Valor (ex.: 10 po)"
                   placeholderTextColor={colors.textMuted}
                 />
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.categoryStrip}>
+                  {EQUIPMENT_CATEGORIES.filter((category) => category !== 'Todos').map((category) => (
+                    <TouchableOpacity
+                      key={category}
+                      style={[styles.categoryChip, form.category === category && styles.categoryChipActive]}
+                      onPress={() => setForm((old) => ({ ...old, category }))}
+                    >
+                      <Text style={[styles.categoryText, form.category === category && styles.categoryTextActive]}>{category}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+                {form.category === 'Itens Magicos' && (
+                  <View style={styles.magicPanel}>
+                    <TextInput
+                      style={styles.input}
+                      value={form.rarity}
+                      onChangeText={(rarity) => setForm((old) => ({ ...old, rarity }))}
+                      placeholder="Raridade"
+                      placeholderTextColor={colors.textMuted}
+                    />
+                    <View style={styles.equippedRow}>
+                      <Text style={styles.itemName}>Requer sintonizacao</Text>
+                      <Switch
+                        value={form.requiresAttunement}
+                        onValueChange={(requiresAttunement) => setForm((old) => ({ ...old, requiresAttunement }))}
+                        trackColor={{ false: colors.border, true: colors.primaryDark }}
+                        thumbColor={form.requiresAttunement ? colors.primary : colors.textMuted}
+                      />
+                    </View>
+                    <View style={styles.equippedRow}>
+                      <Text style={styles.itemName}>Sintonizado</Text>
+                      <Switch
+                        value={form.attuned}
+                        onValueChange={(attuned) => setForm((old) => ({ ...old, attuned }))}
+                        trackColor={{ false: colors.border, true: colors.primaryDark }}
+                        thumbColor={form.attuned ? colors.primary : colors.textMuted}
+                      />
+                    </View>
+                    <View style={styles.row}>
+                      <Field label="Cargas atuais" value={form.charges?.current} onChangeText={(current) => setForm((old) => ({ ...old, charges: { ...old.charges, current } }))} />
+                      <Field label="Cargas max." value={form.charges?.max} onChangeText={(max) => setForm((old) => ({ ...old, charges: { ...old.charges, max } }))} />
+                    </View>
+                  </View>
+                )}
                 <TextInput
                   style={[styles.input, styles.multiline]}
                   value={form.description}
@@ -223,6 +343,13 @@ export default function InventoryScreen() {
                     {item.quantity} × {item.weight} kg = {(item.quantity * item.weight).toFixed(1)} kg
                   </Text>
                   {!!item.value && <Text style={styles.value}>{item.value} · {item.category || 'Personalizado'}</Text>}
+                  {item.category === 'Itens Magicos' && (
+                    <Text style={styles.value}>
+                      {item.rarity || 'Raridade nao informada'}
+                      {item.requiresAttunement ? ` - ${item.attuned ? 'sintonizado' : 'requer sintonizacao'}` : ''}
+                      {item.charges?.max ? ` - cargas ${item.charges.current}/${item.charges.max}` : ''}
+                    </Text>
+                  )}
                   {!!item.description && <Text style={styles.description}>{item.description}</Text>}
                 </View>
                 <TouchableOpacity style={styles.action} onPress={() => editItem(selectedCharacter.id, item)}>
@@ -249,17 +376,14 @@ export default function InventoryScreen() {
               placeholderTextColor={colors.textMuted}
             />
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.categoryStrip}>
-              {EQUIPMENT_CATEGORIES.map((category) => (
+              {catalogCategories.map((category) => (
                 <TouchableOpacity key={category} style={[styles.categoryChip, catalogCategory === category && styles.categoryChipActive]} onPress={() => setCatalogCategory(category)}>
                   <Text style={[styles.categoryText, catalogCategory === category && styles.categoryTextActive]}>{category}</Text>
                 </TouchableOpacity>
               ))}
             </ScrollView>
             <ScrollView style={styles.catalogList}>
-              {EQUIPMENT_CATALOG
-                .filter((item) => catalogCategory === 'Todos' || item.category === catalogCategory)
-                .filter((item) => `${item.name} ${item.description}`.toLowerCase().includes(catalogQuery.trim().toLowerCase()))
-                .map((item) => (
+              {visibleCatalogItems.map((item) => (
                   <TouchableOpacity
                     key={`${item.category}-${item.name}`}
                     style={styles.catalogItem}
@@ -270,6 +394,13 @@ export default function InventoryScreen() {
                         weight: String(item.weight),
                         value: item.value,
                         category: item.category,
+                        rarity: item.rarity || '',
+                        requiresAttunement: Boolean(item.requiresAttunement),
+                        attuned: Boolean(item.attuned),
+                        charges: {
+                          current: String(item.charges?.current ?? 0),
+                          max: String(item.charges?.max ?? 0),
+                        },
                         description: item.description,
                       }));
                       setCatalogOpen(false);
@@ -283,6 +414,22 @@ export default function InventoryScreen() {
                     </View>
                   </TouchableOpacity>
                 ))}
+              {visibleCatalogItems.length === 0 && (
+                <TouchableOpacity
+                  style={styles.catalogItem}
+                  onPress={() => {
+                    setForm((old) => ({
+                      ...old,
+                      name: catalogQuery.trim(),
+                      category: catalogCategory === 'Todos' ? 'Personalizado' : catalogCategory,
+                    }));
+                    setCatalogOpen(false);
+                  }}
+                >
+                  <Text style={styles.itemName}>Criar item personalizado</Text>
+                  <Text style={styles.muted}>Usar "{catalogQuery.trim() || 'Novo item'}" como base e salvar na biblioteca.</Text>
+                </TouchableOpacity>
+              )}
             </ScrollView>
             <TouchableOpacity style={styles.secondary} onPress={() => setCatalogOpen(false)}>
               <Text style={styles.actionText}>Fechar</Text>
@@ -342,6 +489,11 @@ const styles = StyleSheet.create({
   label: { color: colors.textMuted, fontSize: 11, marginTop: spacing.md },
   equippedRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginVertical: spacing.md },
   secondary: { flex: 1, borderColor: colors.border, borderWidth: 1, borderRadius: radii.md, alignItems: 'center', padding: 12 },
+  coinsPanel: { backgroundColor: colors.surfaceMuted, borderColor: colors.border, borderWidth: 1, borderRadius: radii.md, marginBottom: spacing.md, padding: spacing.md },
+  coinGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm, marginTop: spacing.sm },
+  coinField: { width: '18%' },
+  coinInput: { backgroundColor: colors.surface, borderRadius: radii.sm, color: colors.text, marginTop: 4, padding: 9, textAlign: 'center' },
+  magicPanel: { backgroundColor: colors.surface, borderColor: colors.border, borderWidth: 1, borderRadius: radii.md, marginTop: spacing.sm, padding: spacing.md },
   catalogButton: { flexDirection: 'row', justifyContent: 'space-between', backgroundColor: colors.primarySoft, borderColor: colors.primaryDark, borderWidth: 1, borderRadius: radii.md, marginTop: spacing.md, padding: 13 },
   catalogButtonText: { color: colors.primary, fontWeight: '900' },
   modalBackground: { flex: 1, backgroundColor: 'rgba(0,0,0,0.78)', justifyContent: 'flex-end' },

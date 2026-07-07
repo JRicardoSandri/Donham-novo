@@ -2,12 +2,13 @@ import { createCharacter } from '../models/Character.js';
 import { createCombat, heroParticipant, sortedParticipants } from './combatService.js';
 import { STORAGE_KEYS, loadJson, saveJson } from './storageService';
 
-export const SCHEMA_VERSION = 6;
+export const SCHEMA_VERSION = 7;
 
 const EMPTY_STATE = {
   schemaVersion: SCHEMA_VERSION,
   groups: [],
   characters: [],
+  customItems: [],
   combats: [],
   settings: {},
   activeGroupId: null,
@@ -63,6 +64,7 @@ function normalizeState(saved = {}) {
           })
         )
       : [],
+    customItems: Array.isArray(saved.customItems) ? saved.customItems : [],
     combats: Array.isArray(saved.combats)
       ? saved.combats.map((combat) => ({
           ...createCombat(),
@@ -199,6 +201,7 @@ function integrateLegacy(saved, legacy) {
     ...normalized,
     groups,
     characters,
+    customItems: normalized.customItems,
     combats,
     activeGroupId: normalized.activeGroupId || legacyGroup.id,
     settings: { ...normalized.settings, legacyIntegrated: true },

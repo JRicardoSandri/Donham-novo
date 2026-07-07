@@ -4,7 +4,9 @@ import GroupsScreen from './src/screens/GroupsScreen';
 import ResourcesScreen from './src/screens/ResourcesScreen';
 import CombatScreen from './src/screens/CombatScreen';
 import InventoryScreen from './src/screens/InventoryScreen';
-import { CampaignProvider } from './src/services/CampaignContext';
+import SettingsScreen from './src/screens/SettingsScreen';
+import { CampaignProvider, useCampaign } from './src/services/CampaignContext';
+import { activeLanguage, t } from './src/services/i18nService';
 import { colors, shadows } from './src/theme';
 
 export default function App() {
@@ -16,7 +18,9 @@ export default function App() {
 }
 
 function AppContent() {
+  const { state, setState } = useCampaign();
   const [area, setArea] = useState('groups');
+  const language = activeLanguage(state?.settings);
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -26,12 +30,14 @@ function AppContent() {
         {area === 'resources' && <ResourcesScreen />}
         {area === 'combat' && <CombatScreen />}
         {area === 'inventory' && <InventoryScreen />}
+        {area === 'settings' && <SettingsScreen language={language} settings={state?.settings} onSettingsChange={setState} />}
       </View>
       <View style={styles.navigation}>
-        <NavButton symbol="P" label="Personagens" active={area === 'groups'} onPress={() => setArea('groups')} />
-        <NavButton symbol="R" label="Recursos" active={area === 'resources'} onPress={() => setArea('resources')} />
-        <NavButton symbol="C" label="Combate" active={area === 'combat'} onPress={() => setArea('combat')} />
-        <NavButton symbol="I" label="Itens" active={area === 'inventory'} onPress={() => setArea('inventory')} />
+        <NavButton symbol="P" label={t('navCharacters', language)} active={area === 'groups'} onPress={() => setArea('groups')} />
+        <NavButton symbol="R" label={t('navResources', language)} active={area === 'resources'} onPress={() => setArea('resources')} />
+        <NavButton symbol="C" label={t('navCombat', language)} active={area === 'combat'} onPress={() => setArea('combat')} />
+        <NavButton symbol="I" label={t('navItems', language)} active={area === 'inventory'} onPress={() => setArea('inventory')} />
+        <NavButton symbol="A" label={t('navSettings', language)} active={area === 'settings'} onPress={() => setArea('settings')} />
       </View>
     </SafeAreaView>
   );

@@ -52,7 +52,7 @@ export default function CombatScreen() {
       alertedConcentration.current[participant.id] = alertKey;
       Alert.alert(
         'Teste de concentracao',
-        `${participant.name} sofreu dano enquanto concentrava. Role CON CD ${participant.concentrationDc} para manter a magia.`
+        `${participant.name} sofreu dano enquanto concentrava. A CD ja considera o dano total aplicado. Role CON CD ${participant.concentrationDc} para manter a magia.`
       );
     });
     Object.keys(alertedConcentration.current).forEach((participantId) => {
@@ -318,6 +318,7 @@ export default function CombatScreen() {
 
               {isConcentrating ? (
                 <View style={styles.damagePanel}>
+                  <Text style={styles.concentrationHint}>Concentrando: monte o dano total e depois aplique para calcular a CD correta.</Text>
                   <Text style={styles.miniLabel}>Dano total para concentracao</Text>
                   <View style={styles.damageRow}>
                     <TextInput
@@ -550,6 +551,7 @@ const styles = StyleSheet.create({
   hpFill: { height: '100%', borderRadius: radii.pill },
   concentrationAlert: { flexDirection: 'row', alignItems: 'center', backgroundColor: colors.primarySoft, borderRadius: radii.md, padding: 10, marginTop: spacing.md },
   concentrationText: { flex: 1, color: colors.primary, fontSize: 12, fontWeight: '800' },
+  concentrationHint: { color: colors.primary, fontSize: 11, fontWeight: '800', lineHeight: 16, marginBottom: spacing.sm },
   resolveText: { color: colors.text, fontSize: 11, fontWeight: '900' },
   conditionList: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: spacing.md },
   conditionBadge: { backgroundColor: colors.primarySoft, borderRadius: radii.pill, paddingHorizontal: 9, paddingVertical: 5 },

@@ -5,7 +5,7 @@ import { SPELL_CIRCLES, SPELL_SCHOOLS, SPELLS, spellById } from '../data/spells'
 import { useCampaign } from '../services/CampaignContext';
 import { normalizeRecovery, recoverResources, spendResource } from '../services/resourceService';
 import { levelFromXp } from '../services/rulesService';
-import { castSpell, maxAvailableSpellCircle, toggleKnownSpell, togglePreparedSpell } from '../services/spellService';
+import { castSpell, maxAvailableSpellCircle, spellClassesForCharacter, toggleKnownSpell, togglePreparedSpell } from '../services/spellService';
 import { colors, radii, spacing } from '../theme';
 
 export default function ResourcesScreen() {
@@ -58,8 +58,9 @@ export default function ResourcesScreen() {
   const visibleSpells = useMemo(() => {
     if (!spellbookCharacter) return [];
     const known = new Set(spellbookCharacter.spellcasting?.knownSpellIds || []);
+    const allowedClasses = spellClassesForCharacter(spellbookCharacter);
     return SPELLS
-      .filter((spell) => spell.classes.includes(spellbookCharacter.classKey))
+      .filter((spell) => spell.classes.some((classKey) => allowedClasses.has(classKey)))
       .filter((spell) => spell.circle <= spellLimit)
       .filter((spell) => spellbookView === 'catalog' || known.has(spell.id))
       .filter((spell) => spellCircle === 'Todos' || spell.circle === Number(spellCircle))

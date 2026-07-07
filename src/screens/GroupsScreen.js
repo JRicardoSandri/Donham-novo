@@ -12,6 +12,7 @@ import {
 import { ATTRIBUTE_FIELDS, CLASSES } from '../data/dnd5e';
 import { progressionFor } from '../data/classFeatures';
 import { RACE_OPTIONS, raceProgressionFor } from '../data/raceProgression';
+import { subclassById, subclassesForClass } from '../data/subclassProgression';
 import { createCharacter } from '../models/Character';
 import { createGroup } from '../models/Group';
 import { useCampaign } from '../services/CampaignContext';
@@ -29,6 +30,7 @@ const EMPTY_CHARACTER = {
   name: '',
   player: '',
   classKey: 'Guerreiro',
+  subclassKey: null,
   race: '',
   xp: '0',
   background: '',
@@ -40,7 +42,6 @@ const EMPTY_CHARACTER = {
   hp: { current: '1', max: '1', temporary: '0' },
   inspiration: 0,
   plotPoints: 0,
-  coins: { pc: '0', pp: '0', pe: '0', po: '0', pl: '0' },
   attributes: {
     strength: '10',
     dexterity: '10',
@@ -125,9 +126,6 @@ export default function GroupsScreen() {
               max: String(character.hp?.max ?? 1),
               temporary: String(character.hp?.temporary ?? 0),
             },
-            coins: Object.fromEntries(
-              ['pc', 'pp', 'pe', 'po', 'pl'].map((coin) => [coin, String(character.coins?.[coin] ?? 0)])
-            ),
             attributes: Object.fromEntries(
               ATTRIBUTE_FIELDS.map(([key]) => [key, String(character.attributes?.[key] ?? 10)])
             ),
@@ -299,6 +297,8 @@ export default function GroupsScreen() {
               const level = progress.level;
               const progression = progressionFor(character.classKey, level);
               const raceProgression = raceProgressionFor(character.race, level);
+              const subclass = subclassById(character.classKey, character.subclassKey);
+              const classLabel = subclass ? `${character.classKey} (${subclass[1]})` : character.classKey;
               const initiative = character.initiative ?? initiativeFromAttributes(character.attributes);
               const capacity = carryingCapacity(character.attributes, character.size);
               return (
@@ -307,9 +307,10 @@ export default function GroupsScreen() {
                     <View style={styles.flex}>
                       <Text style={styles.cardTitle}>{character.name}</Text>
                       <Text style={styles.muted}>
-                        {character.race || 'Raça não informada'} · {character.classKey} nível {level}
+                        {character.race || 'Raça não informada'} · {classLabel} nível {level}
                       </Text>
                       <Text style={styles.muted}>Jogador: {character.player || 'Não informado'}</Text>
+                      {subclass && <Text style={styles.muted}>Subclasse: {subclass[1]}</Text>}
                     </View>
                     <View style={styles.levelBadge}>
                       <Text style={styles.levelLabel}>NÍVEL</Text>
@@ -559,12 +560,29 @@ function CharacterModal({ draft, onChange, onSave, onClose }) {
                 <TouchableOpacity
                   key={classKey}
                   style={[styles.classChip, draft?.classKey === classKey && styles.classChipActive]}
-                  onPress={() => update({ classKey })}
+                  onPress={() => update({ classKey, subclassKey: null })}
                 >
                   <Text style={[styles.classText, draft?.classKey === classKey && styles.classTextActive]}>{classKey}</Text>
                 </TouchableOpacity>
               ))}
             </ScrollView>
+
+            {subclassesForClass(draft?.classKey).length > 0 && (
+              <>
+                <Text style={styles.fieldLabel}>Subclasse</Text>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.classStrip}>
+                  {subclassesForClass(draft?.classKey).map(([subclassId, subclassName]) => (
+                    <TouchableOpacity
+                      key={subclassId}
+                      style={[styles.classChip, draft?.subclassKey === subclassId && styles.classChipActive]}
+                      onPress={() => update({ subclassKey: subclassId })}
+                    >
+                      <Text style={[styles.classText, draft?.subclassKey === subclassId && styles.classTextActive]}>{subclassName}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+              </>
+            )}
 
             <Text style={styles.fieldLabel}>Atributos</Text>
             <View style={styles.attributeGrid}>
@@ -583,19 +601,6 @@ function CharacterModal({ draft, onChange, onSave, onClose }) {
                   </View>
                 );
               })}
-            </View>
-            <Text style={styles.fieldLabel}>Moedas</Text>
-            <View style={styles.coinGrid}>
-              {['pc', 'pp', 'pe', 'po', 'pl'].map((coin) => (
-                <View key={coin} style={styles.coinField}>
-                  <Field
-                    label={coin.toUpperCase()}
-                    value={draft?.coins?.[coin]}
-                    keyboardType="numeric"
-                    onChangeText={(value) => update({ coins: { ...draft.coins, [coin]: value } })}
-                  />
-                </View>
-              ))}
             </View>
             <ModalActions onClose={onClose} onSave={onSave} />
           </ScrollView>
@@ -773,8 +778,6 @@ const styles = StyleSheet.create({
   classText: { color: colors.textMuted, fontWeight: '800' },
   classTextActive: { color: colors.background },
   attributeGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm, marginTop: spacing.sm },
-  coinGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
-  coinField: { width: '18%' },
   attributeCard: { width: '31%', backgroundColor: colors.surfaceMuted, borderRadius: radii.md, alignItems: 'center', padding: 10 },
   attributeLabel: { color: colors.textMuted, fontSize: 11, fontWeight: '900' },
   attributeInput: { color: colors.text, fontSize: 20, fontWeight: '900', textAlign: 'center', width: '100%', paddingVertical: 4 },

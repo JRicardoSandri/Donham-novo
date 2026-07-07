@@ -6,6 +6,7 @@ import {
   warlockPactFor,
 } from '../data/classProgression.js';
 import { raceResourcesFor } from '../data/raceProgression.js';
+import { subclassResourcesFor } from '../data/subclassProgression.js';
 import { levelFromXp, proficiencyBonus } from './rulesService.js';
 
 function normalizedName(value) {
@@ -54,6 +55,18 @@ export function resourcesForCharacter(character) {
     );
   });
 
+  subclassResourcesFor(character, level, proficiency).forEach((definition) => {
+    generated.push(
+      resource(
+        definition.id,
+        definition.name,
+        definition.max,
+        definition.recovery,
+        previous
+      )
+    );
+  });
+
   if (character.classKey === 'Bruxo') {
     const pact = warlockPactFor(level);
     generated.push(
@@ -72,7 +85,7 @@ export function resourcesForCharacter(character) {
       );
     });
   } else {
-    spellSlotsFor(character.classKey, level).forEach((max, index) => {
+    spellSlotsFor(character.classKey, level, character.subclassKey).forEach((max, index) => {
       const circle = index + 1;
       generated.push(resource(
         `spell-${circle}`,
