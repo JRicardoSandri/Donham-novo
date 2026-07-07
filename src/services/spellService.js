@@ -1,4 +1,5 @@
 import { mysticArcanumFor, spellSlotsFor, warlockPactFor } from '../data/classProgression.js';
+import { spellSupportsHigherSlot } from '../data/spellScaling.js';
 import { spellById } from '../data/spells.js';
 import { levelFromXp } from './rulesService.js';
 
@@ -37,7 +38,7 @@ export function normalizeSpellcasting(value = {}) {
   };
 }
 
-function spellCircleFromResource(resource) {
+export function spellCircleFromResource(resource) {
   const idMatch = String(resource.id || '').match(/^spell-(\d+)$/);
   if (idMatch) return Number(idMatch[1]);
 
@@ -46,6 +47,42 @@ function spellCircleFromResource(resource) {
 
   const nameMatch = String(resource.name || '').match(/(\d+)[º°]/);
   return nameMatch ? Number(nameMatch[1]) : null;
+}
+
+function canSpendAsSpellSlot(resource, selectedSpell) {
+  const id = String(resource.id || '');
+  if (id === 'pact-magic' || id.startsWith('spell-')) return true;
+  const mysticMatch = id.match(/^mystic-(\d+)$/);
+  return Boolean(mysticMatch && Number(mysticMatch[1]) === selectedSpell.circle);
+}
+
+function spellSlotCandidates(character, selectedSpell) {
+  const resources = Array.isArray(character.resources) ? character.resources : [];
+  return resources
+    .map((resource, index) => ({ resource, index, circle: spellCircleFromResource(resource) }))
+    .filter(({ resource, circle }) =>
+      canSpendAsSpellSlot(resource, selectedSpell) &&
+      Number.isFinite(circle) &&
+      circle >= selectedSpell.circle &&
+      Number(resource.current) > 0
+    )
+    .sort((a, b) => a.circle - b.circle);
+}
+
+export function availableCastOptions(character, spellId) {
+  const selectedSpell = spellById(spellId);
+  if (!selectedSpell || selectedSpell.circle === 0 || !canUseSpell(character, selectedSpell)) return [];
+
+  const byCircle = new Map();
+  spellSlotCandidates(character, selectedSpell).forEach(({ resource, circle }) => {
+    const previous = byCircle.get(circle) || { circle, current: 0, resourceName: resource.name };
+    byCircle.set(circle, {
+      ...previous,
+      current: previous.current + Number(resource.current || 0),
+    });
+  });
+
+  return [...byCircle.values()].sort((a, b) => a.circle - b.circle);
 }
 
 export function maxAvailableSpellCircle(character) {
@@ -82,7 +119,7 @@ export function canUseSpell(character, spell) {
   return spell.circle <= maxAvailableSpellCircle(character);
 }
 
-export function castSpell(character, spellId) {
+export function castSpell(character, spellId, preferredCircle = null) {
   const selectedSpell = spellById(spellId);
   if (!selectedSpell) return { character, success: false, reason: 'Magia nao encontrada.' };
   if (!canUseSpell(character, selectedSpell)) {
@@ -111,25 +148,26 @@ export function castSpell(character, spellId) {
     };
   }
 
-  const resources = Array.isArray(character.resources) ? character.resources : [];
-  const pactIndex = resources.findIndex((resource) =>
-    resource.id === 'pact-magic' && Number(resource.current) > 0
-  );
-  if (pactIndex >= 0) {
-    const pactCircle = spellCircleFromResource(resources[pactIndex]) || 1;
-    if (selectedSpell.circle <= pactCircle) {
-      return spendAt(character, spellcasting, selectedSpell, pactIndex, pactCircle);
+  const candidates = spellSlotCandidates(character, selectedSpell);
+  if (preferredCircle !== null && preferredCircle !== undefined) {
+    const requestedCircle = Number(preferredCircle);
+    const candidate = candidates.find((item) => item.circle === requestedCircle);
+    if (!candidate) {
+      return { character, success: false, reason: `Nenhum espaco de ${requestedCircle}Âº circulo disponivel.` };
     }
+    return spendAt(character, spellcasting, selectedSpell, candidate.index, candidate.circle);
   }
 
-  const candidates = resources
-    .map((resource, index) => ({ resource, index, circle: spellCircleFromResource(resource) }))
-    .filter(({ resource, circle }) => circle >= selectedSpell.circle && Number(resource.current) > 0)
-    .sort((a, b) => a.circle - b.circle);
   if (!candidates.length) {
     return { character, success: false, reason: 'Nenhum espaco compativel disponivel.' };
   }
   return spendAt(character, spellcasting, selectedSpell, candidates[0].index, candidates[0].circle);
+}
+
+export function shouldAskForCastCircle(character, spellId) {
+  const selectedSpell = spellById(spellId);
+  return spellSupportsHigherSlot(selectedSpell) &&
+    availableCastOptions(character, spellId).some((option) => option.circle > selectedSpell.circle);
 }
 
 function spendAt(character, spellcasting, selectedSpell, resourceIndex, slotCircle) {

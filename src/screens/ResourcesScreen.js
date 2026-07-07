@@ -5,7 +5,7 @@ import { SPELL_CIRCLES, SPELL_SCHOOLS, SPELLS, spellById } from '../data/spells'
 import { useCampaign } from '../services/CampaignContext';
 import { normalizeRecovery, recoverResources, spendResource } from '../services/resourceService';
 import { levelFromXp } from '../services/rulesService';
-import { castSpell, maxAvailableSpellCircle, spellClassesForCharacter, toggleKnownSpell, togglePreparedSpell } from '../services/spellService';
+import { availableCastOptions, castSpell, maxAvailableSpellCircle, shouldAskForCastCircle, spellClassesForCharacter, toggleKnownSpell, togglePreparedSpell } from '../services/spellService';
 import { colors, radii, spacing } from '../theme';
 
 export default function ResourcesScreen() {
@@ -18,6 +18,7 @@ export default function ResourcesScreen() {
   const [spellSchool, setSpellSchool] = useState('Todas');
   const [concentrationOnly, setConcentrationOnly] = useState(false);
   const [spellDetailId, setSpellDetailId] = useState(null);
+  const [castingSpellId, setCastingSpellId] = useState(null);
 
   const activeGroup = useMemo(
     () => state?.groups.find((group) => group.id === state.activeGroupId) || null,
@@ -45,6 +46,11 @@ export default function ResourcesScreen() {
       ? [selectedResourceCharacter]
       : [];
   const spellDetail = spellById(spellDetailId);
+  const castingSpell = spellById(castingSpellId);
+  const castingOptions = useMemo(
+    () => spellbookCharacter && castingSpell ? availableCastOptions(spellbookCharacter, castingSpell.id) : [],
+    [spellbookCharacter, castingSpell]
+  );
   const spellLimit = spellbookCharacter ? maxAvailableSpellCircle(spellbookCharacter) : 0;
   const availableSpellCircles = useMemo(
     () => SPELL_CIRCLES.filter((circle) => circle === 'Todos' || Number(circle) <= spellLimit),
@@ -119,17 +125,28 @@ export default function ResourcesScreen() {
     }));
   }
 
-  function conjure(characterId, spellId) {
+  function conjure(characterId, spellId, slotCircle = null) {
     const character = state.characters.find((item) => item.id === characterId);
     if (!character) return;
-    const result = castSpell(character, spellId);
+    const result = castSpell(character, spellId, slotCircle);
     setState((old) => ({
       ...old,
       characters: old.characters.map((item) =>
         item.id === characterId ? result.character : item
       ),
     }));
+    setCastingSpellId(null);
     Alert.alert('Conjuração', result.reason);
+  }
+
+  function requestConjure(characterId, spell) {
+    const character = state.characters.find((item) => item.id === characterId);
+    if (!character) return;
+    if (shouldAskForCastCircle(character, spell.id)) {
+      setCastingSpellId(spell.id);
+      return;
+    }
+    conjure(characterId, spell.id);
   }
 
   function closeSpellbook() {
@@ -139,6 +156,7 @@ export default function ResourcesScreen() {
     setSpellCircle('Todos');
     setSpellSchool('Todas');
     setConcentrationOnly(false);
+    setCastingSpellId(null);
     setSpellbookView('mine');
   }
 
@@ -342,7 +360,7 @@ export default function ResourcesScreen() {
                           <TouchableOpacity style={[styles.smallAction, prepared && styles.smallActionActive]} onPress={() => updateSpellbook(spellbookCharacter.id, (value) => togglePreparedSpell(value, spell.id))}>
                             <Text style={[styles.smallActionText, prepared && styles.smallActionTextActive]}>{prepared ? 'Preparada' : 'Preparar'}</Text>
                           </TouchableOpacity>
-                          <TouchableOpacity style={styles.castAction} onPress={() => conjure(spellbookCharacter.id, spell.id)}>
+                          <TouchableOpacity style={styles.castAction} onPress={() => requestConjure(spellbookCharacter.id, spell)}>
                             <Text style={styles.castText}>Conjurar</Text>
                           </TouchableOpacity>
                         </>
@@ -352,6 +370,38 @@ export default function ResourcesScreen() {
                 );
               })}
             </ScrollView>
+          </View>
+        </View>
+      </Modal>
+
+      <Modal visible={Boolean(castingSpell && spellbookCharacter)} transparent animationType="fade" onRequestClose={() => setCastingSpellId(null)}>
+        <View style={styles.detailBackground}>
+          <View style={styles.detailCard}>
+            <Text style={styles.eyebrow}>CONJURAR MAGIA</Text>
+            <Text style={styles.detailTitle}>{castingSpell?.name}</Text>
+            <Text style={styles.muted}>Escolha qual espaço de magia será consumido.</Text>
+            <View style={styles.castLevelList}>
+              {castingOptions.length === 0 ? (
+                <Text style={styles.noResources}>Nenhum espaço compatível disponível.</Text>
+              ) : castingOptions.map((option) => (
+                <TouchableOpacity
+                  key={option.circle}
+                  style={styles.castLevelOption}
+                  onPress={() => conjure(spellbookCharacter.id, castingSpell.id, option.circle)}
+                >
+                  <View style={styles.flex}>
+                    <Text style={styles.castLevelTitle}>{option.circle}º círculo</Text>
+                    <Text style={styles.muted}>
+                      {option.circle === castingSpell?.circle ? 'Círculo original' : 'Nível superior'} · {option.resourceName}
+                    </Text>
+                  </View>
+                  <Text style={styles.castLevelCount}>{option.current} disp.</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+            <TouchableOpacity style={styles.detailClose} onPress={() => setCastingSpellId(null)}>
+              <Text style={styles.primaryText}>Cancelar</Text>
+            </TouchableOpacity>
           </View>
         </View>
       </Modal>
@@ -470,6 +520,10 @@ const styles = StyleSheet.create({
   smallActionTextActive: { color: colors.primary },
   castAction: { backgroundColor: colors.primary, borderRadius: radii.sm, alignItems: 'center', paddingHorizontal: 8, paddingVertical: 8 },
   castText: { color: colors.background, fontSize: 9, fontWeight: '900' },
+  castLevelList: { gap: spacing.sm, marginTop: spacing.lg },
+  castLevelOption: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, backgroundColor: colors.surfaceMuted, borderColor: colors.border, borderWidth: 1, borderRadius: radii.md, padding: spacing.md },
+  castLevelTitle: { color: colors.text, fontSize: 15, fontWeight: '900' },
+  castLevelCount: { color: colors.primary, fontSize: 12, fontWeight: '900' },
   detailBackground: { flex: 1, backgroundColor: 'rgba(0,0,0,0.86)', alignItems: 'center', justifyContent: 'center', padding: spacing.lg },
   detailCard: { width: '100%', backgroundColor: colors.surface, borderColor: colors.borderStrong, borderWidth: 1, borderRadius: radii.xl, padding: spacing.xl },
   detailTitle: { color: colors.text, fontSize: 24, fontWeight: '900', marginTop: 4 },
