@@ -3,6 +3,7 @@ import { Alert, Modal, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity
 import { CONDITIONS } from '../data/conditions';
 import { CRITICAL_ERROR_TABLES, criticalErrorTableById, rollCriticalError as rollCriticalErrorFromTable } from '../data/criticalErrors';
 import { useCampaign } from '../services/CampaignContext';
+import { conditionName, conditionSummary, tr } from '../services/i18nService';
 import {
   advanceTurn,
   applyParticipantHp,
@@ -19,8 +20,9 @@ import { colors, radii, shadows, spacing } from '../theme';
 
 const EMPTY_ENEMY = { name: '', hpMax: '10', armorClass: '10', initiative: '0' };
 
-export default function CombatScreen() {
+export default function CombatScreen({ language = 'pt-BR' }) {
   const { state, setState } = useCampaign();
+  const tt = (text, values = {}) => tr(text, language, values);
   const [enemy, setEnemy] = useState(EMPTY_ENEMY);
   const [conditionTarget, setConditionTarget] = useState(null);
   const [damageDrafts, setDamageDrafts] = useState({});
@@ -51,8 +53,11 @@ export default function CombatScreen() {
       if (alertedConcentration.current[participant.id] === alertKey) return;
       alertedConcentration.current[participant.id] = alertKey;
       Alert.alert(
-        'Teste de concentracao',
-        `${participant.name} sofreu dano enquanto concentrava. A CD ja considera o dano total aplicado. Role CON CD ${participant.concentrationDc} para manter a magia.`
+        tt('Teste de concentração'),
+        tt('{name} sofreu dano enquanto concentrava. A CD já considera o dano total aplicado. Role CON CD {dc} para manter a magia.', {
+          name: participant.name,
+          dc: participant.concentrationDc,
+        })
       );
     });
     Object.keys(alertedConcentration.current).forEach((participantId) => {
@@ -175,22 +180,22 @@ export default function CombatScreen() {
     setCriticalResult(rollCriticalErrorFromTable(tableId));
   }
 
-  if (!state) return <Text style={styles.loading}>Carregando combate...</Text>;
+  if (!state) return <Text style={styles.loading}>{tt('Carregando combate...')}</Text>;
 
   return (
     <View style={styles.screen}>
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.hero}>
-          <Text style={styles.eyebrow}>ENCONTRO ATIVO</Text>
+          <Text style={styles.eyebrow}>{tt('ENCONTRO ATIVO')}</Text>
           <View style={styles.heroRow}>
             <View style={styles.flex}>
-              <Text style={styles.title}>Rodada {combat.round}</Text>
+              <Text style={styles.title}>{tt('Rodada')} {combat.round}</Text>
               <Text style={styles.subtitle}>
-                {activeParticipant ? `Turno de ${activeParticipant.name}` : 'Adicione participantes para comecar'}
+                {activeParticipant ? `${tt('Turno de')} ${activeParticipant.name}` : tt('Adicione participantes para começar')}
               </Text>
             </View>
             <TouchableOpacity style={styles.nextButton} onPress={() => setCombat(advanceTurn)}>
-              <Text style={styles.nextLabel}>PROXIMO</Text>
+              <Text style={styles.nextLabel}>{tt('PRÓXIMO')}</Text>
               <Text style={styles.nextArrow}>›</Text>
             </TouchableOpacity>
           </View>
@@ -198,7 +203,7 @@ export default function CombatScreen() {
 
         <View style={styles.toolbar}>
           <TouchableOpacity style={styles.secondary} onPress={addHeroes}>
-            <Text style={styles.secondaryText}>+ Personagens</Text>
+            <Text style={styles.secondaryText}>{tt('+ Personagens')}</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.secondary}
@@ -208,23 +213,23 @@ export default function CombatScreen() {
               setCombat(() => createCombat());
             }}
           >
-            <Text style={styles.secondaryText}>Novo combate</Text>
+            <Text style={styles.secondaryText}>{tt('Novo combate')}</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.secondary} onPress={() => setCriticalModalOpen(true)}>
-            <Text style={styles.secondaryText}>Erro critico</Text>
+            <Text style={styles.secondaryText}>{tt('Erro crítico')}</Text>
           </TouchableOpacity>
         </View>
 
         <View style={styles.enemyForm}>
-          <Text style={styles.sectionTitle}>Adicionar inimigo</Text>
-          <TextInput style={styles.input} value={enemy.name} onChangeText={(name) => setEnemy((old) => ({ ...old, name }))} placeholder="Nome do inimigo" placeholderTextColor={colors.textMuted} />
+          <Text style={styles.sectionTitle}>{tt('Adicionar inimigo')}</Text>
+          <TextInput style={styles.input} value={enemy.name} onChangeText={(name) => setEnemy((old) => ({ ...old, name }))} placeholder={tt('Nome do inimigo')} placeholderTextColor={colors.textMuted} />
           <View style={styles.row}>
             <SmallField label="PV" value={enemy.hpMax} onChangeText={(hpMax) => setEnemy((old) => ({ ...old, hpMax }))} />
             <SmallField label="CA" value={enemy.armorClass} onChangeText={(armorClass) => setEnemy((old) => ({ ...old, armorClass }))} />
-            <SmallField label="INICIATIVA" value={enemy.initiative} onChangeText={(initiative) => setEnemy((old) => ({ ...old, initiative }))} />
+            <SmallField label={tt('INICIATIVA')} value={enemy.initiative} onChangeText={(initiative) => setEnemy((old) => ({ ...old, initiative }))} />
           </View>
           <TouchableOpacity style={styles.addEnemy} onPress={addEnemy}>
-            <Text style={styles.primaryText}>Adicionar ao encontro</Text>
+            <Text style={styles.primaryText}>{tt('Adicionar ao encontro')}</Text>
           </TouchableOpacity>
         </View>
 
@@ -244,7 +249,7 @@ export default function CombatScreen() {
                 <View style={styles.flex}>
                   <Text style={styles.cardTitle}>{participant.name}</Text>
                   <Text style={styles.muted}>
-                    {participant.type === 'enemy' ? 'Inimigo' : 'Personagem'} · CA {participant.armorClass}
+                    {participant.type === 'enemy' ? tt('Inimigo') : tt('Personagem')} · CA {participant.armorClass}
                   </Text>
                 </View>
                 <View style={styles.initiativeBox}>
@@ -261,7 +266,7 @@ export default function CombatScreen() {
                 </View>
                 {tied && (
                   <TouchableOpacity style={styles.priorityButton} onPress={() => prioritizeParticipant(participant.id)}>
-                    <Text style={styles.priorityText}>Prioridade</Text>
+                    <Text style={styles.priorityText}>{tt('Prioridade')}</Text>
                   </TouchableOpacity>
                 )}
               </View>
@@ -269,10 +274,10 @@ export default function CombatScreen() {
               <View style={styles.hpBlock}>
                 <View style={styles.hpHeader}>
                   <Text style={styles.hpValue}>{participant.hp.current} / {participant.hp.max} PV</Text>
-                  <Text style={styles.tempValue}>+{participant.hp.temporary || 0} temporarios</Text>
+                  <Text style={styles.tempValue}>+{participant.hp.temporary || 0} {tt('temporários')}</Text>
                 </View>
                 <View style={styles.hpEditor}>
-                  <Text style={styles.miniLabel}>PV máximo</Text>
+                  <Text style={styles.miniLabel}>{tt('PV máximo')}</Text>
                   <TextInput
                     style={styles.hpMaxInput}
                     keyboardType="numeric"
@@ -283,10 +288,10 @@ export default function CombatScreen() {
                     })}
                   />
                   <TouchableOpacity style={styles.hpPreset} onPress={() => updateParticipant(participant.id, (item) => applyParticipantHp(item, -item.hp.current))}>
-                    <Text style={styles.actionText}>Zerar PV</Text>
+                    <Text style={styles.actionText}>{tt('Zerar PV')}</Text>
                   </TouchableOpacity>
                   <TouchableOpacity style={styles.hpPreset} onPress={() => updateParticipant(participant.id, (item) => applyParticipantHp(item, item.hp.max - item.hp.current))}>
-                    <Text style={styles.actionText}>PV cheio</Text>
+                    <Text style={styles.actionText}>{tt('PV cheio')}</Text>
                   </TouchableOpacity>
                 </View>
                 <View style={styles.hpTrack}>
@@ -299,9 +304,9 @@ export default function CombatScreen() {
 
               {participant.concentrationDc && (
                 <View style={styles.concentrationAlert}>
-                  <Text style={styles.concentrationText}>Concentracao: teste de CON CD {participant.concentrationDc}</Text>
+                  <Text style={styles.concentrationText}>{tt('Concentração: teste de CON CD {dc}', { dc: participant.concentrationDc })}</Text>
                   <TouchableOpacity onPress={() => updateParticipant(participant.id, (item) => ({ ...item, concentrationDc: null }))}>
-                    <Text style={styles.resolveText}>Resolver</Text>
+                    <Text style={styles.resolveText}>{tt('Resolver')}</Text>
                   </TouchableOpacity>
                 </View>
               )}
@@ -310,7 +315,7 @@ export default function CombatScreen() {
                 <View style={styles.conditionList}>
                   {participant.conditions.map((id) => (
                     <View key={id} style={styles.conditionBadge}>
-                      <Text style={styles.conditionBadgeText}>{CONDITIONS.find((condition) => condition.id === id)?.name || id}</Text>
+                      <Text style={styles.conditionBadgeText}>{conditionName(CONDITIONS.find((condition) => condition.id === id), language) || id}</Text>
                     </View>
                   ))}
                 </View>
@@ -318,8 +323,8 @@ export default function CombatScreen() {
 
               {isConcentrating ? (
                 <View style={styles.damagePanel}>
-                  <Text style={styles.concentrationHint}>Concentrando: monte o dano total e depois aplique para calcular a CD correta.</Text>
-                  <Text style={styles.miniLabel}>Dano total para concentracao</Text>
+                  <Text style={styles.concentrationHint}>{tt('Concentrando: monte o dano total e depois aplique para calcular a CD correta.')}</Text>
+                  <Text style={styles.miniLabel}>{tt('Dano total para concentração')}</Text>
                   <View style={styles.damageRow}>
                     <TextInput
                       style={styles.damageInput}
@@ -337,10 +342,10 @@ export default function CombatScreen() {
                   </View>
                   <View style={styles.damageRow}>
                     <TouchableOpacity style={styles.applyDamageButton} onPress={() => applyDamageDraft(participant.id)}>
-                      <Text style={styles.applyDamageText}>Aplicar dano</Text>
+                      <Text style={styles.applyDamageText}>{tt('Aplicar dano')}</Text>
                     </TouchableOpacity>
                     <TouchableOpacity style={styles.hpPreset} onPress={() => clearDamageDraft(participant.id)}>
-                      <Text style={styles.actionText}>Limpar</Text>
+                      <Text style={styles.actionText}>{tt('Limpar')}</Text>
                     </TouchableOpacity>
                   </View>
                 </View>
@@ -357,7 +362,7 @@ export default function CombatScreen() {
               <View style={styles.quickRow}>
                 {[1, 5, 10].map((value) => (
                   <TouchableOpacity key={value} style={[styles.quick, styles.healQuick]} onPress={() => updateParticipant(participant.id, (item) => applyParticipantHp(item, value))}>
-                    <Text style={styles.quickText}>Cura +{value}</Text>
+                    <Text style={styles.quickText}>{tt('Cura')} +{value}</Text>
                   </TouchableOpacity>
                 ))}
               </View>
@@ -365,9 +370,9 @@ export default function CombatScreen() {
               {atZero && (
                 <View style={styles.deathPanel}>
                   <Text style={styles.deathTitle}>
-                    {participant.deathSaves?.dead ? 'Morto' : participant.deathSaves?.stable ? 'Estavel' : 'Testes contra a morte'}
+                    {participant.deathSaves?.dead ? tt('Morto') : participant.deathSaves?.stable ? tt('Estável') : tt('Testes contra a morte')}
                   </Text>
-                  <Text style={styles.muted}>Sucessos {participant.deathSaves?.successes || 0}/3 · Falhas {participant.deathSaves?.failures || 0}/3</Text>
+                  <Text style={styles.muted}>{tt('Sucessos')} {participant.deathSaves?.successes || 0}/3 · {tt('Falhas')} {participant.deathSaves?.failures || 0}/3</Text>
                   <View style={styles.quickRow}>
                     {[1, 5, 10, 20].map((roll) => (
                       <TouchableOpacity key={roll} style={styles.deathRoll} onPress={() => updateParticipant(participant.id, (item) => recordDeathSave(item, roll))}>
@@ -375,7 +380,7 @@ export default function CombatScreen() {
                       </TouchableOpacity>
                     ))}
                     <TouchableOpacity style={styles.stabilize} onPress={() => updateParticipant(participant.id, stabilizeParticipant)}>
-                      <Text style={styles.stabilizeText}>Estabilizar</Text>
+                      <Text style={styles.stabilizeText}>{tt('Estabilizar')}</Text>
                     </TouchableOpacity>
                   </View>
                 </View>
@@ -383,7 +388,7 @@ export default function CombatScreen() {
 
               <View style={styles.cardActions}>
                 <TouchableOpacity style={styles.actionButton} onPress={() => setConditionTarget(participant.id)}>
-                  <Text style={styles.actionText}>Condicoes</Text>
+                  <Text style={styles.actionText}>{tt('Condições')}</Text>
                 </TouchableOpacity>
                 {[1, 5, 10].map((value) => (
                   <TouchableOpacity key={`temp-${value}`} style={styles.actionButton} onPress={() => updateParticipant(participant.id, (item) => ({ ...item, hp: { ...item.hp, temporary: (item.hp.temporary || 0) + value } }))}>
@@ -391,10 +396,10 @@ export default function CombatScreen() {
                   </TouchableOpacity>
                 ))}
                 <TouchableOpacity style={styles.actionButton} onPress={() => updateParticipant(participant.id, (item) => ({ ...item, hp: { ...item.hp, temporary: 0 } }))}>
-                  <Text style={styles.actionText}>Limpar Temp</Text>
+                  <Text style={styles.actionText}>{tt('Limpar Temp')}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.removeButton} onPress={() => setCombat((old) => ({ ...old, participants: old.participants.filter((item) => item.id !== participant.id), activeIndex: 0 }))}>
-                  <Text style={styles.removeText}>Remover</Text>
+                  <Text style={styles.removeText}>{tt('Remover')}</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -402,8 +407,9 @@ export default function CombatScreen() {
         })}
       </ScrollView>
 
-      <ConditionModal participant={conditionParticipant} onToggle={(conditionId) => updateParticipant(conditionTarget, (item) => toggleCondition(item, conditionId))} onClose={() => setConditionTarget(null)} />
+      <ConditionModal language={language} participant={conditionParticipant} onToggle={(conditionId) => updateParticipant(conditionTarget, (item) => toggleCondition(item, conditionId))} onClose={() => setConditionTarget(null)} />
       <CriticalErrorModal
+        language={language}
         visible={criticalModalOpen}
         selectedTableId={criticalTableId}
         result={criticalResult}
@@ -418,15 +424,16 @@ export default function CombatScreen() {
   );
 }
 
-function CriticalErrorModal({ visible, selectedTableId, result, onSelect, onRoll, onClose }) {
+function CriticalErrorModal({ language, visible, selectedTableId, result, onSelect, onRoll, onClose }) {
+  const tt = (text, values = {}) => tr(text, language, values);
   const selectedTable = criticalErrorTableById(selectedTableId);
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
       <View style={styles.modalBackdrop}>
         <View style={styles.conditionSheet}>
           <View style={styles.sheetHandle} />
-          <Text style={styles.sectionTitle}>Gerador de erro critico</Text>
-          <Text style={styles.subtitle}>Escolha o tipo do ataque que tirou 1 natural e sorteie o efeito.</Text>
+          <Text style={styles.sectionTitle}>{tt('Gerador de erro crítico')}</Text>
+          <Text style={styles.subtitle}>{tt('Escolha o tipo do ataque que tirou 1 natural e sorteie o efeito.')}</Text>
           <View style={styles.criticalGrid}>
             {CRITICAL_ERROR_TABLES.map((table) => {
               const selected = table.id === selectedTableId;
@@ -443,17 +450,17 @@ function CriticalErrorModal({ visible, selectedTableId, result, onSelect, onRoll
             })}
           </View>
           <TouchableOpacity style={styles.rollButton} onPress={() => onRoll(selectedTable.id)}>
-            <Text style={styles.rollButtonText}>Sortear efeito ({selectedTable.die})</Text>
+            <Text style={styles.rollButtonText}>{tt('Sortear efeito')} ({selectedTable.die})</Text>
           </TouchableOpacity>
           {result && (
             <View style={styles.criticalResult}>
-              <Text style={styles.criticalRoll}>{result.tableName} - resultado {result.roll}</Text>
-              <Text style={styles.criticalMeta}>Faixa {result.range} - {result.severity} ({result.chance})</Text>
+              <Text style={styles.criticalRoll}>{result.tableName} - {tt('resultado')} {result.roll}</Text>
+              <Text style={styles.criticalMeta}>{tt('Faixa')} {result.range} - {result.severity} ({result.chance})</Text>
               <Text style={styles.criticalEffect}>{result.effect}</Text>
             </View>
           )}
           <TouchableOpacity style={styles.closeButton} onPress={onClose}>
-            <Text style={styles.primaryText}>Concluir</Text>
+            <Text style={styles.primaryText}>{tt('Concluir')}</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -461,22 +468,23 @@ function CriticalErrorModal({ visible, selectedTableId, result, onSelect, onRoll
   );
 }
 
-function ConditionModal({ participant, onToggle, onClose }) {
+function ConditionModal({ language, participant, onToggle, onClose }) {
+  const tt = (text, values = {}) => tr(text, language, values);
   return (
     <Modal visible={Boolean(participant)} transparent animationType="slide" onRequestClose={onClose}>
       <View style={styles.modalBackdrop}>
         <View style={styles.conditionSheet}>
           <View style={styles.sheetHandle} />
-          <Text style={styles.sectionTitle}>Condicoes de {participant?.name}</Text>
-          <Text style={styles.subtitle}>Toque para aplicar ou remover. Condicoes incapacitantes encerram concentracao.</Text>
+          <Text style={styles.sectionTitle}>{tt('Condições de {name}', { name: participant?.name })}</Text>
+          <Text style={styles.subtitle}>{tt('Toque para aplicar ou remover. Condições incapacitantes encerram concentração.')}</Text>
           <ScrollView>
             {CONDITIONS.map((condition) => {
               const selected = participant?.conditions?.includes(condition.id);
               return (
                 <TouchableOpacity key={condition.id} style={[styles.conditionOption, selected && styles.conditionOptionActive]} onPress={() => onToggle(condition.id)}>
                   <View style={styles.flex}>
-                    <Text style={[styles.conditionName, selected && styles.conditionNameActive]}>{condition.name}</Text>
-                    <Text style={styles.muted}>{condition.summary}</Text>
+                    <Text style={[styles.conditionName, selected && styles.conditionNameActive]}>{conditionName(condition, language)}</Text>
+                    <Text style={styles.muted}>{conditionSummary(condition, language)}</Text>
                   </View>
                   <Text style={[styles.check, selected && styles.checkActive]}>{selected ? '✓' : '+'}</Text>
                 </TouchableOpacity>
@@ -484,7 +492,7 @@ function ConditionModal({ participant, onToggle, onClose }) {
             })}
           </ScrollView>
           <TouchableOpacity style={styles.closeButton} onPress={onClose}>
-            <Text style={styles.primaryText}>Concluir</Text>
+            <Text style={styles.primaryText}>{tt('Concluir')}</Text>
           </TouchableOpacity>
         </View>
       </View>

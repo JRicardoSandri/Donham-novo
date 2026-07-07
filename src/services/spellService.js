@@ -121,12 +121,14 @@ export function canUseSpell(character, spell) {
 
 export function castSpell(character, spellId, preferredCircle = null) {
   const selectedSpell = spellById(spellId);
-  if (!selectedSpell) return { character, success: false, reason: 'Magia nao encontrada.' };
+  if (!selectedSpell) return { character, success: false, code: 'spell-not-found', reason: 'Magia nao encontrada.' };
   if (!canUseSpell(character, selectedSpell)) {
     const maxCircle = maxAvailableSpellCircle(character);
     return {
       character,
       success: false,
+      code: maxCircle > 0 ? 'spell-locked' : 'no-unlocked-spell-circles',
+      maxCircle,
       reason: maxCircle > 0
         ? `Esta magia ainda nao foi desbloqueada. Limite atual: ${maxCircle}º circulo.`
         : 'Este personagem ainda nao possui circulos de magia desbloqueados.',
@@ -144,6 +146,9 @@ export function castSpell(character, spellId, preferredCircle = null) {
         },
       },
       success: true,
+      code: 'cantrip-cast',
+      spellId: selectedSpell.id,
+      cantrip: true,
       reason: 'Truque conjurado sem gastar espaco.',
     };
   }
@@ -153,13 +158,19 @@ export function castSpell(character, spellId, preferredCircle = null) {
     const requestedCircle = Number(preferredCircle);
     const candidate = candidates.find((item) => item.circle === requestedCircle);
     if (!candidate) {
-      return { character, success: false, reason: `Nenhum espaco de ${requestedCircle}Âº circulo disponivel.` };
+      return {
+        character,
+        success: false,
+        code: 'no-slot-for-circle',
+        slotCircle: requestedCircle,
+        reason: `Nenhum espaco de ${requestedCircle}º circulo disponivel.`,
+      };
     }
     return spendAt(character, spellcasting, selectedSpell, candidate.index, candidate.circle);
   }
 
   if (!candidates.length) {
-    return { character, success: false, reason: 'Nenhum espaco compativel disponivel.' };
+    return { character, success: false, code: 'no-compatible-slot', reason: 'Nenhum espaco compativel disponivel.' };
   }
   return spendAt(character, spellcasting, selectedSpell, candidates[0].index, candidates[0].circle);
 }
@@ -183,6 +194,9 @@ function spendAt(character, spellcasting, selectedSpell, resourceIndex, slotCirc
       },
     },
     success: true,
+    code: 'spell-cast',
+    spellId: selectedSpell.id,
+    slotCircle,
     reason: `${selectedSpell.name} conjurada usando espaco de ${slotCircle}º circulo.`,
   };
 }

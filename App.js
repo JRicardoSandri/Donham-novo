@@ -26,18 +26,18 @@ function AppContent() {
     <SafeAreaView style={styles.safe}>
       <StatusBar barStyle="light-content" backgroundColor={colors.background} />
       <View style={styles.screen}>
-        {area === 'groups' && <GroupsScreen />}
-        {area === 'resources' && <ResourcesScreen />}
-        {area === 'combat' && <CombatScreen />}
-        {area === 'inventory' && <InventoryScreen />}
+        {area === 'groups' && <GroupsScreen language={language} />}
+        {area === 'resources' && <ResourcesScreen language={language} />}
+        {area === 'combat' && <CombatScreen language={language} />}
+        {area === 'inventory' && <InventoryScreen language={language} />}
         {area === 'settings' && <SettingsScreen language={language} settings={state?.settings} onSettingsChange={setState} />}
       </View>
       <View style={styles.navigation}>
-        <NavButton symbol="P" label={t('navCharacters', language)} active={area === 'groups'} onPress={() => setArea('groups')} />
-        <NavButton symbol="R" label={t('navResources', language)} active={area === 'resources'} onPress={() => setArea('resources')} />
-        <NavButton symbol="C" label={t('navCombat', language)} active={area === 'combat'} onPress={() => setArea('combat')} />
-        <NavButton symbol="I" label={t('navItems', language)} active={area === 'inventory'} onPress={() => setArea('inventory')} />
-        <NavButton symbol="A" label={t('navSettings', language)} active={area === 'settings'} onPress={() => setArea('settings')} />
+        <NavButton symbol="♙" label={t('navCharacters', language)} active={area === 'groups'} onPress={() => setArea('groups')} />
+        <NavButton symbol="✦" label={t('navResources', language)} active={area === 'resources'} onPress={() => setArea('resources')} />
+        <NavButton symbol="⚔" label={t('navCombat', language)} active={area === 'combat'} onPress={() => setArea('combat')} />
+        <NavButton symbol="▣" label={t('navItems', language)} active={area === 'inventory'} onPress={() => setArea('inventory')} />
+        <NavButton symbol="⚙" label={t('navSettings', language)} active={area === 'settings'} onPress={() => setArea('settings')} />
       </View>
     </SafeAreaView>
   );
@@ -60,9 +60,9 @@ const styles = StyleSheet.create({
   navigation: { flexDirection: 'row', gap: 6, backgroundColor: colors.backgroundRaised, borderTopColor: colors.border, borderTopWidth: 1, paddingHorizontal: 10, paddingTop: 8, paddingBottom: 10, ...shadows.card },
   navButton: { flex: 1, alignItems: 'center', borderRadius: 14, paddingVertical: 5 },
   navButtonActive: { backgroundColor: colors.surfaceHighlight },
-  navSymbol: { width: 28, height: 28, borderRadius: 10, backgroundColor: colors.surface, alignItems: 'center', justifyContent: 'center' },
+  navSymbol: { width: 30, height: 30, borderRadius: 11, backgroundColor: colors.surface, alignItems: 'center', justifyContent: 'center' },
   navSymbolActive: { backgroundColor: colors.primary },
-  navSymbolText: { color: colors.textMuted, fontSize: 11, fontWeight: '900' },
+  navSymbolText: { color: colors.textMuted, fontSize: 16, fontWeight: '900' },
   navSymbolTextActive: { color: colors.background },
   navText: { color: colors.textMuted, fontSize: 9, fontWeight: '800', marginTop: 3 },
   navTextActive: { color: colors.primary },

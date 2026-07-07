@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { Modal, ScrollView, StyleSheet, Switch, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { EQUIPMENT_CATALOG, EQUIPMENT_CATEGORIES } from '../data/equipmentCatalog';
 import { useCampaign } from '../services/CampaignContext';
+import { gameTerm, tr } from '../services/i18nService';
 import {
   inventoryCapacity,
   normalizeCoins,
@@ -35,8 +36,10 @@ const COIN_FIELDS = [
   ['pc', 'Cobre'],
 ];
 
-export default function InventoryScreen() {
+export default function InventoryScreen({ language = 'pt-BR' }) {
   const { state, setState } = useCampaign();
+  const tt = (text, values = {}) => tr(text, language, values);
+  const term = (value) => gameTerm(value, language);
   const [form, setForm] = useState(EMPTY_ITEM);
   const [catalogOpen, setCatalogOpen] = useState(false);
   const [catalogQuery, setCatalogQuery] = useState('');
@@ -139,18 +142,18 @@ export default function InventoryScreen() {
     }));
   }
 
-  if (!state) return <Text style={styles.loading}>Carregando inventario...</Text>;
+  if (!state) return <Text style={styles.loading}>{tt('Carregando inventário...')}</Text>;
 
   return (
     <ScrollView contentContainerStyle={styles.content}>
-      <Text style={styles.eyebrow}>INVENTARIO</Text>
-      <Text style={styles.title}>Equipamento e carga</Text>
-      <Text style={styles.subtitle}>A capacidade usa Força × 7,5 kg para porte Médio e × 15 kg para porte Grande.</Text>
+      <Text style={styles.eyebrow}>{tt('INVENTÁRIO')}</Text>
+      <Text style={styles.title}>{tt('Equipamento e carga')}</Text>
+      <Text style={styles.subtitle}>{tt('A capacidade usa Força × 7,5 kg para porte Médio e × 15 kg para porte Grande.')}</Text>
 
       {characters.length === 0 && (
         <View style={styles.card}>
-          <Text style={styles.cardTitle}>Nenhum personagem criado</Text>
-          <Text style={styles.muted}>Crie um personagem na aba Grupos para montar o inventario.</Text>
+          <Text style={styles.cardTitle}>{tt('Nenhum personagem criado')}</Text>
+          <Text style={styles.muted}>{tt('Crie um personagem na aba Grupos para montar o inventário.')}</Text>
         </View>
       )}
 
@@ -175,9 +178,9 @@ export default function InventoryScreen() {
             <View style={styles.flex}>
               <Text style={styles.cardTitle}>{character.name}</Text>
               <Text style={[styles.weight, overloaded && styles.overloaded]}>
-                {currentWeight.toFixed(1)} / {capacity} kg · {inventory.length} {inventory.length === 1 ? 'item' : 'itens'}
+                {currentWeight.toFixed(1)} / {capacity} kg · {inventory.length} {inventory.length === 1 ? tt('item') : tt('itens')}
               </Text>
-              {overloaded && <Text style={styles.overloadLabel}>SOBRECARGA</Text>}
+              {overloaded && <Text style={styles.overloadLabel}>{tt('SOBRECARGA')}</Text>}
             </View>
             <Text style={styles.openArrow}>›</Text>
           </TouchableOpacity>
@@ -199,7 +202,7 @@ export default function InventoryScreen() {
                 setForm(EMPTY_ITEM);
               }}
             >
-              <Text style={styles.backText}>‹ Todos os personagens</Text>
+              <Text style={styles.backText}>‹ {tt('Todos os personagens')}</Text>
             </TouchableOpacity>
             <View style={styles.cardHeader}>
               <View style={styles.flex}>
@@ -207,22 +210,22 @@ export default function InventoryScreen() {
                 <Text style={[styles.weight, overloaded && styles.overloaded]}>
                   {currentWeight.toFixed(1)} / {capacity} kg
                 </Text>
-                <Text style={styles.muted}>{inventory.length} {inventory.length === 1 ? 'item' : 'itens'} no inventário</Text>
+                <Text style={styles.muted}>{inventory.length} {inventory.length === 1 ? tt('item') : tt('itens')} {tt('no inventário')}</Text>
               </View>
               <TouchableOpacity
                 style={styles.primary}
                 onPress={() => setForm({ ...EMPTY_ITEM, characterId: selectedCharacter.id })}
               >
-                <Text style={styles.primaryText}>Novo item</Text>
+                <Text style={styles.primaryText}>{tt('Novo item')}</Text>
               </TouchableOpacity>
             </View>
 
             <View style={styles.coinsPanel}>
-              <Text style={styles.itemName}>Moedas</Text>
+              <Text style={styles.itemName}>{tt('Moedas')}</Text>
               <View style={styles.coinGrid}>
                 {COIN_FIELDS.map(([coin, label]) => (
                   <View key={coin} style={styles.coinField}>
-                    <Text style={styles.label}>{label}</Text>
+                    <Text style={styles.label}>{tt(label)}</Text>
                     <TextInput
                       style={styles.coinInput}
                       keyboardType="numeric"
@@ -238,27 +241,27 @@ export default function InventoryScreen() {
 
             {!!form.characterId && form.characterId === selectedCharacter.id && (
               <View style={styles.form}>
-                <Text style={styles.cardTitle}>{form.id ? 'Editar item' : 'Adicionar item'}</Text>
+                <Text style={styles.cardTitle}>{form.id ? tt('Editar item') : tt('Adicionar item')}</Text>
                 <TouchableOpacity style={styles.catalogButton} onPress={() => setCatalogOpen(true)}>
-                  <Text style={styles.catalogButtonText}>Escolher no catálogo</Text>
+                  <Text style={styles.catalogButtonText}>{tt('Escolher no catálogo')}</Text>
                   <Text style={styles.catalogButtonText}>⌕</Text>
                 </TouchableOpacity>
                 <TextInput
                   style={styles.input}
                   value={form.name}
                   onChangeText={(name) => setForm((old) => ({ ...old, name }))}
-                  placeholder="Nome"
+                  placeholder={tt('Nome')}
                   placeholderTextColor={colors.textMuted}
                 />
                 <View style={styles.row}>
-                  <Field label="Quantidade" value={form.quantity} onChangeText={(quantity) => setForm((old) => ({ ...old, quantity }))} />
-                  <Field label="Peso (kg)" value={form.weight} onChangeText={(weight) => setForm((old) => ({ ...old, weight }))} />
+                  <Field label={tt('Quantidade')} value={form.quantity} onChangeText={(quantity) => setForm((old) => ({ ...old, quantity }))} />
+                  <Field label={tt('Peso (kg)')} value={form.weight} onChangeText={(weight) => setForm((old) => ({ ...old, weight }))} />
                 </View>
                 <TextInput
                   style={styles.input}
                   value={form.value}
                   onChangeText={(value) => setForm((old) => ({ ...old, value }))}
-                  placeholder="Valor (ex.: 10 po)"
+                  placeholder={tt('Valor (ex.: 10 po)')}
                   placeholderTextColor={colors.textMuted}
                 />
                 <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.categoryStrip}>
@@ -268,7 +271,7 @@ export default function InventoryScreen() {
                       style={[styles.categoryChip, form.category === category && styles.categoryChipActive]}
                       onPress={() => setForm((old) => ({ ...old, category }))}
                     >
-                      <Text style={[styles.categoryText, form.category === category && styles.categoryTextActive]}>{category}</Text>
+                      <Text style={[styles.categoryText, form.category === category && styles.categoryTextActive]}>{term(category)}</Text>
                     </TouchableOpacity>
                   ))}
                 </ScrollView>
@@ -278,11 +281,11 @@ export default function InventoryScreen() {
                       style={styles.input}
                       value={form.rarity}
                       onChangeText={(rarity) => setForm((old) => ({ ...old, rarity }))}
-                      placeholder="Raridade"
+                      placeholder={tt('Raridade')}
                       placeholderTextColor={colors.textMuted}
                     />
                     <View style={styles.equippedRow}>
-                      <Text style={styles.itemName}>Requer sintonizacao</Text>
+                      <Text style={styles.itemName}>{tt('Requer sintonização')}</Text>
                       <Switch
                         value={form.requiresAttunement}
                         onValueChange={(requiresAttunement) => setForm((old) => ({ ...old, requiresAttunement }))}
@@ -291,7 +294,7 @@ export default function InventoryScreen() {
                       />
                     </View>
                     <View style={styles.equippedRow}>
-                      <Text style={styles.itemName}>Sintonizado</Text>
+                      <Text style={styles.itemName}>{tt('Sintonizado')}</Text>
                       <Switch
                         value={form.attuned}
                         onValueChange={(attuned) => setForm((old) => ({ ...old, attuned }))}
@@ -300,8 +303,8 @@ export default function InventoryScreen() {
                       />
                     </View>
                     <View style={styles.row}>
-                      <Field label="Cargas atuais" value={form.charges?.current} onChangeText={(current) => setForm((old) => ({ ...old, charges: { ...old.charges, current } }))} />
-                      <Field label="Cargas max." value={form.charges?.max} onChangeText={(max) => setForm((old) => ({ ...old, charges: { ...old.charges, max } }))} />
+                      <Field label={tt('Cargas atuais')} value={form.charges?.current} onChangeText={(current) => setForm((old) => ({ ...old, charges: { ...old.charges, current } }))} />
+                      <Field label={tt('Cargas max.')} value={form.charges?.max} onChangeText={(max) => setForm((old) => ({ ...old, charges: { ...old.charges, max } }))} />
                     </View>
                   </View>
                 )}
@@ -309,12 +312,12 @@ export default function InventoryScreen() {
                   style={[styles.input, styles.multiline]}
                   value={form.description}
                   onChangeText={(description) => setForm((old) => ({ ...old, description }))}
-                  placeholder="Descrição"
+                  placeholder={tt('Descrição')}
                   placeholderTextColor={colors.textMuted}
                   multiline
                 />
                 <View style={styles.equippedRow}>
-                  <Text style={styles.itemName}>Equipado</Text>
+                  <Text style={styles.itemName}>{tt('Equipado')}</Text>
                   <Switch
                     value={form.equipped}
                     onValueChange={(equipped) => setForm((old) => ({ ...old, equipped }))}
@@ -324,16 +327,16 @@ export default function InventoryScreen() {
                 </View>
                 <View style={styles.row}>
                   <TouchableOpacity style={styles.secondary} onPress={() => setForm(EMPTY_ITEM)}>
-                    <Text style={styles.actionText}>Cancelar</Text>
+                    <Text style={styles.actionText}>{tt('Cancelar')}</Text>
                   </TouchableOpacity>
                   <TouchableOpacity style={styles.primaryWide} onPress={saveItem}>
-                    <Text style={styles.primaryText}>Salvar item</Text>
+                    <Text style={styles.primaryText}>{tt('Salvar item')}</Text>
                   </TouchableOpacity>
                 </View>
               </View>
             )}
 
-            {inventory.length === 0 && <Text style={styles.muted}>Inventario vazio.</Text>}
+            {inventory.length === 0 && <Text style={styles.muted}>{tt('Inventário vazio.')}</Text>}
 
             {inventory.map((item) => (
               <View key={item.id} style={styles.item}>
@@ -345,15 +348,15 @@ export default function InventoryScreen() {
                   {!!item.value && <Text style={styles.value}>{item.value} · {item.category || 'Personalizado'}</Text>}
                   {item.category === 'Itens Magicos' && (
                     <Text style={styles.value}>
-                      {item.rarity || 'Raridade nao informada'}
-                      {item.requiresAttunement ? ` - ${item.attuned ? 'sintonizado' : 'requer sintonizacao'}` : ''}
-                      {item.charges?.max ? ` - cargas ${item.charges.current}/${item.charges.max}` : ''}
+                      {item.rarity || tt('Raridade não informada')}
+                      {item.requiresAttunement ? ` - ${item.attuned ? tt('sintonizado') : tt('requer sintonização')}` : ''}
+                      {item.charges?.max ? ` - ${tt('cargas')} ${item.charges.current}/${item.charges.max}` : ''}
                     </Text>
                   )}
                   {!!item.description && <Text style={styles.description}>{item.description}</Text>}
                 </View>
                 <TouchableOpacity style={styles.action} onPress={() => editItem(selectedCharacter.id, item)}>
-                  <Text style={styles.actionText}>Editar</Text>
+                  <Text style={styles.actionText}>{tt('Editar')}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.danger} onPress={() => removeItem(selectedCharacter.id, item.id)}>
                   <Text style={styles.dangerText}>X</Text>
@@ -367,18 +370,18 @@ export default function InventoryScreen() {
       <Modal visible={catalogOpen} transparent animationType="slide" onRequestClose={() => setCatalogOpen(false)}>
         <View style={styles.modalBackground}>
           <View style={styles.catalogSheet}>
-            <Text style={styles.cardTitle}>Catálogo de equipamentos</Text>
+            <Text style={styles.cardTitle}>{tt('Catálogo de equipamentos')}</Text>
             <TextInput
               style={styles.input}
               value={catalogQuery}
               onChangeText={setCatalogQuery}
-              placeholder="Digite para filtrar itens"
+              placeholder={tt('Digite para filtrar itens')}
               placeholderTextColor={colors.textMuted}
             />
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.categoryStrip}>
               {catalogCategories.map((category) => (
                 <TouchableOpacity key={category} style={[styles.categoryChip, catalogCategory === category && styles.categoryChipActive]} onPress={() => setCatalogCategory(category)}>
-                  <Text style={[styles.categoryText, catalogCategory === category && styles.categoryTextActive]}>{category}</Text>
+                  <Text style={[styles.categoryText, catalogCategory === category && styles.categoryTextActive]}>{term(category)}</Text>
                 </TouchableOpacity>
               ))}
             </ScrollView>
@@ -409,7 +412,7 @@ export default function InventoryScreen() {
                   >
                     <View style={styles.flex}>
                       <Text style={styles.itemName}>{item.name}</Text>
-                      <Text style={styles.muted}>{item.category} · {item.value} · {item.weight} kg</Text>
+                      <Text style={styles.muted}>{term(item.category)} · {item.value} · {item.weight} kg</Text>
                       <Text style={styles.description}>{item.description}</Text>
                     </View>
                   </TouchableOpacity>
@@ -426,13 +429,13 @@ export default function InventoryScreen() {
                     setCatalogOpen(false);
                   }}
                 >
-                  <Text style={styles.itemName}>Criar item personalizado</Text>
-                  <Text style={styles.muted}>Usar "{catalogQuery.trim() || 'Novo item'}" como base e salvar na biblioteca.</Text>
+                  <Text style={styles.itemName}>{tt('Criar item personalizado')}</Text>
+                  <Text style={styles.muted}>{tt('Usar "{name}" como base e salvar na biblioteca.', { name: catalogQuery.trim() || tt('Novo item') })}</Text>
                 </TouchableOpacity>
               )}
             </ScrollView>
             <TouchableOpacity style={styles.secondary} onPress={() => setCatalogOpen(false)}>
-              <Text style={styles.actionText}>Fechar</Text>
+              <Text style={styles.actionText}>{tt('Fechar')}</Text>
             </TouchableOpacity>
           </View>
         </View>

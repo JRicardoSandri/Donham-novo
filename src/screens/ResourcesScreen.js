@@ -3,13 +3,16 @@ import { Alert, Modal, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity
 import { RECOVERY } from '../data/classProgression';
 import { SPELL_CIRCLES, SPELL_SCHOOLS, SPELLS, spellById } from '../data/spells';
 import { useCampaign } from '../services/CampaignContext';
+import { gameTerm, resourceName, spellCircleLabel, spellName, spellSummary, tr } from '../services/i18nService';
 import { normalizeRecovery, recoverResources, spendResource } from '../services/resourceService';
 import { levelFromXp } from '../services/rulesService';
 import { availableCastOptions, castSpell, maxAvailableSpellCircle, shouldAskForCastCircle, spellClassesForCharacter, toggleKnownSpell, togglePreparedSpell } from '../services/spellService';
 import { colors, radii, spacing } from '../theme';
 
-export default function ResourcesScreen() {
+export default function ResourcesScreen({ language = 'pt-BR' }) {
   const { state, setState } = useCampaign();
+  const tt = (text, values = {}) => tr(text, language, values);
+  const term = (value) => gameTerm(value, language);
   const [spellbookCharacterId, setSpellbookCharacterId] = useState(null);
   const [selectedResourceCharacterId, setSelectedResourceCharacterId] = useState(null);
   const [spellbookView, setSpellbookView] = useState('mine');
@@ -72,8 +75,8 @@ export default function ResourcesScreen() {
       .filter((spell) => spellCircle === 'Todos' || spell.circle === Number(spellCircle))
       .filter((spell) => spellSchool === 'Todas' || spell.school === spellSchool)
       .filter((spell) => !concentrationOnly || spell.concentration)
-      .filter((spell) => `${spell.name} ${spell.summary}`.toLowerCase().includes(spellQuery.trim().toLowerCase()));
-  }, [spellbookCharacter, spellLimit, spellbookView, spellQuery, spellCircle, spellSchool, concentrationOnly]);
+      .filter((spell) => `${spell.name} ${spellName(spell, language)} ${spell.summary}`.toLowerCase().includes(spellQuery.trim().toLowerCase()));
+  }, [spellbookCharacter, spellLimit, spellbookView, spellQuery, spellCircle, spellSchool, concentrationOnly, language]);
 
   function updateResources(characterId, updater) {
     setState((old) => ({
@@ -129,6 +132,7 @@ export default function ResourcesScreen() {
     const character = state.characters.find((item) => item.id === characterId);
     if (!character) return;
     const result = castSpell(character, spellId, slotCircle);
+    const selectedSpell = spellById(spellId);
     setState((old) => ({
       ...old,
       characters: old.characters.map((item) =>
@@ -136,7 +140,31 @@ export default function ResourcesScreen() {
       ),
     }));
     setCastingSpellId(null);
-    Alert.alert('Conjuração', result.reason);
+    Alert.alert(tt('Conjuração'), spellCastMessage(result, selectedSpell, slotCircle));
+  }
+
+  function spellCastMessage(result, selectedSpell, slotCircle = null) {
+    switch (result.code) {
+      case 'cantrip-cast':
+        return tt('Truque conjurado sem gastar espaço.');
+      case 'spell-cast':
+        return tt('{spell} conjurada usando espaço de {circle}º círculo.', {
+          spell: spellName(selectedSpell, language),
+          circle: result.slotCircle || slotCircle || selectedSpell?.circle,
+        });
+      case 'spell-not-found':
+        return tt('Magia não encontrada.');
+      case 'spell-locked':
+        return tt('Esta magia ainda não foi desbloqueada. Limite atual: {circle}º círculo.', { circle: result.maxCircle });
+      case 'no-unlocked-spell-circles':
+        return tt('Este personagem ainda não possui círculos de magia desbloqueados.');
+      case 'no-slot-for-circle':
+        return tt('Nenhum espaço de {circle}º círculo disponível.', { circle: result.slotCircle });
+      case 'no-compatible-slot':
+        return tt('Nenhum espaço compatível disponível.');
+      default:
+        return result.reason;
+    }
   }
 
   function requestConjure(characterId, spell) {
@@ -160,26 +188,26 @@ export default function ResourcesScreen() {
     setSpellbookView('mine');
   }
 
-  if (!state) return <Text style={styles.loading}>Carregando recursos...</Text>;
+  if (!state) return <Text style={styles.loading}>{tt('Carregando recursos...')}</Text>;
 
   return (
     <ScrollView contentContainerStyle={styles.content}>
-      <Text style={styles.eyebrow}>PROGRESSÃO AUTOMÁTICA</Text>
-      <Text style={styles.title}>Recursos e magias</Text>
-      <Text style={styles.subtitle}>Classe e XP determinam automaticamente recursos e espaços de magia.</Text>
+      <Text style={styles.eyebrow}>{tt('PROGRESSÃO AUTOMÁTICA')}</Text>
+      <Text style={styles.title}>{tt('Recursos e magias')}</Text>
+      <Text style={styles.subtitle}>{tt('Classe e XP determinam automaticamente recursos e espaços de magia.')}</Text>
       <View style={styles.globalActions}>
         <TouchableOpacity style={styles.globalRest} onPress={() => restCharacter(null, RECOVERY.SHORT)}>
-          <Text style={styles.restText}>Descanso curto para todos</Text>
+          <Text style={styles.restText}>{tt('Descanso curto para todos')}</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.globalRest} onPress={() => restCharacter(null, RECOVERY.LONG)}>
-          <Text style={styles.restText}>Descanso longo para todos</Text>
+          <Text style={styles.restText}>{tt('Descanso longo para todos')}</Text>
         </TouchableOpacity>
       </View>
 
       {characters.length === 0 && (
         <View style={styles.empty}>
-          <Text style={styles.cardTitle}>Nenhum personagem criado</Text>
-          <Text style={styles.muted}>Crie personagens na aba Grupos para acompanhar seus recursos.</Text>
+          <Text style={styles.cardTitle}>{tt('Nenhum personagem criado')}</Text>
+          <Text style={styles.muted}>{tt('Crie personagens na aba Grupos para acompanhar seus recursos.')}</Text>
         </View>
       )}
 
@@ -199,9 +227,9 @@ export default function ResourcesScreen() {
             </View>
             <View style={styles.flex}>
               <Text style={styles.cardTitle}>{character.name}</Text>
-              <Text style={styles.muted}>{character.classKey} · nível {levelFromXp(character.xp)}</Text>
+              <Text style={styles.muted}>{term(character.classKey)} {'\u00b7'} {tt('N\u00edvel')} {levelFromXp(character.xp)}</Text>
               <Text style={[styles.summaryValue, depleted > 0 && styles.summaryWarning]}>
-                {available}/{maximum} usos disponíveis · {depleted} esgotados
+                {available}/{maximum} {tt('usos dispon\u00edveis')} {'\u00b7'} {depleted} {tt('esgotados')}
               </Text>
             </View>
             <Text style={styles.spellbookArrow}>›</Text>
@@ -213,15 +241,15 @@ export default function ResourcesScreen() {
         <View key={character.id} style={styles.card}>
           {characters.length > 1 && (
             <TouchableOpacity style={styles.backButton} onPress={() => setSelectedResourceCharacterId(null)}>
-              <Text style={styles.backText}>‹ Todos os personagens</Text>
+              <Text style={styles.backText}>‹ {tt('Todos os personagens')}</Text>
             </TouchableOpacity>
           )}
           <Text style={styles.cardTitle}>{character.name}</Text>
-          <Text style={styles.muted}>{character.classKey} · nível {levelFromXp(character.xp)} · {character.xp} XP</Text>
+          <Text style={styles.muted}>{term(character.classKey)} {'\u00b7'} {tt('N\u00edvel')} {levelFromXp(character.xp)} {'\u00b7'} {character.xp} XP</Text>
 
           <View style={styles.tokenRow}>
-            <Token label="Inspiração" value={character.inspiration || 0} onMinus={() => changeToken(character.id, 'inspiration', -1)} onPlus={() => changeToken(character.id, 'inspiration', 1)} />
-            <Token label="Pontos de Enredo" value={character.plotPoints || 0} onMinus={() => changeToken(character.id, 'plotPoints', -1)} onPlus={() => changeToken(character.id, 'plotPoints', 1)} />
+            <Token label={tt('Inspira\u00e7\u00e3o')} value={character.inspiration || 0} onMinus={() => changeToken(character.id, 'inspiration', -1)} onPlus={() => changeToken(character.id, 'inspiration', 1)} />
+            <Token label={tt('Pontos de Enredo')} value={character.plotPoints || 0} onMinus={() => changeToken(character.id, 'plotPoints', -1)} onPlus={() => changeToken(character.id, 'plotPoints', 1)} />
           </View>
 
           <TouchableOpacity
@@ -232,21 +260,21 @@ export default function ResourcesScreen() {
             }}
           >
             <View style={styles.flex}>
-              <Text style={styles.spellbookTitle}>Grimório</Text>
+              <Text style={styles.spellbookTitle}>{tt('Grim\u00f3rio')}</Text>
               <Text style={styles.muted}>
-                {character.spellcasting?.knownSpellIds?.length || 0} conhecidas · {character.spellcasting?.preparedSpellIds?.length || 0} preparadas
+                {character.spellcasting?.knownSpellIds?.length || 0} {tt('conhecidas')} {'\u00b7'} {character.spellcasting?.preparedSpellIds?.length || 0} {tt('preparadas')}
               </Text>
             </View>
             <Text style={styles.spellbookArrow}>›</Text>
           </TouchableOpacity>
 
           {(character.resources || []).length === 0 ? (
-            <Text style={styles.noResources}>Esta classe não possui recursos automáticos neste nível.</Text>
+            <Text style={styles.noResources}>{tt('Esta classe n\u00e3o possui recursos autom\u00e1ticos neste n\u00edvel.')}</Text>
           ) : character.resources.map((item) => (
             <View key={item.id} style={styles.resource}>
               <View style={styles.flex}>
-                <Text style={styles.resourceName}>{item.name}</Text>
-                <Text style={styles.muted}>Recupera em descanso {normalizeRecovery(item.recovery) === RECOVERY.SHORT ? 'curto' : 'longo'}</Text>
+                <Text style={styles.resourceName}>{resourceName(item.name, language)}</Text>
+                <Text style={styles.muted}>{tt('Recupera em descanso')} {normalizeRecovery(item.recovery) === RECOVERY.SHORT ? tt('curto') : tt('longo')}</Text>
               </View>
               <View style={styles.resourceControls}>
                 <TouchableOpacity style={styles.control} onPress={() => updateResources(character.id, (items) => spendResource(items, item.id, -1))}>
@@ -257,10 +285,10 @@ export default function ResourcesScreen() {
                   <Text style={styles.controlText}>+</Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.textControl} onPress={() => updateResources(character.id, (items) => items.map((resource) => resource.id === item.id ? { ...resource, current: 0 } : resource))}>
-                  <Text style={styles.textControlLabel}>Usou</Text>
+                  <Text style={styles.textControlLabel}>{tt('Usou')}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.textControl} onPress={() => updateResources(character.id, (items) => items.map((resource) => resource.id === item.id ? { ...resource, current: resource.max } : resource))}>
-                  <Text style={styles.textControlLabel}>Cheio</Text>
+                  <Text style={styles.textControlLabel}>{tt('Cheio')}</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -268,10 +296,10 @@ export default function ResourcesScreen() {
 
           <View style={styles.actions}>
             <TouchableOpacity style={styles.rest} onPress={() => restCharacter(character.id, RECOVERY.SHORT)}>
-              <Text style={styles.restText}>Descanso curto</Text>
+              <Text style={styles.restText}>{tt('Descanso curto')}</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.rest} onPress={() => restCharacter(character.id, RECOVERY.LONG)}>
-              <Text style={styles.restText}>Descanso longo</Text>
+              <Text style={styles.restText}>{tt('Descanso longo')}</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -282,9 +310,9 @@ export default function ResourcesScreen() {
           <View style={styles.spellbookSheet}>
             <View style={styles.sheetHeader}>
               <View style={styles.flex}>
-                <Text style={styles.cardTitle}>Grimório de {spellbookCharacter?.name}</Text>
+                <Text style={styles.cardTitle}>{tt('Grim\u00f3rio de {name}', { name: spellbookCharacter?.name })}</Text>
                 <Text style={styles.muted}>
-                  {spellbookCharacter?.classKey} · {spellLimit > 0 ? `liberado ate ${spellLimit}º circulo` : 'sem magias liberadas neste nivel'}
+                  {term(spellbookCharacter?.classKey)} {'\u00b7'} {spellLimit > 0 ? tt('liberado até {circle}º círculo', { circle: spellLimit }) : tt('sem magias liberadas neste nível')}
                 </Text>
               </View>
               <TouchableOpacity style={styles.closeIcon} onPress={closeSpellbook}>
@@ -294,10 +322,10 @@ export default function ResourcesScreen() {
 
             <View style={styles.segmented}>
               <TouchableOpacity style={[styles.segment, spellbookView === 'mine' && styles.segmentActive]} onPress={() => setSpellbookView('mine')}>
-                <Text style={[styles.segmentText, spellbookView === 'mine' && styles.segmentTextActive]}>Minhas magias</Text>
+                <Text style={[styles.segmentText, spellbookView === 'mine' && styles.segmentTextActive]}>{tt('Minhas magias')}</Text>
               </TouchableOpacity>
               <TouchableOpacity style={[styles.segment, spellbookView === 'catalog' && styles.segmentActive]} onPress={() => setSpellbookView('catalog')}>
-                <Text style={[styles.segmentText, spellbookView === 'catalog' && styles.segmentTextActive]}>Adicionar magia</Text>
+                <Text style={[styles.segmentText, spellbookView === 'catalog' && styles.segmentTextActive]}>{tt('Adicionar magia')}</Text>
               </TouchableOpacity>
             </View>
 
@@ -305,24 +333,24 @@ export default function ResourcesScreen() {
               style={styles.search}
               value={spellQuery}
               onChangeText={setSpellQuery}
-              placeholder="Buscar por nome ou efeito"
+              placeholder={tt('Buscar por nome ou efeito')}
               placeholderTextColor={colors.textMuted}
             />
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterStrip}>
               {availableSpellCircles.map((circle) => (
                 <TouchableOpacity key={circle} style={[styles.filterChip, spellCircle === circle && styles.filterChipActive]} onPress={() => setSpellCircle(circle)}>
-                  <Text style={[styles.filterText, spellCircle === circle && styles.filterTextActive]}>{circle === 'Todos' ? 'Todos' : circle === 0 ? 'Truques' : `${circle}º`}</Text>
+                  <Text style={[styles.filterText, spellCircle === circle && styles.filterTextActive]}>{spellCircleLabel(circle, language)}</Text>
                 </TouchableOpacity>
               ))}
             </ScrollView>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterStrip}>
               {SPELL_SCHOOLS.map((school) => (
                 <TouchableOpacity key={school} style={[styles.filterChip, spellSchool === school && styles.filterChipActive]} onPress={() => setSpellSchool(school)}>
-                  <Text style={[styles.filterText, spellSchool === school && styles.filterTextActive]}>{school}</Text>
+                  <Text style={[styles.filterText, spellSchool === school && styles.filterTextActive]}>{term(school)}</Text>
                 </TouchableOpacity>
               ))}
               <TouchableOpacity style={[styles.filterChip, concentrationOnly && styles.filterChipActive]} onPress={() => setConcentrationOnly((value) => !value)}>
-                <Text style={[styles.filterText, concentrationOnly && styles.filterTextActive]}>Concentração</Text>
+                <Text style={[styles.filterText, concentrationOnly && styles.filterTextActive]}>{tt('Concentra\u00e7\u00e3o')}</Text>
               </TouchableOpacity>
             </ScrollView>
 
@@ -330,8 +358,8 @@ export default function ResourcesScreen() {
               {visibleSpells.length === 0 && (
                 <Text style={styles.noResources}>
                   {spellbookView === 'mine'
-                    ? 'Nenhuma magia disponivel neste nivel. Abra Adicionar magia quando liberar novos circulos.'
-                    : 'Nenhuma magia encontrada para os circulos liberados deste personagem.'}
+                    ? tt('Nenhuma magia disponível neste nível. Abra Adicionar magia quando liberar novos círculos.')
+                    : tt('Nenhuma magia encontrada para os círculos liberados deste personagem.')}
                 </Text>
               )}
               {visibleSpells.map((spell) => {
@@ -341,27 +369,27 @@ export default function ResourcesScreen() {
                   <View key={spell.id} style={styles.spellCard}>
                     <TouchableOpacity style={styles.flex} onPress={() => setSpellDetailId(spell.id)}>
                       <View style={styles.spellTitleRow}>
-                        <Text style={styles.resourceName}>{spell.name}</Text>
+                        <Text style={styles.resourceName}>{spellName(spell, language)}</Text>
                         {spell.concentration && <Text style={styles.ruleBadge}>CONC.</Text>}
                         {spell.ritual && <Text style={styles.ruleBadge}>RITUAL</Text>}
                       </View>
                       <Text style={styles.muted}>
-                        {spell.circle === 0 ? 'Truque' : `${spell.circle}º círculo`} · {spell.school} · {spell.castingTime}
+                        {spellCircleLabel(spell.circle, language)} {'\u00b7'} {term(spell.school)} {'\u00b7'} {spell.castingTime}
                       </Text>
-                      <Text style={styles.spellSummary}>{spell.summary}</Text>
+                      <Text style={styles.spellSummary}>{spellSummary(spell, language)}</Text>
                     </TouchableOpacity>
                     <View style={styles.spellActions}>
                       {spellbookView === 'catalog' ? (
                         <TouchableOpacity style={[styles.smallAction, known && styles.smallActionActive]} onPress={() => updateSpellbook(spellbookCharacter.id, (value) => toggleKnownSpell(value, spell.id))}>
-                          <Text style={[styles.smallActionText, known && styles.smallActionTextActive]}>{known ? 'Remover' : 'Adicionar'}</Text>
+                          <Text style={[styles.smallActionText, known && styles.smallActionTextActive]}>{known ? tt('Remover') : tt('Adicionar')}</Text>
                         </TouchableOpacity>
                       ) : (
                         <>
                           <TouchableOpacity style={[styles.smallAction, prepared && styles.smallActionActive]} onPress={() => updateSpellbook(spellbookCharacter.id, (value) => togglePreparedSpell(value, spell.id))}>
-                            <Text style={[styles.smallActionText, prepared && styles.smallActionTextActive]}>{prepared ? 'Preparada' : 'Preparar'}</Text>
+                            <Text style={[styles.smallActionText, prepared && styles.smallActionTextActive]}>{prepared ? tt('Preparada') : tt('Preparar')}</Text>
                           </TouchableOpacity>
                           <TouchableOpacity style={styles.castAction} onPress={() => requestConjure(spellbookCharacter.id, spell)}>
-                            <Text style={styles.castText}>Conjurar</Text>
+                            <Text style={styles.castText}>{tt('Conjurar')}</Text>
                           </TouchableOpacity>
                         </>
                       )}
@@ -377,12 +405,12 @@ export default function ResourcesScreen() {
       <Modal visible={Boolean(castingSpell && spellbookCharacter)} transparent animationType="fade" onRequestClose={() => setCastingSpellId(null)}>
         <View style={styles.detailBackground}>
           <View style={styles.detailCard}>
-            <Text style={styles.eyebrow}>CONJURAR MAGIA</Text>
-            <Text style={styles.detailTitle}>{castingSpell?.name}</Text>
-            <Text style={styles.muted}>Escolha qual espaço de magia será consumido.</Text>
+            <Text style={styles.eyebrow}>{tt('CONJURAR MAGIA')}</Text>
+            <Text style={styles.detailTitle}>{spellName(castingSpell, language)}</Text>
+            <Text style={styles.muted}>{tt('Escolha qual espaço de magia será consumido.')}</Text>
             <View style={styles.castLevelList}>
               {castingOptions.length === 0 ? (
-                <Text style={styles.noResources}>Nenhum espaço compatível disponível.</Text>
+                <Text style={styles.noResources}>{tt('Nenhum espaço compatível disponível.')}</Text>
               ) : castingOptions.map((option) => (
                 <TouchableOpacity
                   key={option.circle}
@@ -392,7 +420,7 @@ export default function ResourcesScreen() {
                   <View style={styles.flex}>
                     <Text style={styles.castLevelTitle}>{option.circle}º círculo</Text>
                     <Text style={styles.muted}>
-                      {option.circle === castingSpell?.circle ? 'Círculo original' : 'Nível superior'} · {option.resourceName}
+                      {option.circle === castingSpell?.circle ? tt('Círculo original') : tt('Nível superior')} · {resourceName(option.resourceName, language)}
                     </Text>
                   </View>
                   <Text style={styles.castLevelCount}>{option.current} disp.</Text>
@@ -400,7 +428,7 @@ export default function ResourcesScreen() {
               ))}
             </View>
             <TouchableOpacity style={styles.detailClose} onPress={() => setCastingSpellId(null)}>
-              <Text style={styles.primaryText}>Cancelar</Text>
+              <Text style={styles.primaryText}>{tt('Cancelar')}</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -410,17 +438,17 @@ export default function ResourcesScreen() {
         <View style={styles.detailBackground}>
           <View style={styles.detailCard}>
             <Text style={styles.eyebrow}>{spellDetail?.source}</Text>
-            <Text style={styles.detailTitle}>{spellDetail?.name}</Text>
-            <Text style={styles.muted}>{spellDetail?.circle === 0 ? 'Truque' : `${spellDetail?.circle}º círculo`} · {spellDetail?.school}</Text>
+            <Text style={styles.detailTitle}>{spellName(spellDetail, language)}</Text>
+            <Text style={styles.muted}>{spellCircleLabel(spellDetail?.circle, language)} {'\u00b7'} {term(spellDetail?.school)}</Text>
             <View style={styles.detailGrid}>
-              <Detail label="Conjuração" value={spellDetail?.castingTime} />
-              <Detail label="Alcance" value={spellDetail?.range} />
-              <Detail label="Duração" value={spellDetail?.duration} />
-              <Detail label="Concentração" value={spellDetail?.concentration ? 'Sim' : 'Não'} />
+              <Detail label={tt('Conjuração')} value={spellDetail?.castingTime} />
+              <Detail label={tt('Alcance')} value={spellDetail?.range} />
+              <Detail label={tt('Duração')} value={spellDetail?.duration} />
+              <Detail label={tt('Concentração')} value={spellDetail?.concentration ? tt('Sim') : tt('Não')} />
             </View>
-            <Text style={styles.detailSummary}>{spellDetail?.summary}</Text>
+            <Text style={styles.detailSummary}>{spellSummary(spellDetail, language)}</Text>
             <TouchableOpacity style={styles.detailClose} onPress={() => setSpellDetailId(null)}>
-              <Text style={styles.primaryText}>Fechar</Text>
+              <Text style={styles.primaryText}>{tt('Fechar')}</Text>
             </TouchableOpacity>
           </View>
         </View>
