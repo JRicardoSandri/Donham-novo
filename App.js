@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { SafeAreaView, StatusBar, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import AppSplashScreen from './src/components/AppSplashScreen';
 import GroupsScreen from './src/screens/GroupsScreen';
 import ResourcesScreen from './src/screens/ResourcesScreen';
 import CombatScreen from './src/screens/CombatScreen';
@@ -20,26 +21,31 @@ export default function App() {
 function AppContent() {
   const { state, setState } = useCampaign();
   const [area, setArea] = useState('groups');
+  const [showSplash, setShowSplash] = useState(true);
+  const finishSplash = useCallback(() => setShowSplash(false), []);
   const language = activeLanguage(state?.settings);
 
   return (
-    <SafeAreaView style={styles.safe}>
-      <StatusBar barStyle="light-content" backgroundColor={colors.background} />
-      <View style={styles.screen}>
-        {area === 'groups' && <GroupsScreen language={language} />}
-        {area === 'resources' && <ResourcesScreen language={language} />}
-        {area === 'combat' && <CombatScreen language={language} />}
-        {area === 'inventory' && <InventoryScreen language={language} />}
-        {area === 'settings' && <SettingsScreen language={language} settings={state?.settings} onSettingsChange={setState} />}
-      </View>
-      <View style={styles.navigation}>
-        <NavButton symbol="♙" label={t('navCharacters', language)} active={area === 'groups'} onPress={() => setArea('groups')} />
-        <NavButton symbol="✦" label={t('navResources', language)} active={area === 'resources'} onPress={() => setArea('resources')} />
-        <NavButton symbol="⚔" label={t('navCombat', language)} active={area === 'combat'} onPress={() => setArea('combat')} />
-        <NavButton symbol="▣" label={t('navItems', language)} active={area === 'inventory'} onPress={() => setArea('inventory')} />
-        <NavButton symbol="⚙" label={t('navSettings', language)} active={area === 'settings'} onPress={() => setArea('settings')} />
-      </View>
-    </SafeAreaView>
+    <View style={styles.appRoot}>
+      <SafeAreaView style={styles.safe}>
+        <StatusBar barStyle="light-content" backgroundColor={colors.background} />
+        <View style={styles.screen}>
+          {area === 'groups' && <GroupsScreen language={language} />}
+          {area === 'resources' && <ResourcesScreen language={language} />}
+          {area === 'combat' && <CombatScreen language={language} />}
+          {area === 'inventory' && <InventoryScreen language={language} />}
+          {area === 'settings' && <SettingsScreen language={language} settings={state?.settings} onSettingsChange={setState} />}
+        </View>
+        <View style={styles.navigation}>
+          <NavButton symbol="♙" label={t('navCharacters', language)} active={area === 'groups'} onPress={() => setArea('groups')} />
+          <NavButton symbol="✦" label={t('navResources', language)} active={area === 'resources'} onPress={() => setArea('resources')} />
+          <NavButton symbol="⚔" label={t('navCombat', language)} active={area === 'combat'} onPress={() => setArea('combat')} />
+          <NavButton symbol="▣" label={t('navItems', language)} active={area === 'inventory'} onPress={() => setArea('inventory')} />
+          <NavButton symbol="⚙" label={t('navSettings', language)} active={area === 'settings'} onPress={() => setArea('settings')} />
+        </View>
+      </SafeAreaView>
+      {showSplash && <AppSplashScreen onFinish={finishSplash} />}
+    </View>
   );
 }
 
@@ -55,6 +61,7 @@ function NavButton({ symbol, label, active, onPress }) {
 }
 
 const styles = StyleSheet.create({
+  appRoot: { flex: 1, backgroundColor: colors.background },
   safe: { flex: 1, backgroundColor: colors.background },
   screen: { flex: 1 },
   navigation: { flexDirection: 'row', gap: 6, backgroundColor: colors.backgroundRaised, borderTopColor: colors.border, borderTopWidth: 1, paddingHorizontal: 10, paddingTop: 8, paddingBottom: 10, ...shadows.card },
