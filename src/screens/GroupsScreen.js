@@ -16,7 +16,7 @@ import { subclassById, subclassesForClass } from '../data/subclassProgression';
 import { createCharacter } from '../models/Character';
 import { createGroup } from '../models/Group';
 import { useCampaign } from '../services/CampaignContext';
-import { gameTerm, tr } from '../services/i18nService';
+import { featureText, gameTerm, tr } from '../services/i18nService';
 import {
   abilityModifier,
   carryingCapacity,
@@ -351,12 +351,12 @@ export default function GroupsScreen({ language = 'pt-BR' }) {
                       <Text style={styles.featureTitle}>{tt('Habilidades por nível')}</Text>
                       {progression.unlocked.map(([featureLevel, text]) => (
                         <Text key={`${character.id}-feature-${featureLevel}`} style={styles.featureText}>
-                          {tt('Nível')} {featureLevel}: {language === 'pt-BR' ? text : tt('Class feature unlocked. Check rules for details.')}
+                          {tt('Nível')} {featureLevel}: {featureText(text, language)}
                         </Text>
                       ))}
                       {progression.upcoming.length > 0 && (
                         <Text style={styles.nextFeature}>
-                          {tt('Próximo')}: {tt('Nível')} {progression.upcoming[0][0]} · {language === 'pt-BR' ? progression.upcoming[0][1] : tt('Next class feature. Check rules for details.')}
+                          {tt('Próximo')}: {tt('Nível')} {progression.upcoming[0][0]} · {featureText(progression.upcoming[0][1], language)}
                         </Text>
                       )}
                     </View>
@@ -367,12 +367,12 @@ export default function GroupsScreen({ language = 'pt-BR' }) {
                       <Text style={styles.featureTitle}>{tt('Habilidades raciais')}</Text>
                       {raceProgression.unlocked.map(([featureLevel, text]) => (
                         <Text key={`${character.id}-race-${featureLevel}`} style={styles.featureText}>
-                          {tt('Nível')} {featureLevel}: {language === 'pt-BR' ? text : tt('Racial trait unlocked. Check rules for details.')}
+                          {tt('Nível')} {featureLevel}: {featureText(text, language)}
                         </Text>
                       ))}
                       {raceProgression.upcoming.length > 0 && (
                         <Text style={styles.nextFeature}>
-                          {tt('Próximo')}: {tt('Nível')} {raceProgression.upcoming[0][0]} · {language === 'pt-BR' ? raceProgression.upcoming[0][1] : tt('Next racial trait. Check rules for details.')}
+                          {tt('Próximo')}: {tt('Nível')} {raceProgression.upcoming[0][0]} · {featureText(raceProgression.upcoming[0][1], language)}
                         </Text>
                       )}
                     </View>
