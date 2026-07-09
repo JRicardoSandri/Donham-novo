@@ -628,7 +628,13 @@ function CharacterModal({ draft, language, onChange, onSave, onClose }) {
             />
             <ScrollView style={styles.raceList}>
               {RACE_OPTIONS
-                .filter((option) => option.name.toLowerCase().includes(raceQuery.trim().toLowerCase()))
+                .filter((option) => {
+                  const query = raceQuery.trim().toLowerCase();
+                  if (!query) return true;
+                  return option.name.toLowerCase().includes(query)
+                    || term(option.name).toLowerCase().includes(query)
+                    || term(option.group).toLowerCase().includes(query);
+                })
                 .map((option, index, filtered) => (
                   <View key={option.name}>
                     {(index === 0 || filtered[index - 1].group !== option.group) && (
@@ -643,7 +649,7 @@ function CharacterModal({ draft, language, onChange, onSave, onClose }) {
                       }}
                     >
                       <Text style={[styles.raceOptionText, draft?.race === option.name && styles.raceOptionTextActive]}>
-                        {option.name}
+                        {term(option.name)}
                       </Text>
                     </TouchableOpacity>
                   </View>
