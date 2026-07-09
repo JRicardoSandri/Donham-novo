@@ -3,7 +3,7 @@ import { Alert, Modal, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity
 import { CONDITIONS } from '../data/conditions';
 import { CRITICAL_ERROR_TABLES, criticalErrorTableById, rollCriticalError as rollCriticalErrorFromTable } from '../data/criticalErrors';
 import { useCampaign } from '../services/CampaignContext';
-import { conditionName, conditionSummary, tr } from '../services/i18nService';
+import { conditionName, conditionSummary, criticalErrorText, gameTerm, tr } from '../services/i18nService';
 import {
   advanceTurn,
   applyParticipantHp,
@@ -426,6 +426,7 @@ export default function CombatScreen({ language = 'pt-BR' }) {
 
 function CriticalErrorModal({ language, visible, selectedTableId, result, onSelect, onRoll, onClose }) {
   const tt = (text, values = {}) => tr(text, language, values);
+  const term = (value) => gameTerm(value, language);
   const selectedTable = criticalErrorTableById(selectedTableId);
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
@@ -443,7 +444,7 @@ function CriticalErrorModal({ language, visible, selectedTableId, result, onSele
                   style={[styles.criticalOption, selected && styles.criticalOptionActive]}
                   onPress={() => onSelect(table.id)}
                 >
-                  <Text style={[styles.criticalOptionText, selected && styles.criticalOptionTextActive]}>{table.name}</Text>
+                  <Text style={[styles.criticalOptionText, selected && styles.criticalOptionTextActive]}>{term(table.name)}</Text>
                   <Text style={styles.muted}>{table.die}</Text>
                 </TouchableOpacity>
               );
@@ -454,9 +455,9 @@ function CriticalErrorModal({ language, visible, selectedTableId, result, onSele
           </TouchableOpacity>
           {result && (
             <View style={styles.criticalResult}>
-              <Text style={styles.criticalRoll}>{result.tableName} - {tt('resultado')} {result.roll}</Text>
-              <Text style={styles.criticalMeta}>{tt('Faixa')} {result.range} - {result.severity} ({result.chance})</Text>
-              <Text style={styles.criticalEffect}>{result.effect}</Text>
+              <Text style={styles.criticalRoll}>{term(result.tableName)} - {tt('resultado')} {result.roll}</Text>
+              <Text style={styles.criticalMeta}>{tt('Faixa')} {result.range} - {term(result.severity)} ({result.chance})</Text>
+              <Text style={styles.criticalEffect}>{criticalErrorText(result.effect, language)}</Text>
             </View>
           )}
           <TouchableOpacity style={styles.closeButton} onPress={onClose}>

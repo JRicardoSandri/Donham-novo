@@ -3,7 +3,7 @@ import { Alert, Modal, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity
 import { RECOVERY } from '../data/classProgression';
 import { SPELL_CIRCLES, SPELL_SCHOOLS, SPELLS, spellById } from '../data/spells';
 import { useCampaign } from '../services/CampaignContext';
-import { gameTerm, resourceName, spellCircleLabel, spellName, spellSummary, tr } from '../services/i18nService';
+import { gameTerm, resourceName, spellCircleLabel, spellMetaText, spellName, spellSummary, tr } from '../services/i18nService';
 import { normalizeRecovery, recoverResources, spendResource } from '../services/resourceService';
 import { levelFromXp } from '../services/rulesService';
 import { availableCastOptions, castSpell, maxAvailableSpellCircle, shouldAskForCastCircle, spellClassesForCharacter, toggleKnownSpell, togglePreparedSpell } from '../services/spellService';
@@ -370,11 +370,11 @@ export default function ResourcesScreen({ language = 'pt-BR' }) {
                     <TouchableOpacity style={styles.flex} onPress={() => setSpellDetailId(spell.id)}>
                       <View style={styles.spellTitleRow}>
                         <Text style={styles.resourceName}>{spellName(spell, language)}</Text>
-                        {spell.concentration && <Text style={styles.ruleBadge}>CONC.</Text>}
-                        {spell.ritual && <Text style={styles.ruleBadge}>RITUAL</Text>}
+                        {spell.concentration && <Text style={styles.ruleBadge}>{tt('Concentração')}</Text>}
+                        {spell.ritual && <Text style={styles.ruleBadge}>{tt('Ritual')}</Text>}
                       </View>
                       <Text style={styles.muted}>
-                        {spellCircleLabel(spell.circle, language)} {'\u00b7'} {term(spell.school)} {'\u00b7'} {spell.castingTime}
+                        {spellCircleLabel(spell.circle, language)} {'\u00b7'} {term(spell.school)} {'\u00b7'} {spellMetaText(spell.castingTime, language)}
                       </Text>
                       <Text style={styles.spellSummary}>{spellSummary(spell, language)}</Text>
                     </TouchableOpacity>
@@ -441,9 +441,9 @@ export default function ResourcesScreen({ language = 'pt-BR' }) {
             <Text style={styles.detailTitle}>{spellName(spellDetail, language)}</Text>
             <Text style={styles.muted}>{spellCircleLabel(spellDetail?.circle, language)} {'\u00b7'} {term(spellDetail?.school)}</Text>
             <View style={styles.detailGrid}>
-              <Detail label={tt('Conjuração')} value={spellDetail?.castingTime} />
-              <Detail label={tt('Alcance')} value={spellDetail?.range} />
-              <Detail label={tt('Duração')} value={spellDetail?.duration} />
+              <Detail label={tt('Conjuração')} value={spellMetaText(spellDetail?.castingTime, language)} />
+              <Detail label={tt('Alcance')} value={spellMetaText(spellDetail?.range, language)} />
+              <Detail label={tt('Duração')} value={spellMetaText(spellDetail?.duration, language)} />
               <Detail label={tt('Concentração')} value={spellDetail?.concentration ? tt('Sim') : tt('Não')} />
             </View>
             <Text style={styles.detailSummary}>{spellSummary(spellDetail, language)}</Text>

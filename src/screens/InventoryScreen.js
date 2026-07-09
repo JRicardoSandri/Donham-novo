@@ -2,7 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { Modal, ScrollView, StyleSheet, Switch, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { EQUIPMENT_CATALOG, EQUIPMENT_CATEGORIES } from '../data/equipmentCatalog';
 import { useCampaign } from '../services/CampaignContext';
-import { gameTerm, tr } from '../services/i18nService';
+import { gameTerm, itemDescription, itemName, itemRarity, tr } from '../services/i18nService';
 import {
   inventoryCapacity,
   normalizeCoins,
@@ -74,8 +74,8 @@ export default function InventoryScreen({ language = 'pt-BR' }) {
   const visibleCatalogItems = useMemo(
     () => catalogItems
       .filter((item) => catalogCategory === 'Todos' || item.category === catalogCategory)
-      .filter((item) => `${item.name} ${item.description} ${item.rarity || ''}`.toLowerCase().includes(catalogQuery.trim().toLowerCase())),
-    [catalogItems, catalogCategory, catalogQuery]
+      .filter((item) => `${item.name} ${itemName(item.name, language)} ${item.description} ${itemDescription(item.description, language)} ${item.rarity || ''} ${itemRarity(item.rarity || '', language)}`.toLowerCase().includes(catalogQuery.trim().toLowerCase())),
+    [catalogItems, catalogCategory, catalogQuery, language]
   );
 
   function saveItem() {
@@ -345,19 +345,19 @@ export default function InventoryScreen({ language = 'pt-BR' }) {
             {inventory.map((item) => (
               <View key={item.id} style={styles.item}>
                 <View style={styles.flex}>
-                  <Text style={styles.itemName}>{item.equipped ? '[E] ' : ''}{item.name}</Text>
+                  <Text style={styles.itemName}>{item.equipped ? '[E] ' : ''}{itemName(item.name, language)}</Text>
                   <Text style={styles.muted}>
                     {item.quantity} × {item.weight} kg = {(item.quantity * item.weight).toFixed(1)} kg
                   </Text>
                   {!!item.value && <Text style={styles.value}>{item.value} · {term(item.category || 'Personalizado')}</Text>}
                   {item.category === 'Itens Magicos' && (
                     <Text style={styles.value}>
-                      {item.rarity || tt('Raridade não informada')}
+                      {item.rarity ? itemRarity(item.rarity, language) : tt('Raridade não informada')}
                       {item.requiresAttunement ? ` - ${item.attuned ? tt('sintonizado') : tt('requer sintonização')}` : ''}
                       {item.charges?.max ? ` - ${tt('cargas')} ${item.charges.current}/${item.charges.max}` : ''}
                     </Text>
                   )}
-                  {!!item.description && <Text style={styles.description}>{item.description}</Text>}
+                  {!!item.description && <Text style={styles.description}>{itemDescription(item.description, language)}</Text>}
                 </View>
                 <TouchableOpacity style={styles.action} onPress={() => editItem(selectedCharacter.id, item)}>
                   <Text style={styles.actionText}>{tt('Editar')}</Text>
@@ -422,9 +422,9 @@ export default function InventoryScreen({ language = 'pt-BR' }) {
                     }}
                   >
                     <View style={styles.flex}>
-                      <Text style={styles.itemName}>{item.name}</Text>
+                      <Text style={styles.itemName}>{itemName(item.name, language)}</Text>
                       <Text style={styles.muted}>{term(item.category)} · {item.value} · {item.weight} kg</Text>
-                      <Text style={styles.description}>{item.description}</Text>
+                      <Text style={styles.description}>{itemDescription(item.description, language)}</Text>
                     </View>
                   </TouchableOpacity>
                 ))}

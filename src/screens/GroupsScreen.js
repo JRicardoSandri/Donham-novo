@@ -16,7 +16,7 @@ import { subclassById, subclassesForClass } from '../data/subclassProgression';
 import { createCharacter } from '../models/Character';
 import { createGroup } from '../models/Group';
 import { useCampaign } from '../services/CampaignContext';
-import { featureText, gameTerm, tr } from '../services/i18nService';
+import { featureText, gameTerm, subclassName, tr } from '../services/i18nService';
 import {
   abilityModifier,
   carryingCapacity,
@@ -303,7 +303,7 @@ export default function GroupsScreen({ language = 'pt-BR' }) {
               const progression = progressionFor(character.classKey, level);
               const raceProgression = raceProgressionFor(character.race, level);
               const subclass = subclassById(character.classKey, character.subclassKey);
-              const classLabel = subclass ? `${term(character.classKey)} (${subclass[1]})` : term(character.classKey);
+              const classLabel = subclass ? `${term(character.classKey)} (${subclassName(subclass[1], language)})` : term(character.classKey);
               const initiative = character.initiative ?? initiativeFromAttributes(character.attributes);
               const capacity = carryingCapacity(character.attributes, character.size);
               return (
@@ -315,7 +315,7 @@ export default function GroupsScreen({ language = 'pt-BR' }) {
                         {character.race ? term(character.race) : tt('Raça não informada')} · {classLabel} {tt('Nível')} {level}
                       </Text>
                       <Text style={styles.muted}>{tt('Jogador')}: {character.player || tt('Não informado')}</Text>
-                      {subclass && <Text style={styles.muted}>{tt('Subclasse')}: {subclass[1]}</Text>}
+                      {subclass && <Text style={styles.muted}>{tt('Subclasse')}: {subclassName(subclass[1], language)}</Text>}
                     </View>
                     <View style={styles.levelBadge}>
                       <Text style={styles.levelLabel}>{tt('NÍVEL')}</Text>
@@ -580,13 +580,13 @@ function CharacterModal({ draft, language, onChange, onSave, onClose }) {
               <>
                 <Text style={styles.fieldLabel}>{tt('Subclasse')}</Text>
                 <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.classStrip}>
-                  {subclassesForClass(draft?.classKey).map(([subclassId, subclassName]) => (
+                  {subclassesForClass(draft?.classKey).map(([subclassId, subclassLabel]) => (
                     <TouchableOpacity
                       key={subclassId}
                       style={[styles.classChip, draft?.subclassKey === subclassId && styles.classChipActive]}
                       onPress={() => update({ subclassKey: subclassId })}
                     >
-                      <Text style={[styles.classText, draft?.subclassKey === subclassId && styles.classTextActive]}>{subclassName}</Text>
+                      <Text style={[styles.classText, draft?.subclassKey === subclassId && styles.classTextActive]}>{subclassName(subclassLabel, language)}</Text>
                     </TouchableOpacity>
                   ))}
                 </ScrollView>
