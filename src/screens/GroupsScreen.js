@@ -326,7 +326,7 @@ export default function GroupsScreen({ language = 'pt-BR' }) {
                   <View style={styles.statsRow}>
                     <Stat label="Prof." value={signedModifier(proficiencyBonus(level))} />
                     <Stat label={tt('Iniciativa')} value={signedModifier(initiative)} />
-                    <Stat label="CA" value={character.armorClass || 10} />
+                    <Stat label={tt('CA')} value={character.armorClass || 10} />
                     <Stat label={tt('Desloc.')} value={`${character.speed || 9} m`} />
                   </View>
                   <View style={styles.statsRow}>
@@ -526,7 +526,7 @@ function CharacterModal({ draft, language, onChange, onSave, onClose }) {
             <Field label={tt('Alinhamento')} value={draft?.alignment} onChangeText={(alignment) => update({ alignment })} />
             <View style={styles.fieldRow}>
               <View style={styles.flex}>
-                <Field label="CA" value={draft?.armorClass} keyboardType="numeric" onChangeText={(armorClass) => update({ armorClass })} />
+                <Field label={tt('CA')} value={draft?.armorClass} keyboardType="numeric" onChangeText={(armorClass) => update({ armorClass })} />
               </View>
               <View style={styles.flex}>
                 <Field label={tt('Deslocamento (m)')} value={draft?.speed} keyboardType="numeric" onChangeText={(speed) => update({ speed })} />

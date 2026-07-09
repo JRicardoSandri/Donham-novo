@@ -225,7 +225,7 @@ export default function CombatScreen({ language = 'pt-BR' }) {
           <TextInput style={styles.input} value={enemy.name} onChangeText={(name) => setEnemy((old) => ({ ...old, name }))} placeholder={tt('Nome do inimigo')} placeholderTextColor={colors.textMuted} />
           <View style={styles.row}>
             <SmallField label={tt('PV')} value={enemy.hpMax} onChangeText={(hpMax) => setEnemy((old) => ({ ...old, hpMax }))} />
-            <SmallField label="CA" value={enemy.armorClass} onChangeText={(armorClass) => setEnemy((old) => ({ ...old, armorClass }))} />
+            <SmallField label={tt('CA')} value={enemy.armorClass} onChangeText={(armorClass) => setEnemy((old) => ({ ...old, armorClass }))} />
             <SmallField label={tt('INICIATIVA')} value={enemy.initiative} onChangeText={(initiative) => setEnemy((old) => ({ ...old, initiative }))} />
           </View>
           <TouchableOpacity style={styles.addEnemy} onPress={addEnemy}>
@@ -249,7 +249,7 @@ export default function CombatScreen({ language = 'pt-BR' }) {
                 <View style={styles.flex}>
                   <Text style={styles.cardTitle}>{participant.name}</Text>
                   <Text style={styles.muted}>
-                    {participant.type === 'enemy' ? tt('Inimigo') : tt('Personagem')} · CA {participant.armorClass}
+                    {participant.type === 'enemy' ? tt('Inimigo') : tt('Personagem')} · {tt('CA')} {participant.armorClass}
                   </Text>
                 </View>
                 <View style={styles.initiativeBox}>

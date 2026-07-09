@@ -75,7 +75,7 @@ export default function ResourcesScreen({ language = 'pt-BR' }) {
       .filter((spell) => spellCircle === 'Todos' || spell.circle === Number(spellCircle))
       .filter((spell) => spellSchool === 'Todas' || spell.school === spellSchool)
       .filter((spell) => !concentrationOnly || spell.concentration)
-      .filter((spell) => `${spell.name} ${spellName(spell, language)} ${spell.summary}`.toLowerCase().includes(spellQuery.trim().toLowerCase()));
+      .filter((spell) => `${spell.name} ${spellName(spell, language)} ${spell.summary} ${spellSummary(spell, language)}`.toLowerCase().includes(spellQuery.trim().toLowerCase()));
   }, [spellbookCharacter, spellLimit, spellbookView, spellQuery, spellCircle, spellSchool, concentrationOnly, language]);
 
   function updateResources(characterId, updater) {
@@ -437,7 +437,7 @@ export default function ResourcesScreen({ language = 'pt-BR' }) {
       <Modal visible={Boolean(spellDetail)} transparent animationType="fade" onRequestClose={() => setSpellDetailId(null)}>
         <View style={styles.detailBackground}>
           <View style={styles.detailCard}>
-            <Text style={styles.eyebrow}>{spellDetail?.source}</Text>
+            <Text style={styles.eyebrow}>{term(spellDetail?.source)}</Text>
             <Text style={styles.detailTitle}>{spellName(spellDetail, language)}</Text>
             <Text style={styles.muted}>{spellCircleLabel(spellDetail?.circle, language)} {'\u00b7'} {term(spellDetail?.school)}</Text>
             <View style={styles.detailGrid}>

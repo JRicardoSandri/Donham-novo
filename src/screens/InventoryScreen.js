@@ -2,7 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { Modal, ScrollView, StyleSheet, Switch, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { EQUIPMENT_CATALOG, EQUIPMENT_CATEGORIES } from '../data/equipmentCatalog';
 import { useCampaign } from '../services/CampaignContext';
-import { gameTerm, itemDescription, itemName, itemRarity, tr } from '../services/i18nService';
+import { gameTerm, itemDescription, itemName, itemRarity, itemValue, tr } from '../services/i18nService';
 import {
   inventoryCapacity,
   normalizeCoins,
@@ -345,11 +345,11 @@ export default function InventoryScreen({ language = 'pt-BR' }) {
             {inventory.map((item) => (
               <View key={item.id} style={styles.item}>
                 <View style={styles.flex}>
-                  <Text style={styles.itemName}>{item.equipped ? '[E] ' : ''}{itemName(item.name, language)}</Text>
+                  <Text style={styles.itemName}>{item.equipped ? `[${tt('E')}] ` : ''}{itemName(item.name, language)}</Text>
                   <Text style={styles.muted}>
                     {item.quantity} × {item.weight} kg = {(item.quantity * item.weight).toFixed(1)} kg
                   </Text>
-                  {!!item.value && <Text style={styles.value}>{item.value} · {term(item.category || 'Personalizado')}</Text>}
+                  {!!item.value && <Text style={styles.value}>{itemValue(item.value, language)} · {term(item.category || 'Personalizado')}</Text>}
                   {item.category === 'Itens Magicos' && (
                     <Text style={styles.value}>
                       {item.rarity ? itemRarity(item.rarity, language) : tt('Raridade não informada')}
@@ -423,7 +423,7 @@ export default function InventoryScreen({ language = 'pt-BR' }) {
                   >
                     <View style={styles.flex}>
                       <Text style={styles.itemName}>{itemName(item.name, language)}</Text>
-                      <Text style={styles.muted}>{term(item.category)} · {item.value} · {item.weight} kg</Text>
+                      <Text style={styles.muted}>{term(item.category)} · {itemValue(item.value, language)} · {item.weight} kg</Text>
                       <Text style={styles.description}>{itemDescription(item.description, language)}</Text>
                     </View>
                   </TouchableOpacity>
