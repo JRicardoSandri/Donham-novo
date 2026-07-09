@@ -264,7 +264,11 @@ export default function InventoryScreen({ language = 'pt-BR' }) {
                   placeholder={tt('Valor (ex.: 10 po)')}
                   placeholderTextColor={colors.textMuted}
                 />
-                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.categoryStrip}>
+                <View style={styles.filterHeader}>
+                  <Text style={styles.label}>{tt('Tipo do item')}</Text>
+                  <Text style={styles.filterStatus}>{tt('Selecionado: {type}', { type: term(form.category) })}</Text>
+                </View>
+                <View style={styles.categoryGrid}>
                   {EQUIPMENT_CATEGORIES.filter((category) => category !== 'Todos').map((category) => (
                     <TouchableOpacity
                       key={category}
@@ -274,7 +278,7 @@ export default function InventoryScreen({ language = 'pt-BR' }) {
                       <Text style={[styles.categoryText, form.category === category && styles.categoryTextActive]}>{term(category)}</Text>
                     </TouchableOpacity>
                   ))}
-                </ScrollView>
+                </View>
                 {form.category === 'Itens Magicos' && (
                   <View style={styles.magicPanel}>
                     <TextInput
@@ -345,7 +349,7 @@ export default function InventoryScreen({ language = 'pt-BR' }) {
                   <Text style={styles.muted}>
                     {item.quantity} × {item.weight} kg = {(item.quantity * item.weight).toFixed(1)} kg
                   </Text>
-                  {!!item.value && <Text style={styles.value}>{item.value} · {item.category || 'Personalizado'}</Text>}
+                  {!!item.value && <Text style={styles.value}>{item.value} · {term(item.category || 'Personalizado')}</Text>}
                   {item.category === 'Itens Magicos' && (
                     <Text style={styles.value}>
                       {item.rarity || tt('Raridade não informada')}
@@ -378,13 +382,20 @@ export default function InventoryScreen({ language = 'pt-BR' }) {
               placeholder={tt('Digite para filtrar itens')}
               placeholderTextColor={colors.textMuted}
             />
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.categoryStrip}>
+            <View style={styles.filterHeader}>
+              <Text style={styles.label}>{tt('Filtrar por tipo')}</Text>
+              <Text style={styles.filterStatus}>{tt('Filtro ativo: {type}', { type: term(catalogCategory) })}</Text>
+            </View>
+            <View style={styles.categoryGrid}>
               {catalogCategories.map((category) => (
                 <TouchableOpacity key={category} style={[styles.categoryChip, catalogCategory === category && styles.categoryChipActive]} onPress={() => setCatalogCategory(category)}>
                   <Text style={[styles.categoryText, catalogCategory === category && styles.categoryTextActive]}>{term(category)}</Text>
                 </TouchableOpacity>
               ))}
-            </ScrollView>
+            </View>
+            <Text style={styles.resultHint}>
+              {tt('{count} itens encontrados', { count: visibleCatalogItems.length })}
+            </Text>
             <ScrollView style={styles.catalogList}>
               {visibleCatalogItems.map((item) => (
                   <TouchableOpacity
@@ -490,6 +501,9 @@ const styles = StyleSheet.create({
   multiline: { minHeight: 72, textAlignVertical: 'top' },
   row: { flexDirection: 'row', gap: spacing.sm, alignItems: 'center' },
   label: { color: colors.textMuted, fontSize: 11, marginTop: spacing.md },
+  filterHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end', gap: spacing.sm, marginTop: spacing.sm },
+  filterStatus: { color: colors.primary, fontSize: 11, fontWeight: '900', flexShrink: 1, textAlign: 'right' },
+  resultHint: { color: colors.textMuted, fontSize: 11, fontWeight: '800', marginBottom: spacing.sm },
   equippedRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginVertical: spacing.md },
   secondary: { flex: 1, borderColor: colors.border, borderWidth: 1, borderRadius: radii.md, alignItems: 'center', padding: 12 },
   coinsPanel: { backgroundColor: colors.surfaceMuted, borderColor: colors.border, borderWidth: 1, borderRadius: radii.md, marginBottom: spacing.md, padding: spacing.md },
@@ -501,10 +515,10 @@ const styles = StyleSheet.create({
   catalogButtonText: { color: colors.primary, fontWeight: '900' },
   modalBackground: { flex: 1, backgroundColor: 'rgba(0,0,0,0.78)', justifyContent: 'flex-end' },
   catalogSheet: { maxHeight: '90%', backgroundColor: colors.surface, borderTopLeftRadius: radii.xl, borderTopRightRadius: radii.xl, padding: spacing.lg },
-  categoryStrip: { gap: spacing.sm, paddingVertical: spacing.md },
-  categoryChip: { borderColor: colors.border, borderWidth: 1, borderRadius: radii.pill, paddingHorizontal: 13, paddingVertical: 8 },
+  categoryGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm, paddingVertical: spacing.md },
+  categoryChip: { backgroundColor: colors.surfaceHighlight, borderColor: colors.borderStrong, borderWidth: 1, borderRadius: radii.pill, minWidth: 118, alignItems: 'center', paddingHorizontal: 16, paddingVertical: 11 },
   categoryChipActive: { backgroundColor: colors.primary, borderColor: colors.primary },
-  categoryText: { color: colors.textMuted, fontWeight: '800' },
+  categoryText: { color: colors.text, fontSize: 13, fontWeight: '900', textAlign: 'center' },
   categoryTextActive: { color: colors.background },
   catalogList: { marginBottom: spacing.md },
   catalogItem: { borderTopColor: colors.border, borderTopWidth: 1, paddingVertical: spacing.md },

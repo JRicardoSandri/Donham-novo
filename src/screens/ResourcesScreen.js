@@ -418,12 +418,12 @@ export default function ResourcesScreen({ language = 'pt-BR' }) {
                   onPress={() => conjure(spellbookCharacter.id, castingSpell.id, option.circle)}
                 >
                   <View style={styles.flex}>
-                    <Text style={styles.castLevelTitle}>{option.circle}º círculo</Text>
+                    <Text style={styles.castLevelTitle}>{spellCircleLabel(option.circle, language)}</Text>
                     <Text style={styles.muted}>
                       {option.circle === castingSpell?.circle ? tt('Círculo original') : tt('Nível superior')} · {resourceName(option.resourceName, language)}
                     </Text>
                   </View>
-                  <Text style={styles.castLevelCount}>{option.current} disp.</Text>
+                  <Text style={styles.castLevelCount}>{option.current} {tt('disp.')}</Text>
                 </TouchableOpacity>
               ))}
             </View>

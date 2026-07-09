@@ -224,7 +224,7 @@ export default function CombatScreen({ language = 'pt-BR' }) {
           <Text style={styles.sectionTitle}>{tt('Adicionar inimigo')}</Text>
           <TextInput style={styles.input} value={enemy.name} onChangeText={(name) => setEnemy((old) => ({ ...old, name }))} placeholder={tt('Nome do inimigo')} placeholderTextColor={colors.textMuted} />
           <View style={styles.row}>
-            <SmallField label="PV" value={enemy.hpMax} onChangeText={(hpMax) => setEnemy((old) => ({ ...old, hpMax }))} />
+            <SmallField label={tt('PV')} value={enemy.hpMax} onChangeText={(hpMax) => setEnemy((old) => ({ ...old, hpMax }))} />
             <SmallField label="CA" value={enemy.armorClass} onChangeText={(armorClass) => setEnemy((old) => ({ ...old, armorClass }))} />
             <SmallField label={tt('INICIATIVA')} value={enemy.initiative} onChangeText={(initiative) => setEnemy((old) => ({ ...old, initiative }))} />
           </View>
@@ -253,7 +253,7 @@ export default function CombatScreen({ language = 'pt-BR' }) {
                   </Text>
                 </View>
                 <View style={styles.initiativeBox}>
-                  <Text style={styles.miniLabel}>INIT</Text>
+                  <Text style={styles.miniLabel}>{tt('INIT')}</Text>
                   <TextInput
                     style={styles.initiativeInput}
                     keyboardType="numeric"
@@ -273,7 +273,7 @@ export default function CombatScreen({ language = 'pt-BR' }) {
 
               <View style={styles.hpBlock}>
                 <View style={styles.hpHeader}>
-                  <Text style={styles.hpValue}>{participant.hp.current} / {participant.hp.max} PV</Text>
+                  <Text style={styles.hpValue}>{participant.hp.current} / {participant.hp.max} {tt('PV')}</Text>
                   <Text style={styles.tempValue}>+{participant.hp.temporary || 0} {tt('temporários')}</Text>
                 </View>
                 <View style={styles.hpEditor}>

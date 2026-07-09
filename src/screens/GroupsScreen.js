@@ -272,7 +272,9 @@ export default function GroupsScreen({ language = 'pt-BR' }) {
                 onLongPress={() => setEditingGroup({ ...group })}
               >
                 <Text style={[styles.groupChipText, active && styles.groupChipTextActive]}>{group.name}</Text>
-                <Text style={styles.groupCount}>{group.characterIds.length} personagens</Text>
+                <Text style={styles.groupCount}>
+                  {group.characterIds.length} {group.characterIds.length === 1 ? tt('personagem') : tt('personagens')}
+                </Text>
               </TouchableOpacity>
             );
           })}
