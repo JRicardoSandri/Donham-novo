@@ -19,6 +19,33 @@ const DEFAULT_ATTRIBUTES = {
   charisma: 10,
 };
 
+const REMOVED_REGIONAL_TALENTS = new Set([
+  'especialista em extracao e forja',
+  'mestria de oficio',
+  'olhar do avaliador',
+  'artifice de campo',
+  'baluarte inabalavel',
+  'postura de rocha',
+  'presa de solo',
+  'selo de pedra',
+  'fortitude versatil',
+  'foco interior',
+  'esforco heroico',
+  'mestre geomante doutrina de solo sagrado',
+  'ressonancia terrestre',
+  'inercia elemental restricao total',
+]);
+
+function normalizedName(value) {
+  return String(value || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[()]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .toLowerCase();
+}
+
 export function createCharacter(input = {}) {
   const xp = Math.max(0, Number(input.xp) || 0);
   const hpMax = Math.max(1, Number(input.hp?.max ?? input.hpMax) || 1);
@@ -88,14 +115,15 @@ export function createCharacter(input = {}) {
   const automaticResources = resourcesForCharacter(character);
   const automaticIds = new Set(automaticResources.map((item) => item.id));
   const automaticNames = new Set(automaticResources.map((item) =>
-    String(item.name || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
+    normalizedName(item.name)
   ));
   const classResourceIds = new Set((CLASS_RESOURCES[character.classKey] || []).map((item) => item.id));
   const classResourceNames = new Set((CLASS_RESOURCES[character.classKey] || []).map((item) =>
-    String(item.name || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
+    normalizedName(item.name)
   ));
   const customResources = character.resources.filter((item) => {
-    const name = String(item.name || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+    const name = normalizedName(item.name);
+    if (REMOVED_REGIONAL_TALENTS.has(name)) return false;
     const automaticId = classResourceIds.has(item.id)
       || ALL_RACE_RESOURCE_IDS.has(item.id)
       || ALL_SUBCLASS_RESOURCE_IDS.has(item.id)

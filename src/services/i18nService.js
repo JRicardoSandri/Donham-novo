@@ -1409,8 +1409,37 @@ const NORMALIZED_TRANSLATIONS = {
   },
 };
 
-function keyOf(value) {
+function cleanEncoding(value) {
   return String(value || '')
+    .replace(/ÃƒÂ§/g, 'ç')
+    .replace(/ÃƒÂ£/g, 'ã')
+    .replace(/ÃƒÂ¡/g, 'á')
+    .replace(/ÃƒÂ¢/g, 'â')
+    .replace(/ÃƒÂª/g, 'ê')
+    .replace(/ÃƒÂ©/g, 'é')
+    .replace(/ÃƒÂ­/g, 'í')
+    .replace(/ÃƒÂ³/g, 'ó')
+    .replace(/ÃƒÂ´/g, 'ô')
+    .replace(/ÃƒÂº/g, 'ú')
+    .replace(/Ã§/g, 'ç')
+    .replace(/Ã£/g, 'ã')
+    .replace(/Ã¡/g, 'á')
+    .replace(/Ã¢/g, 'â')
+    .replace(/Ãª/g, 'ê')
+    .replace(/Ã©/g, 'é')
+    .replace(/Ã­/g, 'í')
+    .replace(/Ã³/g, 'ó')
+    .replace(/Ã´/g, 'ô')
+    .replace(/Ãº/g, 'ú')
+    .replace(/Ã/g, 'Á')
+    .replace(/Ã‰/g, 'É')
+    .replace(/Ã“/g, 'Ó')
+    .replace(/Â·/g, '·')
+    .replace(/Âº/g, 'º');
+}
+
+function keyOf(value) {
+  return cleanEncoding(value)
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
     .toLowerCase()
@@ -1428,6 +1457,45 @@ function normalizedLookup(bucket, value, language) {
 
 const ITEM_REPLACEMENTS = {
   en: [
+    ['Ábaco', 'Abacus'], ['Ácido', 'Acid'], ['Água Benta', 'Holy Water'], ['Algemas', 'Manacles'], ['Algibeira', 'Pouch'],
+    ['Aljava', 'Quiver'], ['Ampulheta', 'Hourglass'], ['Antídoto', 'Antitoxin'], ['Apito de Advertência', 'Signal Whistle'],
+    ['Aríete Portátil', 'Portable Ram'], ['Armadilha de Caça', 'Hunting Trap'], ['Arpéu', 'Grappling Hook'], ['Balança de Mercador', "Merchant's Scale"],
+    ['Balde', 'Bucket'], ['Barril', 'Barrel'], ['Baú', 'Chest'], ['Bolsa de Componentes', 'Component Pouch'], ['Caixa de Fogo', 'Tinderbox'],
+    ['Caneca', 'Mug'], ['Caneta Tinteiro', 'Ink Pen'], ['Cantil', 'Waterskin'], ['Cesto', 'Basket'], ['Cobertor de Inverno', 'Winter Blanket'],
+    ['Corda de Cânhamo', 'Hempen Rope'], ['Corda de Seda', 'Silk Rope'], ['Corrente', 'Chain'], ['Equipamento de Pescaria', 'Fishing Tackle'],
+    ['Escada', 'Ladder'], ['Esferas', 'Ball Bearings'], ['Espelho de Aço', 'Steel Mirror'], ['Estrepes', 'Caltrops'], ['Fechadura', 'Lock'],
+    ['Foco Arcano', 'Arcane Focus'], ['Bastão', 'Rod'], ['Cristal', 'Crystal'], ['Orbe', 'Orb'], ['Fogo Alquímico', "Alchemist's Fire"],
+    ['Frasco', 'Flask'], ['Garrafa de Vidro', 'Glass Bottle'], ['Giz', 'Chalk'], ['Grimório', 'Spellbook'], ['Jarra', 'Jug'],
+    ['Kit de Escalada', "Climber's Kit"], ['Kit de Primeiros Socorros', "Healer's Kit"], ['Lâmpada', 'Lamp'], ['Lanterna Coberta', 'Hooded Lantern'],
+    ['Lanterna Furta-Fogo', 'Bullseye Lantern'], ['Lente de Aumento', 'Magnifying Glass'], ['Livro', 'Book'], ['Luneta', 'Spyglass'],
+    ['Marreta', 'Sledgehammer'], ['Balas de Funda', 'Sling Bullets'], ['Flechas', 'Arrows'], ['Virotes', 'Crossbow Bolts'], ['Óleo', 'Oil'],
+    ['Pá', 'Shovel'], ['Panela de Ferro', 'Iron Pot'], ['Papel', 'Paper'], ['Pé de Cabra', 'Crowbar'], ['Pedra de Amolar', 'Whetstone'],
+    ['Perfume', 'Perfume'], ['Picareta de Minerador', "Miner's Pick"], ['Píton', 'Piton'], ['Porta Mapas/Pergaminhos', 'Map/Scroll Case'],
+    ['Pregos de Ferro', 'Iron Spikes'], ['Rações de Viagem', 'Rations'], ['Roldana e Polia', 'Block and Tackle'], ['Roupas Comuns', 'Common Clothes'],
+    ['Roupas de Viajante', "Traveler's Clothes"], ['Roupas Finas', 'Fine Clothes'], ['Sabão', 'Soap'], ['Saco de Dormir', 'Bedroll'],
+    ['Símbolo Sagrado', 'Holy Symbol'], ['Amuleto', 'Amulet'], ['Emblema', 'Emblem'], ['Relicário', 'Reliquary'],
+    ['Tenda para Duas Pessoas', 'Two-Person Tent'], ['Tocha', 'Torch'], ['Tinta', 'Ink'], ['Vara', 'Pole'], ['Vela', 'Candle'], ['Veneno Básico', 'Basic Poison'],
+    ['Ferramentas de Carpinteiro', "Carpenter's Tools"], ['Ferramentas de Cartógrafo', "Cartographer's Tools"], ['Ferramentas de Cartografo', "Cartographer's Tools"],
+    ['Ferramentas de Costureiro', "Weaver's Tools"], ['Ferramentas de Coureiro', "Leatherworker's Tools"], ['Ferramentas de Entalhador', "Woodcarver's Tools"],
+    ['Ferramentas de Ferreiro', "Smith's Tools"], ['Ferramentas de Funileiro', "Tinker's Tools"], ['Ferramentas de Joalheiro', "Jeweler's Tools"],
+    ['Ferramentas de Oleiro', "Potter's Tools"], ['Ferramentas de Pedreiro', "Mason's Tools"], ['Ferramentas de Pintor', "Painter's Supplies"],
+    ['Ferramentas de Sapateiro', "Cobbler's Tools"], ['Ferramentas de Vidreiro', "Glassblower's Tools"], ['Suprimentos de Alquimista', "Alchemist's Supplies"],
+    ['Suprimentos de Cervejeiro', "Brewer's Supplies"], ['Suprimentos de Caligrafia', "Calligrapher's Supplies"], ['Utensílios de Cozinheiro', "Cook's Utensils"],
+    ['Utensilios de Cozinheiro', "Cook's Utensils"], ['Ferramentas de Navegação', "Navigator's Tools"], ['Ferramentas de Navegacao', "Navigator's Tools"],
+    ['Ferramentas de Ladrão', "Thieves' Tools"], ['Ferramentas de Ladrao', "Thieves' Tools"], ['Alaúde', 'Lute'], ['Alaude', 'Lute'], ['Flauta de Pã', 'Pan Flute'],
+    ['Flauta de Pa', 'Pan Flute'], ['Gaita de Foles', 'Bagpipes'], ['Lira', 'Lyre'], ['Oboe', 'Shawm'], ['Tambor', 'Drum'], ['Violino', 'Viol'],
+    ['Xilofone', 'Dulcimer'], ['Kit de Disfarce', 'Disguise Kit'], ['Kit de Falsificação', 'Forgery Kit'], ['Kit de Falsificacao', 'Forgery Kit'],
+    ['Kit de Herbalismo', 'Herbalism Kit'], ['Baralho de Cartas', 'Playing Card Set'], ['Conjunto de Dados', 'Dice Set'], ['Jogo dos Três Dragões', 'Three-Dragon Ante Set'],
+    ['Jogo dos Tres Dragoes', 'Three-Dragon Ante Set'], ['Xadrez do Dragão', 'Dragonchess Set'], ['Xadrez do Dragao', 'Dragonchess Set'], ['Kit de Venenos', "Poisoner's Kit"],
+    ['Burro ou Mula', 'Donkey or Mule'], ['Camelo', 'Camel'], ['Cavalo de Guerra', 'Warhorse'], ['Cavalo de Montaria', 'Riding Horse'], ['Cavalo Pesado', 'Draft Horse'],
+    ['Elefante', 'Elephant'], ['Mastim', 'Mastiff'], ['Pônei', 'Pony'], ['Ponei', 'Pony'], ['Alforje', 'Saddlebags'], ['Armadura de Montaria', 'Barding'],
+    ['Estábulo', 'Stable'], ['Estabulo', 'Stable'], ['Freio e Rédea', 'Bit and Bridle'], ['Freio e Redea', 'Bit and Bridle'], ['Ração de Montaria', 'Feed'],
+    ['Racao de Montaria', 'Feed'], ['Sela Compacta', 'Pack Saddle'], ['Sela Exótica', 'Exotic Saddle'], ['Sela Exotica', 'Exotic Saddle'], ['Sela Militar', 'Military Saddle'],
+    ['Sela de Viagem', 'Riding Saddle'], ['Biga', 'Chariot'], ['Carroca', 'Cart'], ['Carruagem', 'Carriage'], ['Treno', 'Sled'], ['Barco de Quilha', 'Keelboat'],
+    ['Barco a Remo', 'Rowboat'], ['Dracar', 'Longship'], ['Galera', 'Galley'], ['Navio de Guerra', 'Warship'], ['Veleiro', 'Sailing Ship'],
+    ['Trigo', 'Wheat'], ['Farinha', 'Flour'], ['Galinha', 'Chicken'], ['Sal', 'Salt'], ['Ferro', 'Iron'], ['Lona', 'Canvas'], ['Tecido de Algodão', 'Cotton Cloth'],
+    ['Tecido de Algodao', 'Cotton Cloth'], ['Gengibre', 'Ginger'], ['Cabra', 'Goat'], ['Canela', 'Cinnamon'], ['Pimenta', 'Pepper'], ['Ovelha', 'Sheep'],
+    ['Cravos', 'Cloves'], ['Porco', 'Pig'], ['Linho', 'Linen'], ['Seda', 'Silk'], ['Vaca', 'Cow'], ['Açafrão', 'Saffron'], ['Acafrao', 'Saffron'], ['Boi', 'Ox'],
     ['Espada Longa', 'Longsword'], ['Espada Curta', 'Shortsword'], ['Espada Grande', 'Greatsword'],
     ['Espada', 'Sword'], ['Adaga', 'Dagger'], ['Azagaia', 'Javelin'], ['BordÃ£o', 'Quarterstaff'],
     ['Clava Grande', 'Greatclub'], ['Foice Curta', 'Sickle'], ['LanÃ§a Longa', 'Pike'], ['LanÃ§a de Montaria', 'Lance'], ['LanÃ§a', 'Spear'],
@@ -1495,9 +1563,78 @@ const ITEM_REPLACEMENTS = {
     ['bÃ´nus', 'bonus'],
     ['Consumivel', 'Consumable'],
     ['Consumível', 'Consumable'],
+    ['Ataque improvisado; ao acertar, causa 2d6 de dano ácido.', 'Improvised attack; on a hit, deals 2d6 acid damage.'],
+    ['Contra corruptor ou morto-vivo, causa 2d6 de dano radiante.', 'Against a fiend or undead, deals 2d6 radiant damage.'],
+    ['Prendem criatura Pequena ou Média; escapar ou quebrar exige teste.', 'Restrains a Small or Medium creature; escaping or breaking requires a check.'],
+    ['Concede vantagem contra veneno por 1 hora.', 'Grants advantage against poison for 1 hour.'],
+    ['Concede +4 em testes de Força para quebrar portas.', 'Grants +4 on Strength checks to break doors.'],
+    ['Possui 2 PV e pode ser rompida com teste de Força CD 17.', 'Has 2 HP and can be burst with a DC 17 Strength check.'],
+    ['Livro de 100 páginas adequado para armazenar magias.', 'A 100-page book suitable for storing spells.'],
+    ['Dez usos; estabiliza uma criatura a 0 PV sem teste de Medicina.', 'Ten uses; stabilizes a creature at 0 HP without a Medicine check.'],
+    ['Recupera 2d4 + 2 pontos de vida.', 'Restores 2d4 + 2 hit points.'],
+    ['Luz plena em 6 m e penumbra por mais 6 m; dura 1 hora.', 'Bright light in 6 m and dim light for another 6 m; lasts 1 hour.'],
+    ['Ferramenta de artesao', "Artisan's tool"],
+    ['Instrumentos para mapas e rotas.', 'Instruments for maps and routes.'],
+    ['Kit para costura e reparos em roupas.', 'Kit for sewing and repairing clothes.'],
+    ['Kit para trabalhar couro.', 'Kit for leatherworking.'],
+    ['Ferramentas para entalhe em madeira.', 'Tools for wood carving.'],
+    ['Ferramentas para forja e reparo de metal.', 'Tools for forging and metal repair.'],
+    ['Ferramentas para pequenos consertos.', 'Tools for small repairs.'],
+    ['Ferramentas para avaliar e reparar joias.', 'Tools for appraising and repairing jewelry.'],
+    ['Instrumento musical.', 'Musical instrument.'],
+    ['Conjunto de jogo.', 'Gaming set.'],
+    ['Montaria:', 'Mount:'],
+    ['deslocamento', 'speed'],
+    ['carga aproximada', 'approximate load'],
+    ['Animal treinado:', 'Trained animal:'],
+    ['Bolsas de carga para montaria.', 'Cargo bags for a mount.'],
+    ['Veiculo terrestre', 'Land vehicle'],
+    ['Veículo terrestre', 'Land vehicle'],
+    ['Veiculo aquatico', 'Water vehicle'],
+    ['Veículo aquático', 'Water vehicle'],
+    ['Bem comercial.', 'Trade good.'],
     ['Recupera PV conforme a regra da mesa.', 'Restores HP according to your table rule.'],
   ],
   es: [
+    ['Ábaco', 'Ábaco'], ['Ácido', 'Ácido'], ['Água Benta', 'Agua bendita'], ['Algemas', 'Grilletes'], ['Algibeira', 'Faltriquera'],
+    ['Aljava', 'Carcaj'], ['Ampulheta', 'Reloj de arena'], ['Antídoto', 'Antitoxina'], ['Apito de Advertência', 'Silbato de señales'],
+    ['Aríete Portátil', 'Ariete portátil'], ['Armadilha de Caça', 'Trampa de caza'], ['Arpéu', 'Garfio'], ['Balança de Mercador', 'Balanza de mercader'],
+    ['Balde', 'Cubo'], ['Barril', 'Barril'], ['Baú', 'Cofre'], ['Bolsa de Componentes', 'Bolsa de componentes'], ['Caixa de Fogo', 'Yesquero'],
+    ['Caneca', 'Jarra'], ['Caneta Tinteiro', 'Pluma'], ['Cantil', 'Odre'], ['Cesto', 'Cesta'], ['Cobertor de Inverno', 'Manta de invierno'],
+    ['Corda de Cânhamo', 'Cuerda de cáñamo'], ['Corda de Seda', 'Cuerda de seda'], ['Corrente', 'Cadena'], ['Equipamento de Pescaria', 'Aparejo de pesca'],
+    ['Escada', 'Escalera'], ['Esferas', 'Bolas de metal'], ['Espelho de Aço', 'Espejo de acero'], ['Estrepes', 'Abrojos'], ['Fechadura', 'Candado'],
+    ['Foco Arcano', 'Foco arcano'], ['Bastão', 'Vara'], ['Cristal', 'Cristal'], ['Orbe', 'Orbe'], ['Fogo Alquímico', 'Fuego de alquimista'],
+    ['Frasco', 'Frasco'], ['Garrafa de Vidro', 'Botella de vidrio'], ['Giz', 'Tiza'], ['Grimório', 'Libro de conjuros'], ['Jarra', 'Jarra'],
+    ['Kit de Escalada', 'Equipo de escalada'], ['Kit de Primeiros Socorros', 'Equipo de sanador'], ['Lâmpada', 'Lámpara'], ['Lanterna Coberta', 'Linterna con capucha'],
+    ['Lanterna Furta-Fogo', 'Linterna sorda'], ['Lente de Aumento', 'Lupa'], ['Livro', 'Libro'], ['Luneta', 'Catalejo'], ['Marreta', 'Almádena'],
+    ['Balas de Funda', 'Balas de honda'], ['Flechas', 'Flechas'], ['Virotes', 'Virotes'], ['Óleo', 'Aceite'], ['Pá', 'Pala'], ['Panela de Ferro', 'Olla de hierro'],
+    ['Papel', 'Papel'], ['Pé de Cabra', 'Palanca'], ['Pedra de Amolar', 'Piedra de afilar'], ['Perfume', 'Perfume'], ['Picareta de Minerador', 'Pico de minero'],
+    ['Píton', 'Pitón'], ['Porta Mapas/Pergaminhos', 'Estuche para mapas/pergaminos'], ['Pregos de Ferro', 'Clavos de hierro'], ['Rações de Viagem', 'Raciones'],
+    ['Roldana e Polia', 'Polea y aparejo'], ['Roupas Comuns', 'Ropas comunes'], ['Roupas de Viajante', 'Ropas de viajero'], ['Roupas Finas', 'Ropas finas'],
+    ['Sabão', 'Jabón'], ['Saco de Dormir', 'Saco de dormir'], ['Símbolo Sagrado', 'Símbolo sagrado'], ['Amuleto', 'Amuleto'], ['Emblema', 'Emblema'],
+    ['Relicário', 'Relicario'], ['Tenda para Duas Pessoas', 'Tienda para dos personas'], ['Tocha', 'Antorcha'], ['Tinta', 'Tinta'], ['Vara', 'Vara'],
+    ['Vela', 'Vela'], ['Veneno Básico', 'Veneno básico'],
+    ['Ferramentas de Carpinteiro', 'Herramientas de carpintero'], ['Ferramentas de Cartógrafo', 'Herramientas de cartógrafo'], ['Ferramentas de Cartografo', 'Herramientas de cartógrafo'],
+    ['Ferramentas de Costureiro', 'Herramientas de tejedor'], ['Ferramentas de Coureiro', 'Herramientas de peletero'], ['Ferramentas de Entalhador', 'Herramientas de tallista'],
+    ['Ferramentas de Ferreiro', 'Herramientas de herrero'], ['Ferramentas de Funileiro', 'Herramientas de hojalatero'], ['Ferramentas de Joalheiro', 'Herramientas de joyero'],
+    ['Ferramentas de Oleiro', 'Herramientas de alfarero'], ['Ferramentas de Pedreiro', 'Herramientas de albañil'], ['Ferramentas de Pintor', 'Suministros de pintor'],
+    ['Ferramentas de Sapateiro', 'Herramientas de zapatero'], ['Ferramentas de Vidreiro', 'Herramientas de vidriero'], ['Suprimentos de Alquimista', 'Suministros de alquimista'],
+    ['Suprimentos de Cervejeiro', 'Suministros de cervecero'], ['Suprimentos de Caligrafia', 'Suministros de calígrafo'], ['Utensílios de Cozinheiro', 'Utensilios de cocinero'],
+    ['Utensilios de Cozinheiro', 'Utensilios de cocinero'], ['Ferramentas de Navegação', 'Herramientas de navegante'], ['Ferramentas de Navegacao', 'Herramientas de navegante'],
+    ['Ferramentas de Ladrão', 'Herramientas de ladrón'], ['Ferramentas de Ladrao', 'Herramientas de ladrón'], ['Alaúde', 'Laúd'], ['Alaude', 'Laúd'], ['Flauta de Pã', 'Flauta de pan'],
+    ['Flauta de Pa', 'Flauta de pan'], ['Gaita de Foles', 'Gaita'], ['Lira', 'Lira'], ['Oboe', 'Chirimía'], ['Tambor', 'Tambor'], ['Violino', 'Viola'],
+    ['Xilofone', 'Dulcémele'], ['Kit de Disfarce', 'Kit de disfraz'], ['Kit de Falsificação', 'Kit de falsificación'], ['Kit de Falsificacao', 'Kit de falsificación'],
+    ['Kit de Herbalismo', 'Kit de herboristería'], ['Baralho de Cartas', 'Baraja'], ['Conjunto de Dados', 'Juego de dados'], ['Jogo dos Três Dragões', 'Juego de tres dragones'],
+    ['Jogo dos Tres Dragoes', 'Juego de tres dragones'], ['Xadrez do Dragão', 'Ajedrez del dragón'], ['Xadrez do Dragao', 'Ajedrez del dragón'], ['Kit de Venenos', 'Kit de venenos'],
+    ['Burro ou Mula', 'Burro o mula'], ['Camelo', 'Camello'], ['Cavalo de Guerra', 'Caballo de guerra'], ['Cavalo de Montaria', 'Caballo de monta'], ['Cavalo Pesado', 'Caballo de tiro'],
+    ['Elefante', 'Elefante'], ['Mastim', 'Mastín'], ['Pônei', 'Poni'], ['Ponei', 'Poni'], ['Alforje', 'Alforjas'], ['Armadura de Montaria', 'Barda'],
+    ['Estábulo', 'Establo'], ['Estabulo', 'Establo'], ['Freio e Rédea', 'Bocado y bridas'], ['Freio e Redea', 'Bocado y bridas'], ['Ração de Montaria', 'Pienso'],
+    ['Racao de Montaria', 'Pienso'], ['Sela Compacta', 'Silla de carga'], ['Sela Exótica', 'Silla exótica'], ['Sela Exotica', 'Silla exótica'], ['Sela Militar', 'Silla militar'],
+    ['Sela de Viagem', 'Silla de montar'], ['Biga', 'Carro'], ['Carroca', 'Carreta'], ['Carruagem', 'Carruaje'], ['Treno', 'Trineo'], ['Barco de Quilha', 'Barco de quilla'],
+    ['Barco a Remo', 'Bote de remos'], ['Dracar', 'Drakkar'], ['Galera', 'Galera'], ['Navio de Guerra', 'Buque de guerra'], ['Veleiro', 'Velero'],
+    ['Trigo', 'Trigo'], ['Farinha', 'Harina'], ['Galinha', 'Gallina'], ['Sal', 'Sal'], ['Ferro', 'Hierro'], ['Lona', 'Lona'], ['Tecido de Algodão', 'Tela de algodón'],
+    ['Tecido de Algodao', 'Tela de algodón'], ['Gengibre', 'Jengibre'], ['Cabra', 'Cabra'], ['Canela', 'Canela'], ['Pimenta', 'Pimienta'], ['Ovelha', 'Oveja'],
+    ['Cravos', 'Clavos'], ['Porco', 'Cerdo'], ['Linho', 'Lino'], ['Seda', 'Seda'], ['Vaca', 'Vaca'], ['Açafrão', 'Azafrán'], ['Acafrao', 'Azafrán'], ['Boi', 'Buey'],
     ['Espada Longa', 'Espada larga'], ['Espada Curta', 'Espada corta'], ['Espada Grande', 'Espadón'],
     ['Espada', 'Espada'], ['Adaga', 'Daga'], ['Azagaia', 'Jabalina'], ['BordÃ£o', 'Bastón'],
     ['Clava Grande', 'Gran clava'], ['Foice Curta', 'Hoz'], ['LanÃ§a Longa', 'Pica'], ['LanÃ§a de Montaria', 'Lanza de caballería'], ['LanÃ§a', 'Lanza'],
@@ -1562,14 +1699,44 @@ const ITEM_REPLACEMENTS = {
     ['mÃ¡gica', 'mágica'],
     ['Consumivel', 'Consumible'],
     ['Consumível', 'Consumible'],
+    ['Ataque improvisado; ao acertar, causa 2d6 de dano ácido.', 'Ataque improvisado; al impactar, causa 2d6 de daño de ácido.'],
+    ['Contra corruptor ou morto-vivo, causa 2d6 de dano radiante.', 'Contra infernales o muertos vivientes, causa 2d6 de daño radiante.'],
+    ['Prendem criatura Pequena ou Média; escapar ou quebrar exige teste.', 'Sujeta a una criatura Pequeña o Mediana; escapar o romperlo requiere una prueba.'],
+    ['Concede vantagem contra veneno por 1 hora.', 'Concede ventaja contra veneno durante 1 hora.'],
+    ['Concede +4 em testes de Força para quebrar portas.', 'Concede +4 a pruebas de Fuerza para romper puertas.'],
+    ['Possui 2 PV e pode ser rompida com teste de Força CD 17.', 'Tiene 2 PG y puede romperse con una prueba de Fuerza CD 17.'],
+    ['Livro de 100 páginas adequado para armazenar magias.', 'Libro de 100 páginas adecuado para almacenar conjuros.'],
+    ['Dez usos; estabiliza uma criatura a 0 PV sem teste de Medicina.', 'Diez usos; estabiliza a una criatura a 0 PG sin prueba de Medicina.'],
+    ['Recupera 2d4 + 2 pontos de vida.', 'Recupera 2d4 + 2 puntos de golpe.'],
+    ['Luz plena em 6 m e penumbra por mais 6 m; dura 1 hora.', 'Luz brillante en 6 m y luz tenue otros 6 m; dura 1 hora.'],
+    ['Ferramenta de artesao', 'Herramienta de artesano'],
+    ['Instrumentos para mapas e rotas.', 'Instrumentos para mapas y rutas.'],
+    ['Kit para costura e reparos em roupas.', 'Kit para costura y reparación de ropa.'],
+    ['Kit para trabalhar couro.', 'Kit para trabajar cuero.'],
+    ['Ferramentas para entalhe em madeira.', 'Herramientas para tallar madera.'],
+    ['Ferramentas para forja e reparo de metal.', 'Herramientas para forja y reparación de metal.'],
+    ['Ferramentas para pequenos consertos.', 'Herramientas para reparaciones pequeñas.'],
+    ['Ferramentas para avaliar e reparar joias.', 'Herramientas para valorar y reparar joyas.'],
+    ['Instrumento musical.', 'Instrumento musical.'],
+    ['Conjunto de jogo.', 'Juego.'],
+    ['Montaria:', 'Montura:'],
+    ['deslocamento', 'movimiento'],
+    ['carga aproximada', 'carga aproximada'],
+    ['Animal treinado:', 'Animal entrenado:'],
+    ['Bolsas de carga para montaria.', 'Bolsas de carga para montura.'],
+    ['Veiculo terrestre', 'Vehículo terrestre'],
+    ['Veículo terrestre', 'Vehículo terrestre'],
+    ['Veiculo aquatico', 'Vehículo acuático'],
+    ['Veículo aquático', 'Vehículo acuático'],
+    ['Bem comercial.', 'Mercancía.'],
     ['Recupera PV conforme a regra da mesa.', 'Recupera PG según la regla de la mesa.'],
   ],
 };
 
 function replaceKnownPhrases(text, language) {
   const normalizedLanguage = normalizeLanguage(language);
-  if (normalizedLanguage === 'pt-BR') return String(text || '');
-  let output = String(text || '');
+  let output = cleanEncoding(text);
+  if (normalizedLanguage === 'pt-BR') return output;
   (ITEM_REPLACEMENTS[normalizedLanguage] || ITEM_REPLACEMENTS.en).forEach(([from, to]) => {
     output = output.split(from).join(to);
   });
@@ -1689,7 +1856,7 @@ export function resourceName(name, language = 'pt-BR') {
 }
 
 export function itemName(name, language = 'pt-BR') {
-  return replaceKnownPhrases(gameTerm(name, language), language);
+  return replaceKnownPhrases(gameTerm(cleanEncoding(name), language), language);
 }
 
 export function itemDescription(description, language = 'pt-BR') {
@@ -1702,10 +1869,17 @@ export function itemRarity(rarity, language = 'pt-BR') {
 
 export function itemValue(value, language = 'pt-BR') {
   const normalizedLanguage = normalizeLanguage(language);
-  const text = String(value || '');
-  if (normalizedLanguage !== 'en') return text;
+  const text = cleanEncoding(value);
+  if (normalizedLanguage === 'pt-BR') return text;
+  if (normalizedLanguage === 'es') {
+    return text
+      .replace(/\bVariavel\b/g, 'Variable')
+      .replace(/\bVariável\b/g, 'Variable')
+      .replace(/\bEspecial\b/g, 'Especial');
+  }
   return text
     .replace(/\bVariavel\b/g, 'Variable')
+    .replace(/\bVariável\b/g, 'Variable')
     .replace(/\bEspecial\b/g, 'Special')
     .replace(/(\d[\d.,]*)\s*po\b/g, '$1 gp')
     .replace(/(\d[\d.,]*)\s*pp\b/g, '$1 sp')
@@ -1716,8 +1890,8 @@ export function itemValue(value, language = 'pt-BR') {
 
 export function spellMetaText(value, language = 'pt-BR') {
   const normalizedLanguage = normalizeLanguage(language);
-  if (normalizedLanguage === 'pt-BR') return String(value || '');
-  let output = String(value || '');
+  if (normalizedLanguage === 'pt-BR') return cleanEncoding(value);
+  let output = cleanEncoding(value);
   const replacements = normalizedLanguage === 'es'
     ? [
         ['Concentração', 'Concentración'], ['ConcentraÃ§Ã£o', 'Concentración'],
@@ -1745,8 +1919,8 @@ export function spellMetaText(value, language = 'pt-BR') {
 
 export function criticalErrorText(value, language = 'pt-BR') {
   const normalizedLanguage = normalizeLanguage(language);
-  if (normalizedLanguage === 'pt-BR') return String(value || '');
-  let output = String(value || '');
+  if (normalizedLanguage === 'pt-BR') return cleanEncoding(value);
+  let output = cleanEncoding(value);
   const replacements = normalizedLanguage === 'es'
     ? [
         ['Perde a Reacao ate o inicio do proximo turno.', 'Pierde la reacción hasta el inicio del próximo turno.'],

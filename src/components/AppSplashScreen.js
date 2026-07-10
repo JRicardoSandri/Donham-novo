@@ -22,46 +22,46 @@ export default function AppSplashScreen({ onFinish }) {
       onFinish?.();
     };
 
-    const fallback = setTimeout(finish, 1500);
+    const fallback = setTimeout(finish, 3200);
     const animation = Animated.parallel([
       Animated.timing(iconOpacity, {
         toValue: 1,
-        duration: 360,
+        duration: 1100,
         easing: Easing.out(Easing.cubic),
         useNativeDriver: true,
       }),
       Animated.sequence([
-        Animated.delay(300),
+        Animated.delay(900),
         Animated.timing(titleOpacity, {
           toValue: 1,
-          duration: 280,
+          duration: 520,
           easing: Easing.out(Easing.cubic),
           useNativeDriver: true,
         }),
       ]),
       Animated.sequence([
-        Animated.delay(520),
+        Animated.delay(1350),
         Animated.timing(lineOpacity, {
           toValue: 1,
-          duration: 260,
+          duration: 440,
           easing: Easing.out(Easing.cubic),
           useNativeDriver: true,
         }),
       ]),
       Animated.sequence([
-        Animated.delay(680),
+        Animated.delay(1700),
         Animated.timing(footerOpacity, {
           toValue: 1,
-          duration: 260,
+          duration: 520,
           easing: Easing.out(Easing.cubic),
           useNativeDriver: true,
         }),
       ]),
       Animated.sequence([
-        Animated.delay(1120),
+        Animated.delay(2800),
         Animated.timing(screenOpacity, {
           toValue: 0,
-          duration: 240,
+          duration: 380,
           easing: Easing.inOut(Easing.cubic),
           useNativeDriver: true,
         }),
