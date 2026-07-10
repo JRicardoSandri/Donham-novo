@@ -5,7 +5,6 @@ import GroupsScreen from './src/screens/GroupsScreen';
 import ResourcesScreen from './src/screens/ResourcesScreen';
 import CombatScreen from './src/screens/CombatScreen';
 import InventoryScreen from './src/screens/InventoryScreen';
-import HelpScreen from './src/screens/HelpScreen';
 import SettingsScreen from './src/screens/SettingsScreen';
 import { CampaignProvider, useCampaign } from './src/services/CampaignContext';
 import { activeLanguage, t } from './src/services/i18nService';
@@ -35,7 +34,6 @@ function AppContent() {
           {area === 'resources' && <ResourcesScreen language={language} />}
           {area === 'combat' && <CombatScreen language={language} />}
           {area === 'inventory' && <InventoryScreen language={language} />}
-          {area === 'help' && <HelpScreen language={language} />}
           {area === 'settings' && <SettingsScreen language={language} settings={state?.settings} onSettingsChange={setState} />}
         </View>
         <View style={styles.navigation}>
@@ -43,7 +41,6 @@ function AppContent() {
           <NavButton symbol="✦" label={t('navResources', language)} active={area === 'resources'} onPress={() => setArea('resources')} />
           <NavButton symbol="⚔" label={t('navCombat', language)} active={area === 'combat'} onPress={() => setArea('combat')} />
           <NavButton symbol="▣" label={t('navItems', language)} active={area === 'inventory'} onPress={() => setArea('inventory')} />
-          <NavButton symbol="?" label={t('navHelp', language)} active={area === 'help'} onPress={() => setArea('help')} />
           <NavButton symbol="⚙" label={t('navSettings', language)} active={area === 'settings'} onPress={() => setArea('settings')} />
         </View>
       </SafeAreaView>
