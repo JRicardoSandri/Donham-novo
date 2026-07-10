@@ -5,7 +5,7 @@ import { colors, radii, spacing } from '../theme';
 
 const HELP_CONTENT = {
   'pt-BR': {
-    title: 'Ajuda do app',
+    title: 'Ajuda interativa',
     subtitle: 'Pergunte como usar personagens, recursos, combate, inventario e ajustes.',
     inputPlaceholder: 'Digite sua duvida...',
     askButton: 'Perguntar',
@@ -102,7 +102,7 @@ const HELP_CONTENT = {
     ],
   },
   en: {
-    title: 'App Help',
+    title: 'Interactive Help',
     subtitle: 'Ask how to use characters, resources, combat, inventory, and settings.',
     inputPlaceholder: 'Type your question...',
     askButton: 'Ask',
@@ -113,7 +113,7 @@ const HELP_CONTENT = {
     greeting: 'Hello! I am the RPG Combat Tracker help assistant. I can explain the tabs and main controls.',
   },
   es: {
-    title: 'Ayuda de la app',
+    title: 'Ayuda interactiva',
     subtitle: 'Pregunta como usar personajes, recursos, combate, inventario y ajustes.',
     inputPlaceholder: 'Escribe tu duda...',
     askButton: 'Preguntar',
