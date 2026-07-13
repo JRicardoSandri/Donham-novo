@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
-import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { PressableScale } from '../components/MicroInteractions';
 import { tr } from '../services/i18nService';
 import { colors, radii, spacing } from '../theme';
 
@@ -466,17 +467,17 @@ export default function HelpScreen({ language = 'pt-BR' }) {
           placeholderTextColor={colors.textMuted}
           onSubmitEditing={() => ask()}
         />
-        <TouchableOpacity style={styles.askButton} onPress={() => ask()}>
+        <PressableScale style={styles.askButton} onPress={() => ask()}>
           <Text style={styles.askButtonText}>{content.askButton}</Text>
-        </TouchableOpacity>
+        </PressableScale>
       </View>
 
       <Text style={styles.sectionTitle}>{content.quickTitle}</Text>
       <View style={styles.questionGrid}>
         {visibleQuestions.map((item) => (
-          <TouchableOpacity key={item.id} style={styles.questionChip} onPress={() => ask(item.question)}>
+          <PressableScale key={item.id} style={styles.questionChip} onPress={() => ask(item.question)}>
             <Text style={styles.questionText}>{item.question}</Text>
-          </TouchableOpacity>
+          </PressableScale>
         ))}
       </View>
     </ScrollView>

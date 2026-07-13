@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { FadeInView, PressableScale } from '../components/MicroInteractions';
 import { LANGUAGES, activeLanguage, t } from '../services/i18nService';
 import { colors, radii, spacing } from '../theme';
 import HelpScreen from './HelpScreen';
@@ -22,9 +23,9 @@ export default function SettingsScreen({ language, settings = {}, onSettingsChan
   if (showHelp) {
     return (
       <View style={styles.helpContainer}>
-        <TouchableOpacity style={styles.backButton} onPress={() => setShowHelp(false)}>
+        <PressableScale style={styles.backButton} onPress={() => setShowHelp(false)}>
           <Text style={styles.backButtonText}>{t('helpBackSettings', currentLanguage)}</Text>
-        </TouchableOpacity>
+        </PressableScale>
         <HelpScreen language={currentLanguage} />
       </View>
     );
@@ -36,39 +37,39 @@ export default function SettingsScreen({ language, settings = {}, onSettingsChan
       <Text style={styles.title}>{t('settingsTitle', currentLanguage)}</Text>
       <Text style={styles.subtitle}>{t('settingsSubtitle', currentLanguage)}</Text>
 
-      <View style={styles.card}>
+      <FadeInView animationKey="settings-help" style={styles.card}>
         <Text style={styles.cardTitle}>{t('settingsHelpTitle', currentLanguage)}</Text>
         <Text style={styles.mutedBlock}>{t('settingsHelpSubtitle', currentLanguage)}</Text>
-        <TouchableOpacity style={styles.helpButton} onPress={() => setShowHelp(true)}>
+        <PressableScale style={styles.helpButton} onPress={() => setShowHelp(true)}>
           <Text style={styles.helpButtonText}>{t('settingsOpenHelp', currentLanguage)}</Text>
-        </TouchableOpacity>
-      </View>
+        </PressableScale>
+      </FadeInView>
 
-      <View style={styles.card}>
+      <FadeInView animationKey="settings-language" delay={40} style={styles.card}>
         <Text style={styles.cardTitle}>{t('languageTitle', currentLanguage)}</Text>
-        <TouchableOpacity
+        <PressableScale
           style={[styles.option, !manualMode && styles.optionActive]}
           onPress={() => updateSettings({ languageMode: 'auto' })}
         >
           <Text style={styles.optionText}>{t('languageAuto', currentLanguage)}</Text>
           <Text style={styles.muted}>{activeLanguage({ languageMode: 'auto' })}</Text>
-        </TouchableOpacity>
+        </PressableScale>
 
         <Text style={styles.sectionLabel}>{t('languageManual', currentLanguage)}</Text>
         {LANGUAGES.map((item) => {
           const selected = manualMode && currentLanguage === item.code;
           return (
-            <TouchableOpacity
+            <PressableScale
               key={item.code}
               style={[styles.option, selected && styles.optionActive]}
               onPress={() => updateSettings({ languageMode: 'manual', language: item.code })}
             >
               <Text style={[styles.optionText, selected && styles.optionTextActive]}>{item.label}</Text>
               <Text style={styles.muted}>{item.code}</Text>
-            </TouchableOpacity>
+            </PressableScale>
           );
         })}
-      </View>
+      </FadeInView>
     </ScrollView>
   );
 }

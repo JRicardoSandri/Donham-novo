@@ -6,9 +6,9 @@ import {
   StyleSheet,
   Text,
   TextInput,
-  TouchableOpacity,
   View,
 } from 'react-native';
+import { AnimatedBar, FadeInView, PressableScale } from '../components/MicroInteractions';
 import { ATTRIBUTE_FIELDS, CLASSES } from '../data/dnd5e';
 import { progressionFor } from '../data/classFeatures';
 import { RACE_OPTIONS, raceProgressionFor } from '../data/raceProgression';
@@ -256,16 +256,16 @@ export default function GroupsScreen({ language = 'pt-BR' }) {
             placeholder={tt('Nome do novo grupo')}
             placeholderTextColor={colors.textMuted}
           />
-          <TouchableOpacity style={styles.primaryButton} onPress={addGroup}>
+          <PressableScale style={styles.primaryButton} onPress={addGroup}>
             <Text style={styles.primaryText}>{tt('Criar')}</Text>
-          </TouchableOpacity>
+          </PressableScale>
         </View>
 
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.groupStrip}>
           {state.groups.map((group) => {
             const active = group.id === state.activeGroupId;
             return (
-              <TouchableOpacity
+              <PressableScale
                 key={group.id}
                 style={[styles.groupChip, active && styles.groupChipActive]}
                 onPress={() => setState((old) => ({ ...old, activeGroupId: group.id }))}
@@ -275,7 +275,7 @@ export default function GroupsScreen({ language = 'pt-BR' }) {
                 <Text style={styles.groupCount}>
                   {group.characterIds.length} {group.characterIds.length === 1 ? tt('personagem') : tt('personagens')}
                 </Text>
-              </TouchableOpacity>
+              </PressableScale>
             );
           })}
         </ScrollView>
@@ -292,9 +292,9 @@ export default function GroupsScreen({ language = 'pt-BR' }) {
                 <Text style={styles.sectionTitle}>{activeGroup.name}</Text>
                 <Text style={styles.muted}>{tt('Segure o cartão do grupo para editar o nome.')}</Text>
               </View>
-              <TouchableOpacity style={styles.smallDanger} onPress={() => removeGroup(activeGroup)}>
+              <PressableScale style={styles.smallDanger} onPress={() => removeGroup(activeGroup)}>
                 <Text style={styles.dangerText}>{tt('Remover')}</Text>
-              </TouchableOpacity>
+              </PressableScale>
             </View>
 
             {groupCharacters.map((character) => {
@@ -307,7 +307,7 @@ export default function GroupsScreen({ language = 'pt-BR' }) {
               const initiative = character.initiative ?? initiativeFromAttributes(character.attributes);
               const capacity = carryingCapacity(character.attributes, character.size);
               return (
-                <View key={character.id} style={styles.characterCard}>
+                <FadeInView key={character.id} animationKey={`${character.id}-${level}-${character.xp}`} style={styles.characterCard}>
                   <View style={styles.characterHeader}>
                     <View style={styles.flex}>
                       <Text style={styles.cardTitle}>{character.name}</Text>
@@ -344,9 +344,7 @@ export default function GroupsScreen({ language = 'pt-BR' }) {
                     </Text>
                     <Text style={styles.progressPercent}>{progress.percent}%</Text>
                   </View>
-                  <View style={styles.progressTrack}>
-                    <View style={[styles.progressFill, { width: `${progress.percent}%` }]} />
-                  </View>
+                  <AnimatedBar percent={progress.percent} style={styles.progressTrack} fillStyle={styles.progressFill} />
 
                   {progression.unlocked.length > 0 && (
                     <View style={styles.featurePanel}>
@@ -396,30 +394,30 @@ export default function GroupsScreen({ language = 'pt-BR' }) {
                   </View>
 
                   <View style={styles.actions}>
-                    <TouchableOpacity style={styles.secondaryButton} onPress={() => openCharacter(character)}>
+                    <PressableScale style={styles.secondaryButton} onPress={() => openCharacter(character)}>
                       <Text style={styles.secondaryText}>{tt('Editar ficha')}</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity style={styles.secondaryButton} onPress={() => removeCharacterFromGroup(character)}>
+                    </PressableScale>
+                    <PressableScale style={styles.secondaryButton} onPress={() => removeCharacterFromGroup(character)}>
                       <Text style={styles.dangerText}>{tt('Remover do grupo')}</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity style={styles.deleteButton} onPress={() => deleteCharacter(character)}>
+                    </PressableScale>
+                    <PressableScale style={styles.deleteButton} onPress={() => deleteCharacter(character)}>
                       <Text style={styles.deleteText}>{tt('Excluir personagem')}</Text>
-                    </TouchableOpacity>
+                    </PressableScale>
                   </View>
-                </View>
+                </FadeInView>
               );
             })}
 
-            <TouchableOpacity style={styles.primaryWide} onPress={() => openCharacter()}>
+            <PressableScale style={styles.primaryWide} onPress={() => openCharacter()}>
               <Text style={styles.primaryText}>{tt('Adicionar personagem')}</Text>
-            </TouchableOpacity>
+            </PressableScale>
 
             {availableCharacters.length > 0 && (
               <View style={styles.availableSection}>
                 <Text style={styles.cardTitle}>{tt('Personagens disponíveis')}</Text>
                 <Text style={styles.muted}>{tt('Adicione ao grupo personagens que já foram criados.')}</Text>
                 {availableCharacters.map((character) => (
-                  <TouchableOpacity
+                  <PressableScale
                     key={`available-${character.id}`}
                     style={styles.availableCharacter}
                     onPress={() => addExistingCharacter(character)}
@@ -429,7 +427,7 @@ export default function GroupsScreen({ language = 'pt-BR' }) {
                       <Text style={styles.muted}>{term(character.classKey)} · {character.player || tt('Sem jogador')}</Text>
                     </View>
                     <Text style={styles.addText}>{tt('+ Adicionar')}</Text>
-                  </TouchableOpacity>
+                  </PressableScale>
                 ))}
               </View>
             )}
@@ -464,13 +462,13 @@ function TokenCounter({ label, value, onMinus, onPlus }) {
     <View style={styles.token}>
       <Text style={styles.tokenLabel}>{label}</Text>
       <View style={styles.tokenControls}>
-        <TouchableOpacity style={styles.tokenButton} onPress={onMinus}>
+        <PressableScale style={styles.tokenButton} onPress={onMinus}>
           <Text style={styles.tokenButtonText}>−</Text>
-        </TouchableOpacity>
+        </PressableScale>
         <Text style={styles.tokenValue}>{value}/10</Text>
-        <TouchableOpacity style={styles.tokenButton} onPress={onPlus}>
+        <PressableScale style={styles.tokenButton} onPress={onPlus}>
           <Text style={styles.tokenButtonText}>+</Text>
-        </TouchableOpacity>
+        </PressableScale>
       </View>
     </View>
   );
@@ -515,12 +513,12 @@ function CharacterModal({ draft, language, onChange, onSave, onClose }) {
             <Field label={tt('Nome')} value={draft?.name} onChangeText={(name) => update({ name })} />
             <Field label={tt('Jogador')} value={draft?.player} onChangeText={(player) => update({ player })} />
             <Text style={styles.fieldLabel}>{tt('Raça')}</Text>
-            <TouchableOpacity style={styles.selectInput} onPress={() => setRacePickerOpen(true)}>
+            <PressableScale style={styles.selectInput} onPress={() => setRacePickerOpen(true)}>
               <Text style={draft?.race ? styles.selectText : styles.selectPlaceholder}>
                 {draft?.race ? term(draft.race) : tt('Escolher raça')}
               </Text>
               <Text style={styles.selectArrow}>⌄</Text>
-            </TouchableOpacity>
+            </PressableScale>
             <Field label="XP" value={draft?.xp} keyboardType="numeric" onChangeText={(xp) => update({ xp })} />
             <Field label={tt('Antecedente')} value={draft?.background} onChangeText={(background) => update({ background })} />
             <Field label={tt('Alinhamento')} value={draft?.alignment} onChangeText={(alignment) => update({ alignment })} />
@@ -541,13 +539,13 @@ function CharacterModal({ draft, language, onChange, onSave, onClose }) {
                 ['medium', tt('Médio · FOR × 7,5 kg')],
                 ['large', tt('Grande · FOR × 15 kg')],
               ].map(([size, label]) => (
-                <TouchableOpacity
+                <PressableScale
                   key={size}
                   style={[styles.sizeButton, draft?.size === size && styles.sizeButtonActive]}
                   onPress={() => update({ size })}
                 >
                   <Text style={[styles.sizeText, draft?.size === size && styles.sizeTextActive]}>{label}</Text>
-                </TouchableOpacity>
+                </PressableScale>
               ))}
             </View>
             <Text style={styles.fieldLabel}>{tt('Pontos de Vida')}</Text>
@@ -566,13 +564,13 @@ function CharacterModal({ draft, language, onChange, onSave, onClose }) {
             <Text style={styles.fieldLabel}>{tt('Classe')}</Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.classStrip}>
               {CLASSES.map((classKey) => (
-                <TouchableOpacity
+                <PressableScale
                   key={classKey}
                   style={[styles.classChip, draft?.classKey === classKey && styles.classChipActive]}
                   onPress={() => update({ classKey, subclassKey: null })}
                 >
                   <Text style={[styles.classText, draft?.classKey === classKey && styles.classTextActive]}>{term(classKey)}</Text>
-                </TouchableOpacity>
+                </PressableScale>
               ))}
             </ScrollView>
 
@@ -581,13 +579,13 @@ function CharacterModal({ draft, language, onChange, onSave, onClose }) {
                 <Text style={styles.fieldLabel}>{tt('Subclasse')}</Text>
                 <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.classStrip}>
                   {subclassesForClass(draft?.classKey).map(([subclassId, subclassLabel]) => (
-                    <TouchableOpacity
+                    <PressableScale
                       key={subclassId}
                       style={[styles.classChip, draft?.subclassKey === subclassId && styles.classChipActive]}
                       onPress={() => update({ subclassKey: subclassId })}
                     >
                       <Text style={[styles.classText, draft?.subclassKey === subclassId && styles.classTextActive]}>{subclassName(subclassLabel, language)}</Text>
-                    </TouchableOpacity>
+                    </PressableScale>
                   ))}
                 </ScrollView>
               </>
@@ -640,7 +638,7 @@ function CharacterModal({ draft, language, onChange, onSave, onClose }) {
                     {(index === 0 || filtered[index - 1].group !== option.group) && (
                       <Text style={styles.raceGroup}>{term(option.group)}</Text>
                     )}
-                    <TouchableOpacity
+                    <PressableScale
                       style={[styles.raceOption, draft?.race === option.name && styles.raceOptionActive]}
                       onPress={() => {
                         update({ race: option.name });
@@ -651,13 +649,13 @@ function CharacterModal({ draft, language, onChange, onSave, onClose }) {
                       <Text style={[styles.raceOptionText, draft?.race === option.name && styles.raceOptionTextActive]}>
                         {term(option.name)}
                       </Text>
-                    </TouchableOpacity>
+                    </PressableScale>
                   </View>
                 ))}
             </ScrollView>
-            <TouchableOpacity style={styles.secondaryButton} onPress={() => setRacePickerOpen(false)}>
+            <PressableScale style={styles.secondaryButton} onPress={() => setRacePickerOpen(false)}>
               <Text style={styles.secondaryText}>{tt('Fechar')}</Text>
-            </TouchableOpacity>
+            </PressableScale>
           </View>
         </View>
       </Modal>
@@ -678,12 +676,12 @@ function ModalActions({ language, onClose, onSave }) {
   const tt = (text, values = {}) => tr(text, language, values);
   return (
     <View style={styles.actions}>
-      <TouchableOpacity style={styles.secondaryButton} onPress={onClose}>
+      <PressableScale style={styles.secondaryButton} onPress={onClose}>
         <Text style={styles.secondaryText}>{tt('Cancelar')}</Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.primaryButton} onPress={onSave}>
+      </PressableScale>
+      <PressableScale style={styles.primaryButton} onPress={onSave}>
         <Text style={styles.primaryText}>{tt('Salvar')}</Text>
-      </TouchableOpacity>
+      </PressableScale>
     </View>
   );
 }

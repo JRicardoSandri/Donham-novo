@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
-import { Modal, ScrollView, StyleSheet, Switch, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Modal, ScrollView, StyleSheet, Switch, Text, TextInput, View } from 'react-native';
+import { FadeInView, PressableScale } from '../components/MicroInteractions';
 import { EQUIPMENT_CATALOG, EQUIPMENT_CATEGORIES } from '../data/equipmentCatalog';
 import { useCampaign } from '../services/CampaignContext';
 import { gameTerm, itemDescription, itemName, itemRarity, itemValue, tr } from '../services/i18nService';
@@ -164,8 +165,8 @@ export default function InventoryScreen({ language = 'pt-BR' }) {
         const overloaded = currentWeight > capacity;
 
         return (
-          <TouchableOpacity
-            key={character.id}
+          <FadeInView key={character.id} animationKey={`inventory-summary-${character.id}`}>
+          <PressableScale
             style={styles.characterSummary}
             onPress={() => {
               setSelectedCharacterId(character.id);
@@ -183,7 +184,8 @@ export default function InventoryScreen({ language = 'pt-BR' }) {
               {overloaded && <Text style={styles.overloadLabel}>{tt('SOBRECARGA')}</Text>}
             </View>
             <Text style={styles.openArrow}>›</Text>
-          </TouchableOpacity>
+          </PressableScale>
+          </FadeInView>
         );
       })}
 
@@ -194,8 +196,8 @@ export default function InventoryScreen({ language = 'pt-BR' }) {
         const overloaded = currentWeight > capacity;
 
         return (
-          <View style={styles.card}>
-            <TouchableOpacity
+          <FadeInView animationKey={`inventory-card-${selectedCharacter.id}`} style={styles.card}>
+            <PressableScale
               style={styles.backButton}
               onPress={() => {
                 setSelectedCharacterId(null);
@@ -203,7 +205,7 @@ export default function InventoryScreen({ language = 'pt-BR' }) {
               }}
             >
               <Text style={styles.backText}>‹ {tt('Todos os personagens')}</Text>
-            </TouchableOpacity>
+            </PressableScale>
             <View style={styles.cardHeader}>
               <View style={styles.flex}>
                 <Text style={styles.cardTitle}>{selectedCharacter.name}</Text>
@@ -212,12 +214,12 @@ export default function InventoryScreen({ language = 'pt-BR' }) {
                 </Text>
                 <Text style={styles.muted}>{inventory.length} {inventory.length === 1 ? tt('item') : tt('itens')} {tt('no inventário')}</Text>
               </View>
-              <TouchableOpacity
+              <PressableScale
                 style={styles.primary}
                 onPress={() => setForm({ ...EMPTY_ITEM, characterId: selectedCharacter.id })}
               >
                 <Text style={styles.primaryText}>{tt('Novo item')}</Text>
-              </TouchableOpacity>
+              </PressableScale>
             </View>
 
             <View style={styles.coinsPanel}>
@@ -242,10 +244,10 @@ export default function InventoryScreen({ language = 'pt-BR' }) {
             {!!form.characterId && form.characterId === selectedCharacter.id && (
               <View style={styles.form}>
                 <Text style={styles.cardTitle}>{form.id ? tt('Editar item') : tt('Adicionar item')}</Text>
-                <TouchableOpacity style={styles.catalogButton} onPress={() => setCatalogOpen(true)}>
+                <PressableScale style={styles.catalogButton} onPress={() => setCatalogOpen(true)}>
                   <Text style={styles.catalogButtonText}>{tt('Escolher no catálogo')}</Text>
                   <Text style={styles.catalogButtonText}>⌕</Text>
-                </TouchableOpacity>
+                </PressableScale>
                 <TextInput
                   style={styles.input}
                   value={form.name}
@@ -270,13 +272,13 @@ export default function InventoryScreen({ language = 'pt-BR' }) {
                 </View>
                 <View style={styles.categoryGrid}>
                   {EQUIPMENT_CATEGORIES.filter((category) => category !== 'Todos').map((category) => (
-                    <TouchableOpacity
+                    <PressableScale
                       key={category}
                       style={[styles.categoryChip, form.category === category && styles.categoryChipActive]}
                       onPress={() => setForm((old) => ({ ...old, category }))}
                     >
                       <Text style={[styles.categoryText, form.category === category && styles.categoryTextActive]}>{term(category)}</Text>
-                    </TouchableOpacity>
+                    </PressableScale>
                   ))}
                 </View>
                 {form.category === 'Itens Magicos' && (
@@ -330,12 +332,12 @@ export default function InventoryScreen({ language = 'pt-BR' }) {
                   />
                 </View>
                 <View style={styles.row}>
-                  <TouchableOpacity style={styles.secondary} onPress={() => setForm(EMPTY_ITEM)}>
+                  <PressableScale style={styles.secondary} onPress={() => setForm(EMPTY_ITEM)}>
                     <Text style={styles.actionText}>{tt('Cancelar')}</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity style={styles.primaryWide} onPress={saveItem}>
+                  </PressableScale>
+                  <PressableScale style={styles.primaryWide} onPress={saveItem}>
                     <Text style={styles.primaryText}>{tt('Salvar item')}</Text>
-                  </TouchableOpacity>
+                  </PressableScale>
                 </View>
               </View>
             )}
@@ -343,7 +345,7 @@ export default function InventoryScreen({ language = 'pt-BR' }) {
             {inventory.length === 0 && <Text style={styles.muted}>{tt('Inventário vazio.')}</Text>}
 
             {inventory.map((item) => (
-              <View key={item.id} style={styles.item}>
+              <FadeInView key={item.id} animationKey={`${selectedCharacter.id}-${item.id}`} style={styles.item}>
                 <View style={styles.flex}>
                   <Text style={styles.itemName}>{item.equipped ? `[${tt('E')}] ` : ''}{itemName(item.name, language)}</Text>
                   <Text style={styles.muted}>
@@ -359,15 +361,15 @@ export default function InventoryScreen({ language = 'pt-BR' }) {
                   )}
                   {!!item.description && <Text style={styles.description}>{itemDescription(item.description, language)}</Text>}
                 </View>
-                <TouchableOpacity style={styles.action} onPress={() => editItem(selectedCharacter.id, item)}>
+                <PressableScale style={styles.action} onPress={() => editItem(selectedCharacter.id, item)}>
                   <Text style={styles.actionText}>{tt('Editar')}</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.danger} onPress={() => removeItem(selectedCharacter.id, item.id)}>
+                </PressableScale>
+                <PressableScale style={styles.danger} onPress={() => removeItem(selectedCharacter.id, item.id)}>
                   <Text style={styles.dangerText}>X</Text>
-                </TouchableOpacity>
-              </View>
+                </PressableScale>
+              </FadeInView>
             ))}
-          </View>
+          </FadeInView>
         );
       })()}
 
@@ -388,9 +390,9 @@ export default function InventoryScreen({ language = 'pt-BR' }) {
             </View>
             <View style={styles.categoryGrid}>
               {catalogCategories.map((category) => (
-                <TouchableOpacity key={category} style={[styles.categoryChip, catalogCategory === category && styles.categoryChipActive]} onPress={() => setCatalogCategory(category)}>
+                <PressableScale key={category} style={[styles.categoryChip, catalogCategory === category && styles.categoryChipActive]} onPress={() => setCatalogCategory(category)}>
                   <Text style={[styles.categoryText, catalogCategory === category && styles.categoryTextActive]}>{term(category)}</Text>
-                </TouchableOpacity>
+                </PressableScale>
               ))}
             </View>
             <Text style={styles.resultHint}>
@@ -398,7 +400,7 @@ export default function InventoryScreen({ language = 'pt-BR' }) {
             </Text>
             <ScrollView style={styles.catalogList}>
               {visibleCatalogItems.map((item) => (
-                  <TouchableOpacity
+                  <PressableScale
                     key={`${item.category}-${item.name}`}
                     style={styles.catalogItem}
                     onPress={() => {
@@ -426,10 +428,10 @@ export default function InventoryScreen({ language = 'pt-BR' }) {
                       <Text style={styles.muted}>{term(item.category)} · {itemValue(item.value, language)} · {item.weight} kg</Text>
                       <Text style={styles.description}>{itemDescription(item.description, language)}</Text>
                     </View>
-                  </TouchableOpacity>
+                  </PressableScale>
                 ))}
               {visibleCatalogItems.length === 0 && (
-                <TouchableOpacity
+                <PressableScale
                   style={styles.catalogItem}
                   onPress={() => {
                     setForm((old) => ({
@@ -442,12 +444,12 @@ export default function InventoryScreen({ language = 'pt-BR' }) {
                 >
                   <Text style={styles.itemName}>{tt('Criar item personalizado')}</Text>
                   <Text style={styles.muted}>{tt('Usar "{name}" como base e salvar na biblioteca.', { name: catalogQuery.trim() || tt('Novo item') })}</Text>
-                </TouchableOpacity>
+                </PressableScale>
               )}
             </ScrollView>
-            <TouchableOpacity style={styles.secondary} onPress={() => setCatalogOpen(false)}>
+            <PressableScale style={styles.secondary} onPress={() => setCatalogOpen(false)}>
               <Text style={styles.actionText}>{tt('Fechar')}</Text>
-            </TouchableOpacity>
+            </PressableScale>
           </View>
         </View>
       </Modal>

@@ -1,6 +1,7 @@
 import React, { useCallback, useState } from 'react';
-import { SafeAreaView, StatusBar, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView, StatusBar, StyleSheet, Text, View } from 'react-native';
 import AppSplashScreen from './src/components/AppSplashScreen';
+import { FadeInView, PressableScale } from './src/components/MicroInteractions';
 import GroupsScreen from './src/screens/GroupsScreen';
 import ResourcesScreen from './src/screens/ResourcesScreen';
 import CombatScreen from './src/screens/CombatScreen';
@@ -29,13 +30,13 @@ function AppContent() {
     <View style={styles.appRoot}>
       <SafeAreaView style={styles.safe}>
         <StatusBar barStyle="light-content" backgroundColor={colors.background} />
-        <View style={styles.screen}>
+        <FadeInView animationKey={area} style={styles.screen}>
           {area === 'groups' && <GroupsScreen language={language} />}
           {area === 'resources' && <ResourcesScreen language={language} />}
           {area === 'combat' && <CombatScreen language={language} />}
           {area === 'inventory' && <InventoryScreen language={language} />}
           {area === 'settings' && <SettingsScreen language={language} settings={state?.settings} onSettingsChange={setState} />}
-        </View>
+        </FadeInView>
         <View style={styles.navigation}>
           <NavButton symbol="♙" label={t('navCharacters', language)} active={area === 'groups'} onPress={() => setArea('groups')} />
           <NavButton symbol="✦" label={t('navResources', language)} active={area === 'resources'} onPress={() => setArea('resources')} />
@@ -51,12 +52,12 @@ function AppContent() {
 
 function NavButton({ symbol, label, active, onPress }) {
   return (
-    <TouchableOpacity style={[styles.navButton, active && styles.navButtonActive]} onPress={onPress}>
+    <PressableScale style={[styles.navButton, active && styles.navButtonActive]} onPress={onPress}>
       <View style={[styles.navSymbol, active && styles.navSymbolActive]}>
         <Text style={[styles.navSymbolText, active && styles.navSymbolTextActive]}>{symbol}</Text>
       </View>
       <Text style={[styles.navText, active && styles.navTextActive]}>{label}</Text>
-    </TouchableOpacity>
+    </PressableScale>
   );
 }
 
