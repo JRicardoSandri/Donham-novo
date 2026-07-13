@@ -384,6 +384,8 @@ const TEXT_TRANSLATIONS = {
     'Classe e XP determinam automaticamente recursos e espaços de magia.': 'La clase y la XP determinan automáticamente recursos y espacios de conjuro.',
     'Descanso curto para todos': 'Descanso corto para todos',
     'Descanso longo para todos': 'Descanso largo para todos',
+    'Descanso curto': 'Descanso corto',
+    'Descanso longo': 'Descanso largo',
     'Nenhum personagem criado': 'No hay personajes creados',
     'Todos os personagens': 'Todos los personajes',
     'Grimório': 'Libro de conjuros',
@@ -433,6 +435,7 @@ const TEXT_TRANSLATIONS = {
     'Inimigo': 'Enemigo',
     'Personagem': 'Personaje',
     'Prioridade': 'Prioridad',
+    'Próximo': 'Siguiente',
     'PV máximo': 'PG máximo',
     'Zerar PV': 'Poner PG a cero',
     'PV cheio': 'PG completos',
@@ -442,11 +445,15 @@ const TEXT_TRANSLATIONS = {
     'Cura': 'Curar',
     'Morto': 'Muerto',
     'Estável': 'Estable',
+    'Estabilizar': 'Estabilizar',
     'Condições': 'Condiciones',
+    'Limpar Temp': 'Limpiar Temp',
     'Concluir': 'Finalizar',
     'INVENTÁRIO': 'INVENTARIO',
     'Equipamento e carga': 'Equipo y carga',
     'Novo item': 'Nuevo objeto',
+    'item': 'objeto',
+    'itens': 'objetos',
     'Moedas': 'Monedas',
     'Platina': 'Platino',
     'Ouro': 'Oro',
@@ -485,6 +492,7 @@ const TEXT_TRANSLATIONS = {
     'CA': 'CA',
     'E': 'Eq.',
     'RPG COMPANION': 'RPG COMPANION',
+    'RPG COMBAT TRACKER': 'RPG COMBAT TRACKER',
     'Não foi possível salvar os dados neste dispositivo. Tente novamente antes de fechar o app.': 'No fue posible guardar los datos en este dispositivo. Intenta nuevamente antes de cerrar la app.',
     'Segure o cartão do grupo para editar o nome.': 'Mantén pulsada la tarjeta del grupo para editar el nombre.',
     'Remover do grupo': 'Quitar del grupo',
@@ -514,6 +522,8 @@ const TEXT_TRANSLATIONS = {
     'conhecidas': 'conocidos',
     'preparadas': 'preparados',
     'Recupera em descanso': 'Recupera con descanso',
+    'curto': 'corto',
+    'longo': 'largo',
     'Usou': 'Usó',
     'Cheio': 'Lleno',
     'Grimório de {name}': 'Libro de conjuros de {name}',
@@ -1748,6 +1758,149 @@ const ITEM_REPLACEMENTS = {
   ],
 };
 
+const ITEM_POST_REPLACEMENTS = {
+  en: [
+    ['Besta de Mão', 'Hand Crossbow'],
+    ['Bordão', 'Quarterstaff'],
+    ['Camisão de Malha', 'Chain Shirt'],
+    ['Cota de Anéis', 'Ring Mail'],
+    ['Gibão de Peles', 'Hide Armor'],
+    ['Lança de Montaria', 'Lance'],
+    ['Lança Longa', 'Pike'],
+    ['Lança', 'Spear'],
+    ['Maça Estrela', 'Morningstar'],
+    ['Maça', 'Mace'],
+    ['vidro', 'vial'],
+    ['CA ', 'AC '],
+    ['DES', 'DEX'],
+    ['FOR', 'STR'],
+    ['máx.', 'max.'],
+    ['max.', 'max.'],
+    ['Ataque improvisado; ao acertar, causa 2d6 de dano acid.', 'Improvised attack; on a hit, deals 2d6 acid damage.'],
+    ['Contra corruptor ou morto-vivo, causa 2d6 de dano radiant.', 'Against a fiend or undead, deals 2d6 radiant damage.'],
+    ['Bags de carga para montaria.', 'Cargo bags for a mount.'],
+    ['Custo x4 e peso x2 da armadura equivalente.', 'Costs x4 and weighs x2 the equivalent armor.'],
+    ['Land vehicle de carga.', 'Cargo land vehicle.'],
+    ['Grande embarcacao movida a remos e velas.', 'Large vessel powered by oars and sails.'],
+    ['Embarcacao de viagem movida a velas.', 'Sailing vessel for travel.'],
+    ['Gazuas e ferramentas para mecanismos.', 'Lockpicks and tools for mechanisms.'],
+    ['Ferramentas para ceramica.', 'Tools for ceramics.'],
+    ['Ferramentas para pedra e alvenaria.', 'Tools for stonework and masonry.'],
+    ['Ferramentas para calçados.', 'Tools for shoes and leather footwear.'],
+    ['Ferramentas para vidro.', 'Tools for glasswork.'],
+    ['Ferramentas para vial.', 'Tools for glasswork.'],
+    ['Ferramentas para documentos e selos falsos.', 'Tools for forged documents and seals.'],
+    ['Book de 100 páginas adequado para armazenar magias.', 'A 100-page book suitable for storing spells.'],
+    ['Item maravilhoso de armazenamento.', 'Wondrous storage item.'],
+    ['Item maravilhoso defensivo.', 'Defensive wondrous item.'],
+    ['Item maravilhoso com cargas.', 'Wondrous item with charges.'],
+    ['Arma magic', 'Magic weapon'],
+    ['Armadura magic', 'Magic armor'],
+    ['Escudo magic', 'Magic shield'],
+    ['Weapon magic com bonus.', 'Magic weapon with bonus.'],
+    ['Armor magic com bonus.', 'Magic armor with bonus.'],
+    ['Shield magic com bonus.', 'Magic shield with bonus.'],
+    ['Magic focus com bonus.', 'Magic focus with bonus.'],
+    ['com bonus', 'with bonus'],
+    ['Anel magic', 'Magic ring'],
+    ['Cajado magic', 'Magic staff'],
+    ['Varinha magic', 'Magic wand'],
+    ['Foco magic', 'Magic focus'],
+    ['Consumable magic', 'Magic consumable'],
+    ['do Guia do Mestre', "from the Dungeon Master's Guide"],
+    ['de armazenamento', 'of storage'],
+    ['defensivo', 'defensive'],
+    ['lendaria', 'legendary'],
+    ['lendário', 'legendary'],
+    ['páginas', 'pages'],
+    ['magias', 'spells'],
+    ['Especial', 'Special'],
+  ],
+  es: [
+    ['Besta de Mão', 'Ballesta de mano'],
+    ['Bordão', 'Bastón'],
+    ['Bolsa de Truques', 'Bolsa de trucos'],
+    ['Botas de Caminhar e Saltar', 'Botas de zancadas y brincos'],
+    ['Broche do Escudo', 'Broche de escudo'],
+    ['Camisão de Malha', 'Camisote de malla'],
+    ['Capa Elfica', 'Capa élfica'],
+    ['Chapeu de Disfarce', 'Sombrero de disfraz'],
+    ['Sombrero de Disfarce', 'Sombrero de disfraz'],
+    ['Corda de Escalada', 'Cuerda de escalada'],
+    ['Cuerda de Escalada', 'Cuerda de escalada'],
+    ['Cota de Anéis', 'Cota de anillas'],
+    ['Gibão de Peles', 'Armadura de pieles'],
+    ['Lança de Montaria', 'Lanza de caballería'],
+    ['Lança Longa', 'Pica'],
+    ['Lança', 'Lanza'],
+    ['Maça Estrela', 'Lucero del alba'],
+    ['Maça', 'Maza'],
+    ['Manto de Protecao', 'Manto de protección'],
+    ['Mochila de Carga', 'Mochila de carga'],
+    ['Ouro', 'Oro'],
+    ['Platina', 'Platino'],
+    ['Prata', 'Plata'],
+    ['Trigo', 'Trigo'],
+    ['vidro', 'vial'],
+    ['CA ', 'CA '],
+    ['DES', 'DES'],
+    ['FOR', 'FUE'],
+    ['máx.', 'máx.'],
+    ['Equipamento de aventura do Libro do Jogador.', 'Equipo de aventurero del Manual del Jugador.'],
+    ['Ataque improvisado; al impactar, causa 2d6 de daño de ácido.', 'Ataque improvisado; al impactar, inflige 2d6 de daño de ácido.'],
+    ['Anillo mágico do Guia do Mestre.', 'Anillo mágico de la Guía del Dungeon Master.'],
+    ['Arma mágica com bonus.', 'Arma mágica con bonificador.'],
+    ['Armadura mágica com bonus.', 'Armadura mágica con bonificador.'],
+    ['Escudo mágico com bonus.', 'Escudo mágico con bonificador.'],
+    ['Arma mágica do Guia do Mestre.', 'Arma mágica de la Guía del Dungeon Master.'],
+    ['Bastón mágico do Guia do Mestre.', 'Bastón mágico de la Guía del Dungeon Master.'],
+    ['Consumible mágico do Guia do Mestre.', 'Consumible mágico de la Guía del Dungeon Master.'],
+    ['Objeto maravilloso do Guia do Mestre.', 'Objeto maravilloso de la Guía del Dungeon Master.'],
+    ['Item maravilhoso con cargas.', 'Objeto maravilloso con cargas.'],
+    ['Item maravilhoso defensivo.', 'Objeto maravilloso defensivo.'],
+    ['Item maravilhoso com usos limitados.', 'Objeto maravilloso con usos limitados.'],
+    ['Arma mágica lendaria.', 'Arma mágica legendaria.'],
+    ['com bonus', 'con bonificador'],
+    ['do Guia do Mestre', 'de la Guía del Dungeon Master'],
+    ['Grande embarcacao movida a remos e velas.', 'Gran embarcación movida por remos y velas.'],
+    ['Vehículo acuático pequeno; velocidade aproximada 2 km/h.', 'Vehículo acuático pequeño; velocidad aproximada 2 km/h.'],
+    ['Vehículo acuático; velocidade aproximada 1,5 km/h.', 'Vehículo acuático; velocidad aproximada 1,5 km/h.'],
+    ['Vehículo terrestre ligera.', 'Vehículo terrestre ligero.'],
+    ['Vehículo terrestre para passageiros.', 'Vehículo terrestre para pasajeros.'],
+    ['Custo x4 e peso x2 da armadura equivalente.', 'Cuesta x4 y pesa x2 la armadura equivalente.'],
+    ['Gazuas e ferramentas para mecanismos.', 'Ganzúas y herramientas para mecanismos.'],
+    ['Ferramentas para ceramica.', 'Herramientas para cerámica.'],
+    ['Ferramentas para pedra e alvenaria.', 'Herramientas para piedra y albañilería.'],
+    ['Ferramentas para calçados.', 'Herramientas para calzado.'],
+    ['Ferramentas para vidro.', 'Herramientas para vidrio.'],
+    ['Ferramentas para vial.', 'Herramientas para vidrio.'],
+    ['Ferramentas para documentos e selos falsos.', 'Herramientas para documentos y sellos falsos.'],
+    ['Kit para identificar e preparar ervas.', 'Kit para identificar y preparar hierbas.'],
+    ['Libro de 100 páginas adequado para armazenar magias.', 'Libro de 100 páginas adecuado para almacenar conjuros.'],
+    ['Anillo mágico defensivo.', 'Anillo mágico defensivo.'],
+    ['Escudo mágico con bonificador.', 'Escudo mágico con bonificador.'],
+    ['Foco mágico com bonus.', 'Foco mágico con bonificador.'],
+    ['Consumible mágico. Registre circulo e magia na descricao.', 'Consumible mágico. Registra el nivel y el conjuro en la descripción.'],
+    ['Recupera PG según la regla de la mesa.', 'Recupera PG según la regla de tu mesa.'],
+    ['Instrumentos para orientacao e cartas.', 'Instrumentos para orientación y cartas náuticas.'],
+    ['Cosmeticos e acessorios para disfarces.', 'Cosméticos y accesorios para disfraces.'],
+    ['Kit para manipular e aplicar venenos.', 'Kit para manipular y aplicar venenos.'],
+    ['Item maravilhoso de armazenamento.', 'Objeto maravilloso de almacenamiento.'],
+    ['Item maravilhoso com recuperacao de magia.', 'Objeto maravilloso con recuperación mágica.'],
+    ['Penas, tintas e materiais de escrita.', 'Plumas, tintas y materiales de escritura.'],
+    ['Kit para fermentacao e bebidas.', 'Kit para fermentación y bebidas.'],
+  ],
+};
+
+function postProcessItemText(text, language) {
+  const normalizedLanguage = normalizeLanguage(language);
+  let output = String(text || '');
+  (ITEM_POST_REPLACEMENTS[normalizedLanguage] || []).forEach(([from, to]) => {
+    output = output.split(from).join(to);
+  });
+  return output;
+}
+
 function replaceKnownPhrases(text, language) {
   const normalizedLanguage = normalizeLanguage(language);
   let output = cleanEncoding(text);
@@ -1755,7 +1908,7 @@ function replaceKnownPhrases(text, language) {
   (ITEM_REPLACEMENTS[normalizedLanguage] || ITEM_REPLACEMENTS.en).forEach(([from, to]) => {
     output = output.split(from).join(to);
   });
-  return output;
+  return postProcessItemText(output, normalizedLanguage);
 }
 
 function format(template, values = {}) {
@@ -1796,7 +1949,7 @@ export function tr(text, language = 'pt-BR', values = {}) {
   const normalizedLanguage = normalizeLanguage(language);
   if (normalizedLanguage === 'pt-BR') return format(text, values);
   const template = TEXT_TRANSLATIONS[normalizedLanguage]?.[text]
-    || TEXT_TRANSLATIONS.en?.[text]
+    || (normalizedLanguage === 'en' ? TEXT_TRANSLATIONS.en?.[text] : null)
     || text;
   return format(template, values);
 }

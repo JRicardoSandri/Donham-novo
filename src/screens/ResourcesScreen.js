@@ -227,9 +227,9 @@ export default function ResourcesScreen({ language = 'pt-BR' }) {
             </View>
             <View style={styles.flex}>
               <Text style={styles.cardTitle}>{character.name}</Text>
-              <Text style={styles.muted}>{term(character.classKey)} {'\u00b7'} {tt('N\u00edvel')} {levelFromXp(character.xp)}</Text>
+              <Text style={styles.muted}>{term(character.classKey)} {'\u00b7'} {tt('Nível')} {levelFromXp(character.xp)}</Text>
               <Text style={[styles.summaryValue, depleted > 0 && styles.summaryWarning]}>
-                {available}/{maximum} {tt('usos dispon\u00edveis')} {'\u00b7'} {depleted} {tt('esgotados')}
+                {available}/{maximum} {tt('usos disponíveis')} {'\u00b7'} {depleted} {tt('esgotados')}
               </Text>
             </View>
             <Text style={styles.spellbookArrow}>›</Text>
@@ -245,10 +245,10 @@ export default function ResourcesScreen({ language = 'pt-BR' }) {
             </TouchableOpacity>
           )}
           <Text style={styles.cardTitle}>{character.name}</Text>
-          <Text style={styles.muted}>{term(character.classKey)} {'\u00b7'} {tt('N\u00edvel')} {levelFromXp(character.xp)} {'\u00b7'} {character.xp} XP</Text>
+          <Text style={styles.muted}>{term(character.classKey)} {'\u00b7'} {tt('Nível')} {levelFromXp(character.xp)} {'\u00b7'} {character.xp} XP</Text>
 
           <View style={styles.tokenRow}>
-            <Token label={tt('Inspira\u00e7\u00e3o')} value={character.inspiration || 0} onMinus={() => changeToken(character.id, 'inspiration', -1)} onPlus={() => changeToken(character.id, 'inspiration', 1)} />
+            <Token label={tt('Inspiração')} value={character.inspiration || 0} onMinus={() => changeToken(character.id, 'inspiration', -1)} onPlus={() => changeToken(character.id, 'inspiration', 1)} />
             <Token label={tt('Pontos de Enredo')} value={character.plotPoints || 0} onMinus={() => changeToken(character.id, 'plotPoints', -1)} onPlus={() => changeToken(character.id, 'plotPoints', 1)} />
           </View>
 
@@ -260,7 +260,7 @@ export default function ResourcesScreen({ language = 'pt-BR' }) {
             }}
           >
             <View style={styles.flex}>
-              <Text style={styles.spellbookTitle}>{tt('Grim\u00f3rio')}</Text>
+              <Text style={styles.spellbookTitle}>{tt('Grimório')}</Text>
               <Text style={styles.muted}>
                 {character.spellcasting?.knownSpellIds?.length || 0} {tt('conhecidas')} {'\u00b7'} {character.spellcasting?.preparedSpellIds?.length || 0} {tt('preparadas')}
               </Text>
@@ -269,7 +269,7 @@ export default function ResourcesScreen({ language = 'pt-BR' }) {
           </TouchableOpacity>
 
           {(character.resources || []).length === 0 ? (
-            <Text style={styles.noResources}>{tt('Esta classe n\u00e3o possui recursos autom\u00e1ticos neste n\u00edvel.')}</Text>
+            <Text style={styles.noResources}>{tt('Esta classe não possui recursos automáticos neste nível.')}</Text>
           ) : character.resources.map((item) => (
             <View key={item.id} style={styles.resource}>
               <View style={styles.flex}>
@@ -310,7 +310,7 @@ export default function ResourcesScreen({ language = 'pt-BR' }) {
           <View style={styles.spellbookSheet}>
             <View style={styles.sheetHeader}>
               <View style={styles.flex}>
-                <Text style={styles.cardTitle}>{tt('Grim\u00f3rio de {name}', { name: spellbookCharacter?.name })}</Text>
+                <Text style={styles.cardTitle}>{tt('Grimório de {name}', { name: spellbookCharacter?.name })}</Text>
                 <Text style={styles.muted}>
                   {term(spellbookCharacter?.classKey)} {'\u00b7'} {spellLimit > 0 ? tt('liberado até {circle}º círculo', { circle: spellLimit }) : tt('sem magias liberadas neste nível')}
                 </Text>
@@ -350,7 +350,7 @@ export default function ResourcesScreen({ language = 'pt-BR' }) {
                 </TouchableOpacity>
               ))}
               <TouchableOpacity style={[styles.filterChip, concentrationOnly && styles.filterChipActive]} onPress={() => setConcentrationOnly((value) => !value)}>
-                <Text style={[styles.filterText, concentrationOnly && styles.filterTextActive]}>{tt('Concentra\u00e7\u00e3o')}</Text>
+                <Text style={[styles.filterText, concentrationOnly && styles.filterTextActive]}>{tt('Concentração')}</Text>
               </TouchableOpacity>
             </ScrollView>
 

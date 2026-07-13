@@ -514,10 +514,10 @@ function CharacterModal({ draft, language, onChange, onSave, onClose }) {
             <Text style={styles.sectionTitle}>{draft?.id ? tt('Editar personagem') : tt('Novo personagem')}</Text>
             <Field label={tt('Nome')} value={draft?.name} onChangeText={(name) => update({ name })} />
             <Field label={tt('Jogador')} value={draft?.player} onChangeText={(player) => update({ player })} />
-            <Text style={styles.fieldLabel}>{tt('Ra\u00e7a')}</Text>
+            <Text style={styles.fieldLabel}>{tt('Raça')}</Text>
             <TouchableOpacity style={styles.selectInput} onPress={() => setRacePickerOpen(true)}>
               <Text style={draft?.race ? styles.selectText : styles.selectPlaceholder}>
-                {draft?.race ? term(draft.race) : tt('Escolher ra\u00e7a')}
+                {draft?.race ? term(draft.race) : tt('Escolher raça')}
               </Text>
               <Text style={styles.selectArrow}>⌄</Text>
             </TouchableOpacity>
@@ -556,10 +556,10 @@ function CharacterModal({ draft, language, onChange, onSave, onClose }) {
                 <Field label={tt('Atual')} value={draft?.hp?.current} keyboardType="numeric" onChangeText={(current) => update({ hp: { ...draft.hp, current } })} />
               </View>
               <View style={styles.flex}>
-                <Field label={tt('M\u00e1ximo')} value={draft?.hp?.max} keyboardType="numeric" onChangeText={(max) => update({ hp: { ...draft.hp, max } })} />
+                <Field label={tt('Máximo')} value={draft?.hp?.max} keyboardType="numeric" onChangeText={(max) => update({ hp: { ...draft.hp, max } })} />
               </View>
               <View style={styles.flex}>
-                <Field label={tt('Tempor\u00e1rio')} value={draft?.hp?.temporary} keyboardType="numeric" onChangeText={(temporary) => update({ hp: { ...draft.hp, temporary } })} />
+                <Field label={tt('Temporário')} value={draft?.hp?.temporary} keyboardType="numeric" onChangeText={(temporary) => update({ hp: { ...draft.hp, temporary } })} />
               </View>
             </View>
 
@@ -618,12 +618,12 @@ function CharacterModal({ draft, language, onChange, onSave, onClose }) {
       <Modal visible={racePickerOpen} transparent animationType="fade" onRequestClose={() => setRacePickerOpen(false)}>
         <View style={styles.modalBackground}>
           <View style={styles.racePicker}>
-            <Text style={styles.sectionTitle}>{tt('Escolher ra\u00e7a')}</Text>
+            <Text style={styles.sectionTitle}>{tt('Escolher raça')}</Text>
             <TextInput
               style={styles.input}
               value={raceQuery}
               onChangeText={setRaceQuery}
-              placeholder={tt('Filtrar ra\u00e7as')}
+              placeholder={tt('Filtrar raças')}
               placeholderTextColor={colors.textMuted}
             />
             <ScrollView style={styles.raceList}>

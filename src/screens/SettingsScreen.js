@@ -32,7 +32,7 @@ export default function SettingsScreen({ language, settings = {}, onSettingsChan
 
   return (
     <ScrollView contentContainerStyle={styles.content}>
-      <Text style={styles.eyebrow}>RPG COMBAT TRACKER</Text>
+      <Text style={styles.eyebrow}>{t('RPG COMBAT TRACKER', currentLanguage)}</Text>
       <Text style={styles.title}>{t('settingsTitle', currentLanguage)}</Text>
       <Text style={styles.subtitle}>{t('settingsSubtitle', currentLanguage)}</Text>
 
