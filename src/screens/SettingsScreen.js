@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { FadeInView, PressableScale } from '../components/MicroInteractions';
+import { APP_VERSION } from '../data/appInfo';
 import { LANGUAGES, activeLanguage, t } from '../services/i18nService';
 import { colors, radii, spacing } from '../theme';
 import HelpScreen from './HelpScreen';
@@ -70,6 +71,14 @@ export default function SettingsScreen({ language, settings = {}, onSettingsChan
           );
         })}
       </FadeInView>
+
+      <FadeInView animationKey="settings-version" delay={80} style={styles.card}>
+        <Text style={styles.cardTitle}>{t('settingsVersionTitle', currentLanguage)}</Text>
+        <View style={styles.versionRow}>
+          <Text style={styles.optionText}>{t('settingsVersionLabel', currentLanguage)}</Text>
+          <Text style={styles.versionValue}>{APP_VERSION}</Text>
+        </View>
+      </FadeInView>
     </ScrollView>
   );
 }
@@ -92,5 +101,7 @@ const styles = StyleSheet.create({
   optionActive: { backgroundColor: colors.primarySoft, borderColor: colors.primary },
   optionText: { color: colors.text, fontWeight: '900' },
   optionTextActive: { color: colors.primary },
+  versionRow: { alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between' },
+  versionValue: { color: colors.primary, fontSize: 16, fontWeight: '900' },
   muted: { color: colors.textMuted, fontSize: 12, marginTop: 3 },
 });
