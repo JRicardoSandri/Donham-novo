@@ -299,6 +299,10 @@ const magicItems = magicRows.map(([name, value, weight, rarity, requiresAttuneme
   description,
 }));
 
+export function catalogKeyForItem(item = {}) {
+  return `${item.category || 'Personalizado'}::${item.name || ''}`;
+}
+
 export const EQUIPMENT_CATEGORIES = ['Todos', 'Armas', 'Armaduras', 'Equipamento', 'Ferramentas', 'Montarias', 'Veiculos', 'Bens', 'Itens Magicos', 'Personalizado'];
 export const EQUIPMENT_CATALOG = [
   ...weapons,
@@ -309,4 +313,5 @@ export const EQUIPMENT_CATALOG = [
   ...vehicles,
   ...tradeGoods,
   ...magicItems,
-].sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'));
+].map((item) => ({ ...item, catalogKey: catalogKeyForItem(item) }))
+  .sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'));

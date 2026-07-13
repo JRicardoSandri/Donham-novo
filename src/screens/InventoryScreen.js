@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { Modal, ScrollView, StyleSheet, Switch, Text, TextInput, View } from 'react-native';
 import { FadeInView, PressableScale } from '../components/MicroInteractions';
-import { EQUIPMENT_CATALOG, EQUIPMENT_CATEGORIES } from '../data/equipmentCatalog';
+import { EQUIPMENT_CATALOG, EQUIPMENT_CATEGORIES, catalogKeyForItem } from '../data/equipmentCatalog';
 import { useCampaign } from '../services/CampaignContext';
 import { gameTerm, itemDescription, itemName, itemRarity, itemValue, tr } from '../services/i18nService';
 import {
@@ -16,6 +16,7 @@ import { colors, radii, spacing } from '../theme';
 const EMPTY_ITEM = {
   id: null,
   characterId: null,
+  catalogKey: '',
   name: '',
   quantity: '1',
   weight: '0',
@@ -62,9 +63,25 @@ export default function InventoryScreen({ language = 'pt-BR' }) {
     () => characters.find((character) => character.id === selectedCharacterId) || null,
     [characters, selectedCharacterId]
   );
-  const catalogItems = useMemo(
-    () => [...EQUIPMENT_CATALOG, ...(state?.customItems || [])],
-    [state?.customItems]
+  const catalogItems = useMemo(() => {
+    const officialLabels = new Set();
+    EQUIPMENT_CATALOG.forEach((item) => {
+      [
+        item.name,
+        itemName(item.name, 'pt-BR'),
+        itemName(item.name, 'en'),
+        itemName(item.name, 'es'),
+      ].forEach((label) => officialLabels.add(`${item.category}::${String(label || '').trim().toLowerCase()}`));
+    });
+    const customItems = (state?.customItems || []).filter((item) => (
+      item.catalogKey
+        || !officialLabels.has(`${item.category || 'Personalizado'}::${String(item.name || '').trim().toLowerCase()}`)
+    ));
+    return [...EQUIPMENT_CATALOG, ...customItems];
+  }, [state?.customItems]);
+  const catalogByKey = useMemo(
+    () => new Map(catalogItems.map((item) => [item.catalogKey || catalogKeyForItem(item), item])),
+    [catalogItems]
   );
   const catalogCategories = useMemo(
     () => EQUIPMENT_CATEGORIES.filter((category) =>
@@ -75,22 +92,78 @@ export default function InventoryScreen({ language = 'pt-BR' }) {
   const visibleCatalogItems = useMemo(
     () => catalogItems
       .filter((item) => catalogCategory === 'Todos' || item.category === catalogCategory)
-      .filter((item) => `${item.name} ${itemName(item.name, language)} ${item.description} ${itemDescription(item.description, language)} ${item.rarity || ''} ${itemRarity(item.rarity || '', language)}`.toLowerCase().includes(catalogQuery.trim().toLowerCase())),
+      .filter((item) => `${item.name} ${itemName(item.name, language)} ${item.description} ${localizedItemDescription(item)} ${item.rarity || ''} ${itemRarity(item.rarity || '', language)}`.toLowerCase().includes(catalogQuery.trim().toLowerCase())),
     [catalogItems, catalogCategory, catalogQuery, language]
   );
 
+  function sourceForItem(item) {
+    const keyed = catalogByKey.get(item.catalogKey) || catalogByKey.get(catalogKeyForItem(item));
+    if (keyed) return keyed;
+
+    const itemCategory = item.category || 'Personalizado';
+    const itemLabel = String(item.name || '').trim().toLowerCase();
+    return catalogItems.find((candidate) => {
+      if ((candidate.category || 'Personalizado') !== itemCategory) return false;
+      return [
+        candidate.name,
+        itemName(candidate.name, 'pt-BR'),
+        itemName(candidate.name, 'en'),
+        itemName(candidate.name, 'es'),
+      ].some((label) => String(label || '').trim().toLowerCase() === itemLabel);
+    }) || item;
+  }
+
+  function localizedItemName(item) {
+    return itemName(sourceForItem(item).name || item.name, language);
+  }
+
+  function localizedItemDescription(item) {
+    return itemDescription(sourceForItem(item).description || item.description, language);
+  }
+
+  function localizedItemValue(item) {
+    return itemValue(sourceForItem(item).value || item.value, language);
+  }
+
+  function localizedItemRarity(item) {
+    return itemRarity(sourceForItem(item).rarity || item.rarity, language);
+  }
+
+  function applyCatalogItem(item) {
+    setForm((old) => ({
+      ...old,
+      catalogKey: item.catalogKey || catalogKeyForItem(item),
+      name: itemName(item.name, language),
+      weight: String(item.weight),
+      value: localizedItemValue(item),
+      category: item.category,
+      rarity: item.rarity ? localizedItemRarity(item) : '',
+      requiresAttunement: Boolean(item.requiresAttunement),
+      attuned: Boolean(item.attuned),
+      charges: {
+        current: String(item.charges?.current ?? 0),
+        max: String(item.charges?.max ?? 0),
+      },
+      description: localizedItemDescription(item),
+    }));
+    setCatalogOpen(false);
+    setCatalogQuery('');
+  }
+
   function saveItem() {
     if (!form.characterId || !form.name.trim()) return;
-    const libraryItem = {
-      ...form,
-      source: 'custom',
-      quantity: 1,
-      equipped: false,
-      attuned: false,
-    };
+    const libraryItem = form.catalogKey
+      ? null
+      : {
+          ...form,
+          source: 'custom',
+          quantity: 1,
+          equipped: false,
+          attuned: false,
+        };
     setState((old) => ({
       ...old,
-      customItems: catalogItems.some((item) => item.name.trim().toLowerCase() === form.name.trim().toLowerCase())
+      customItems: !libraryItem || catalogItems.some((item) => item.name.trim().toLowerCase() === form.name.trim().toLowerCase())
         ? old.customItems || []
         : [...(old.customItems || []), libraryItem],
       characters: old.characters.map((character) =>
@@ -103,20 +176,25 @@ export default function InventoryScreen({ language = 'pt-BR' }) {
   }
 
   function editItem(characterId, item) {
+    const source = sourceForItem(item);
+    const isCatalogItem = Boolean(item.catalogKey || source.catalogKey);
     setForm({
       ...item,
+      catalogKey: item.catalogKey || source.catalogKey || '',
       characterId,
       quantity: String(item.quantity),
       weight: String(item.weight),
-      value: String(item.value || ''),
+      value: isCatalogItem ? itemValue(source.value || item.value, language) : String(item.value || ''),
       category: item.category || 'Personalizado',
-      rarity: String(item.rarity || ''),
+      rarity: isCatalogItem ? itemRarity(source.rarity || item.rarity, language) : String(item.rarity || ''),
       requiresAttunement: Boolean(item.requiresAttunement),
       attuned: Boolean(item.attuned),
       charges: {
         current: String(item.charges?.current ?? 0),
         max: String(item.charges?.max ?? 0),
       },
+      name: isCatalogItem ? itemName(source.name || item.name, language) : String(item.name || ''),
+      description: isCatalogItem ? itemDescription(source.description || item.description, language) : String(item.description || ''),
     });
   }
 
@@ -347,19 +425,19 @@ export default function InventoryScreen({ language = 'pt-BR' }) {
             {inventory.map((item) => (
               <FadeInView key={item.id} animationKey={`${selectedCharacter.id}-${item.id}`} style={styles.item}>
                 <View style={styles.flex}>
-                  <Text style={styles.itemName}>{item.equipped ? `[${tt('E')}] ` : ''}{itemName(item.name, language)}</Text>
+                  <Text style={styles.itemName}>{item.equipped ? `[${tt('E')}] ` : ''}{localizedItemName(item)}</Text>
                   <Text style={styles.muted}>
                     {item.quantity} × {item.weight} kg = {(item.quantity * item.weight).toFixed(1)} kg
                   </Text>
-                  {!!item.value && <Text style={styles.value}>{itemValue(item.value, language)} · {term(item.category || 'Personalizado')}</Text>}
+                  {!!item.value && <Text style={styles.value}>{localizedItemValue(item)} · {term(item.category || 'Personalizado')}</Text>}
                   {item.category === 'Itens Magicos' && (
                     <Text style={styles.value}>
-                      {item.rarity ? itemRarity(item.rarity, language) : tt('Raridade não informada')}
+                      {item.rarity ? localizedItemRarity(item) : tt('Raridade não informada')}
                       {item.requiresAttunement ? ` - ${item.attuned ? tt('sintonizado') : tt('requer sintonização')}` : ''}
                       {item.charges?.max ? ` - ${tt('cargas')} ${item.charges.current}/${item.charges.max}` : ''}
                     </Text>
                   )}
-                  {!!item.description && <Text style={styles.description}>{itemDescription(item.description, language)}</Text>}
+                  {!!item.description && <Text style={styles.description}>{localizedItemDescription(item)}</Text>}
                 </View>
                 <PressableScale style={styles.action} onPress={() => editItem(selectedCharacter.id, item)}>
                   <Text style={styles.actionText}>{tt('Editar')}</Text>
@@ -403,30 +481,12 @@ export default function InventoryScreen({ language = 'pt-BR' }) {
                   <PressableScale
                     key={`${item.category}-${item.name}`}
                     style={styles.catalogItem}
-                    onPress={() => {
-                      setForm((old) => ({
-                        ...old,
-                        name: item.name,
-                        weight: String(item.weight),
-                        value: item.value,
-                        category: item.category,
-                        rarity: item.rarity || '',
-                        requiresAttunement: Boolean(item.requiresAttunement),
-                        attuned: Boolean(item.attuned),
-                        charges: {
-                          current: String(item.charges?.current ?? 0),
-                          max: String(item.charges?.max ?? 0),
-                        },
-                        description: item.description,
-                      }));
-                      setCatalogOpen(false);
-                      setCatalogQuery('');
-                    }}
+                    onPress={() => applyCatalogItem(item)}
                   >
                     <View style={styles.flex}>
-                      <Text style={styles.itemName}>{itemName(item.name, language)}</Text>
-                      <Text style={styles.muted}>{term(item.category)} · {itemValue(item.value, language)} · {item.weight} kg</Text>
-                      <Text style={styles.description}>{itemDescription(item.description, language)}</Text>
+                      <Text style={styles.itemName}>{localizedItemName(item)}</Text>
+                      <Text style={styles.muted}>{term(item.category)} · {localizedItemValue(item)} · {item.weight} kg</Text>
+                      <Text style={styles.description}>{localizedItemDescription(item)}</Text>
                     </View>
                   </PressableScale>
                 ))}
@@ -436,6 +496,7 @@ export default function InventoryScreen({ language = 'pt-BR' }) {
                   onPress={() => {
                     setForm((old) => ({
                       ...old,
+                      catalogKey: '',
                       name: catalogQuery.trim(),
                       category: catalogCategory === 'Todos' ? 'Personalizado' : catalogCategory,
                     }));

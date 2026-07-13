@@ -1,6 +1,7 @@
 export function createInventoryItem(input = {}) {
   return {
     id: input.id || `item-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+    catalogKey: String(input.catalogKey || '').trim(),
     name: String(input.name || '').trim(),
     quantity: Math.max(1, Number(input.quantity) || 1),
     weight: Math.max(0, Number(input.weight) || 0),
