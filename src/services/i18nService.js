@@ -83,8 +83,8 @@ const TEXT_TRANSLATIONS = {
     'Carregando recursos...': 'Loading resources...',
     'Carregando combate...': 'Loading combat...',
     'Carregando inventário...': 'Loading inventory...',
-    '{current} / {capacity} kg · {count} {items}': '{current} / {capacity} lb · {count} {items}',
-    '{quantity} × {weight} kg = {total} kg': '{quantity} × {weight} lb = {total} lb',
+    '{current} / {capacity} kg · {count} {items}': '{current} / {capacity} lb. · {count} {items}',
+    '{quantity} × {weight} kg = {total} kg': '{quantity} × {weight} lb. = {total} lb.',
     'Suas campanhas': 'Your campaigns',
     'Organize grupos e personagens sem prender o app a uma única mesa.': 'Organize parties and characters without locking the app to one campaign.',
     'Não foi possível salvar os dados neste dispositivo. Tente novamente antes de fechar o app.': 'The app could not save data on this device. Try again before closing it.',
@@ -135,11 +135,11 @@ const TEXT_TRANSLATIONS = {
     'Filtrar raças': 'Filter races',
     'Antecedente': 'Background',
     'Alinhamento': 'Alignment',
-    'Deslocamento (m)': 'Speed (ft)',
+    'Deslocamento (m)': 'Speed (ft.)',
     'Mod. iniciativa': 'Initiative mod.',
     'Porte': 'Size',
-    'Médio · FOR × 7,5 kg': 'Medium · STR × 15 lb',
-    'Grande · FOR × 15 kg': 'Large · STR × 30 lb',
+    'Médio · FOR × 7,5 kg': 'Medium · STR × 15 lb.',
+    'Grande · FOR × 15 kg': 'Large · STR × 30 lb.',
     'Pontos de Vida': 'Hit Points',
     'Atual': 'Current',
     'Máximo': 'Maximum',
@@ -201,7 +201,7 @@ const TEXT_TRANSLATIONS = {
     'Círculo original': 'Original level',
     'Nível superior': 'Higher level',
     'disp.': 'available',
-    'Conjuração': 'Casting',
+    'Conjuração': 'Casting Time',
     'Alcance': 'Range',
     'Duração': 'Duration',
     'Sim': 'Yes',
@@ -261,7 +261,7 @@ const TEXT_TRANSLATIONS = {
 
     'INVENTÁRIO': 'INVENTORY',
     'Equipamento e carga': 'Equipment and load',
-    'A capacidade usa Força × 7,5 kg para porte Médio e × 15 kg para porte Grande.': 'Capacity uses Strength × 15 lb for Medium creatures and × 30 lb for Large creatures.',
+    'A capacidade usa Força × 7,5 kg para porte Médio e × 15 kg para porte Grande.': 'Carrying capacity uses Strength × 15 lb. for Medium creatures and × 30 lb. for Large creatures.',
     'Crie um personagem na aba Grupos para montar o inventário.': 'Create a character in the Characters tab to build an inventory.',
     'item': 'item',
     'itens': 'items',
@@ -278,7 +278,7 @@ const TEXT_TRANSLATIONS = {
     'Adicionar item': 'Add item',
     'Escolher no catálogo': 'Choose from catalog',
     'Quantidade': 'Quantity',
-    'Peso (kg)': 'Weight (lb)',
+    'Peso (kg)': 'Weight (lb.)',
     'Valor (ex.: 10 po)': 'Value (e.g. 10 gp)',
     'Raridade': 'Rarity',
     'Requer sintonização': 'Requires attunement',
@@ -326,10 +326,10 @@ const TEXT_TRANSLATIONS = {
     'requer sintonização': 'requires attunement',
     'Carregando inventário...': 'Loading inventory...',
     'INVENTÁRIO': 'INVENTORY',
-    'A capacidade usa Força × 7,5 kg para porte Médio e × 15 kg para porte Grande.': 'Capacity uses Strength × 15 lb for Medium creatures and × 30 lb for Large creatures.',
+    'A capacidade usa Força × 7,5 kg para porte Médio e × 15 kg para porte Grande.': 'Carrying capacity uses Strength × 15 lb. for Medium creatures and × 30 lb. for Large creatures.',
     'Crie um personagem na aba Grupos para montar o inventário.': 'Create a character in the Characters tab to build an inventory.',
     'no inventário': 'in inventory',
-    'Conjuração': 'Casting',
+    'Conjuração': 'Casting Time',
     'Duração': 'Duration',
     'Próximo nível': 'Next level',
     'Nível máximo': 'Max level',
@@ -341,8 +341,8 @@ const TEXT_TRANSLATIONS = {
     'Carregando recursos...': 'Cargando recursos...',
     'Carregando combate...': 'Cargando combate...',
     'Carregando inventário...': 'Cargando inventario...',
-    '{current} / {capacity} kg · {count} {items}': '{current} / {capacity} lb · {count} {items}',
-    '{quantity} × {weight} kg = {total} kg': '{quantity} × {weight} lb = {total} lb',
+    '{current} / {capacity} kg · {count} {items}': '{current} / {capacity} lb. · {count} {items}',
+    '{quantity} × {weight} kg = {total} kg': '{quantity} × {weight} lb. = {total} lb.',
     'Suas campanhas': 'Tus campañas',
     'Organize grupos e personagens sem prender o app a uma única mesa.': 'Organiza grupos y personajes sin atar la app a una sola mesa.',
     'Nome do novo grupo': 'Nombre del nuevo grupo',
@@ -378,8 +378,8 @@ const TEXT_TRANSLATIONS = {
     'Antecedente': 'Trasfondo',
     'Alinhamento': 'Alineamiento',
     'Pontos de Vida': 'Puntos de golpe',
-    'Médio · FOR × 7,5 kg': 'Mediano · FUE × 15 lb',
-    'Grande · FOR × 15 kg': 'Grande · FUE × 30 lb',
+    'Médio · FOR × 7,5 kg': 'Mediano · FUE × 15 lb.',
+    'Grande · FOR × 15 kg': 'Grande · FUE × 30 lb.',
     'Atual': 'Actual',
     'Máximo': 'Máximo',
     'Temporário': 'Temporal',
@@ -416,7 +416,7 @@ const TEXT_TRANSLATIONS = {
     'Círculo original': 'Nivel original',
     'Nível superior': 'Nivel superior',
     'disp.': 'disp.',
-    'Conjuração': 'Lanzamiento',
+    'Conjuração': 'Tiempo de lanzamiento',
     'Alcance': 'Alcance',
     'Duração': 'Duración',
     'Sim': 'Sí',
@@ -474,7 +474,7 @@ const TEXT_TRANSLATIONS = {
     'Adicionar item': 'Añadir objeto',
     'Escolher no catálogo': 'Elegir del catálogo',
     'Quantidade': 'Cantidad',
-    'Peso (kg)': 'Peso (lb)',
+    'Peso (kg)': 'Peso (lb.)',
     'Valor (ex.: 10 po)': 'Valor (ej.: 10 po)',
     'Raridade': 'Rareza',
     'Requer sintonização': 'Requiere sintonización',
@@ -523,8 +523,8 @@ const TEXT_TRANSLATIONS = {
     'Deslocamento (m)': 'Movimiento (pies)',
     'Mod. iniciativa': 'Mod. iniciativa',
     'Porte': 'Tamaño',
-    'Médio · FOR × 7,5 kg': 'Mediano · FUE × 15 lb',
-    'Grande · FOR × 15 kg': 'Grande · FUE × 30 lb',
+    'Médio · FOR × 7,5 kg': 'Mediano · FUE × 15 lb.',
+    'Grande · FOR × 15 kg': 'Grande · FUE × 30 lb.',
     'Esta classe não possui recursos automáticos neste nível.': 'Esta clase no tiene recursos automáticos en este nivel.',
     'Crie personagens na aba Grupos para acompanhar seus recursos.': 'Crea personajes en la pestaña Personajes para seguir sus recursos.',
     'usos disponíveis': 'usos disponibles',
@@ -568,8 +568,8 @@ const TEXT_TRANSLATIONS = {
     'requer sintonização': 'requiere sintonización',
     'Carregando inventário...': 'Cargando inventario...',
     'INVENTÁRIO': 'INVENTARIO',
-    'A capacidade usa Força × 7,5 kg para porte Médio e × 15 kg para porte Grande.': 'La capacidad usa Fuerza × 15 lb para tamaño Mediano y × 30 lb para tamaño Grande.',
-    'Conjuração': 'Lanzamiento',
+    'A capacidade usa Força × 7,5 kg para porte Médio e × 15 kg para porte Grande.': 'La capacidad de carga usa Fuerza × 15 lb. para tamaño Mediano y × 30 lb. para tamaño Grande.',
+    'Conjuração': 'Tiempo de lanzamiento',
     'Duração': 'Duración',
     'Próximo nível': 'Siguiente nivel',
     'Nível máximo': 'Nivel máximo',
@@ -2510,11 +2510,11 @@ function formatUnitNumber(value, language) {
 function convertMetricText(text, language) {
   const normalizedLanguage = normalizeLanguage(language);
   if (normalizedLanguage === 'pt-BR') return text;
-  const distanceUnit = normalizedLanguage === 'es' ? 'pies' : 'ft';
+  const distanceUnit = normalizedLanguage === 'es' ? 'pies' : 'ft.';
   return String(text || '')
     .replace(/(\d+(?:[.,]\d+)?)\s*kg\b/g, (_, number) => {
       const kg = Number(number.replace(',', '.')) || 0;
-      return `${formatUnitNumber(kg * 2, normalizedLanguage)} lb`;
+      return `${formatUnitNumber(kg * 2, normalizedLanguage)} lb.`;
     })
     .replace(/(\d+(?:[.,]\d+)?)\s*m\b/g, (_, number) => {
       const meters = Number(number.replace(',', '.')) || 0;
@@ -2570,12 +2570,12 @@ export function usesImperialUnits(language) {
 }
 
 export function weightUnitLabel(language) {
-  return usesImperialUnits(language) ? 'lb' : 'kg';
+  return usesImperialUnits(language) ? 'lb.' : 'kg';
 }
 
 export function distanceUnitLabel(language) {
   const normalizedLanguage = normalizeLanguage(language);
-  if (normalizedLanguage === 'en') return 'ft';
+  if (normalizedLanguage === 'en') return 'ft.';
   if (normalizedLanguage === 'es') return 'pies';
   return 'm';
 }
@@ -2745,22 +2745,38 @@ export function spellMetaText(value, language = 'pt-BR') {
       const meters = Number(number.replace(',', '.')) || 0;
       return `${Math.round(meters / 0.3)} ${feetUnit}`;
     });
+  // Ordem importa: frases mais longas antes das curtas ('Concentração' e
+  // 'reação...' antes de 'ação', senão viram "Concentraction"/"reaction, que...").
   const replacements = normalizedLanguage === 'es'
     ? [
         ['Concentração', 'Concentración'], ['ConcentraÃ§Ã£o', 'Concentración'],
-        ['até', 'hasta'], ['atÃ©', 'hasta'],
+        ['reação, que você faz quando é', 'reacción, que realizas cuando'],
+        ['reação, que você faz em', 'reacción, que realizas en'],
+        ['reação, que você realiza', 'reacción, que realizas'],
+        ['reação', 'reacción'],
+        ['ação bônus', 'acción adicional'], ['ação', 'acción'],
+        [' ou ', ' o '],
+        ['Até', 'Hasta'], ['até', 'hasta'], ['atÃ©', 'hasta'],
         ['Instantânea', 'Instantánea'], ['InstantÃ¢nea', 'Instantánea'],
         ['Toque', 'Toque'], ['Pessoal', 'Personal'], ['Visão', 'Vista'], ['VisÃ£o', 'Vista'],
-        ['Ilimitado', 'Ilimitado'], ['Especial', 'Especial'], ['rodadas', 'rondas'], ['dias', 'días'],
+        ['Ilimitado', 'Ilimitado'], ['Especial', 'Especial'],
+        ['rodadas', 'rondas'], ['rodada', 'ronda'], ['dias', 'días'],
         ['quilômetro', 'kilómetro'], ['quilÃ´metro', 'kilómetro'], ['quilômetros', 'kilómetros'], ['quilÃ´metros', 'kilómetros'],
         ['metros', 'metros'], ['metro', 'metro'], ['minuto', 'minuto'], ['hora', 'hora'],
       ]
     : [
         ['Concentração', 'Concentration'], ['ConcentraÃ§Ã£o', 'Concentration'],
-        ['até', 'up to'], ['atÃ©', 'up to'],
+        ['reação, que você faz quando é', 'reaction, which you take when'],
+        ['reação, que você faz em', 'reaction, which you take in'],
+        ['reação, que você realiza', 'reaction, which you take'],
+        ['reação', 'reaction'],
+        ['ação bônus', 'bonus action'], ['ação', 'action'],
+        [' ou ', ' or '],
+        ['Até', 'Up to'], ['até', 'up to'], ['atÃ©', 'up to'],
         ['Instantânea', 'Instantaneous'], ['InstantÃ¢nea', 'Instantaneous'],
         ['Toque', 'Touch'], ['Pessoal', 'Self'], ['Visão', 'Sight'], ['VisÃ£o', 'Sight'],
-        ['Ilimitado', 'Unlimited'], ['Especial', 'Special'], ['rodadas', 'rounds'], ['dias', 'days'],
+        ['Ilimitado', 'Unlimited'], ['Especial', 'Special'],
+        ['rodadas', 'rounds'], ['rodada', 'round'], ['dias', 'days'],
         ['quilômetro', 'kilometer'], ['quilÃ´metro', 'kilometer'], ['quilômetros', 'kilometers'], ['quilÃ´metros', 'kilometers'],
         ['metros', 'meters'], ['metro', 'meter'], ['minuto', 'minute'], ['hora', 'hour'],
       ];
