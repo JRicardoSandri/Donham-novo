@@ -257,7 +257,12 @@ export default function InventoryScreen({ language = 'pt-BR' }) {
             <View style={styles.flex}>
               <Text style={styles.cardTitle}>{character.name}</Text>
               <Text style={[styles.weight, overloaded && styles.overloaded]}>
-                {currentWeight.toFixed(1)} / {capacity} kg · {inventory.length} {inventory.length === 1 ? tt('item') : tt('itens')}
+                {tt('{current} / {capacity} kg · {count} {items}', {
+                  current: currentWeight.toFixed(1),
+                  capacity,
+                  count: inventory.length,
+                  items: inventory.length === 1 ? tt('item') : tt('itens'),
+                })}
               </Text>
               {overloaded && <Text style={styles.overloadLabel}>{tt('SOBRECARGA')}</Text>}
             </View>
@@ -427,7 +432,11 @@ export default function InventoryScreen({ language = 'pt-BR' }) {
                 <View style={styles.flex}>
                   <Text style={styles.itemName}>{item.equipped ? `[${tt('E')}] ` : ''}{localizedItemName(item)}</Text>
                   <Text style={styles.muted}>
-                    {item.quantity} × {item.weight} kg = {(item.quantity * item.weight).toFixed(1)} kg
+                    {tt('{quantity} × {weight} kg = {total} kg', {
+                      quantity: item.quantity,
+                      weight: item.weight,
+                      total: (item.quantity * item.weight).toFixed(1),
+                    })}
                   </Text>
                   {!!item.value && <Text style={styles.value}>{localizedItemValue(item)} · {term(item.category || 'Personalizado')}</Text>}
                   {item.category === 'Itens Magicos' && (
