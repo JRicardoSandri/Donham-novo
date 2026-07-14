@@ -83,8 +83,8 @@ const TEXT_TRANSLATIONS = {
     'Carregando recursos...': 'Loading resources...',
     'Carregando combate...': 'Loading combat...',
     'Carregando inventário...': 'Loading inventory...',
-    '{current} / {capacity} kg · {count} {items}': '{current} / {capacity} kg · {count} {items}',
-    '{quantity} × {weight} kg = {total} kg': '{quantity} × {weight} kg = {total} kg',
+    '{current} / {capacity} kg · {count} {items}': '{current} / {capacity} lb · {count} {items}',
+    '{quantity} × {weight} kg = {total} kg': '{quantity} × {weight} lb = {total} lb',
     'Suas campanhas': 'Your campaigns',
     'Organize grupos e personagens sem prender o app a uma única mesa.': 'Organize parties and characters without locking the app to one campaign.',
     'Não foi possível salvar os dados neste dispositivo. Tente novamente antes de fechar o app.': 'The app could not save data on this device. Try again before closing it.',
@@ -135,11 +135,11 @@ const TEXT_TRANSLATIONS = {
     'Filtrar raças': 'Filter races',
     'Antecedente': 'Background',
     'Alinhamento': 'Alignment',
-    'Deslocamento (m)': 'Speed (m)',
+    'Deslocamento (m)': 'Speed (ft)',
     'Mod. iniciativa': 'Initiative mod.',
     'Porte': 'Size',
-    'Médio · FOR × 7,5 kg': 'Medium · STR × 7.5 kg',
-    'Grande · FOR × 15 kg': 'Large · STR × 15 kg',
+    'Médio · FOR × 7,5 kg': 'Medium · STR × 15 lb',
+    'Grande · FOR × 15 kg': 'Large · STR × 30 lb',
     'Pontos de Vida': 'Hit Points',
     'Atual': 'Current',
     'Máximo': 'Maximum',
@@ -261,7 +261,7 @@ const TEXT_TRANSLATIONS = {
 
     'INVENTÁRIO': 'INVENTORY',
     'Equipamento e carga': 'Equipment and load',
-    'A capacidade usa Força × 7,5 kg para porte Médio e × 15 kg para porte Grande.': 'Capacity uses Strength × 7.5 kg for Medium creatures and × 15 kg for Large creatures.',
+    'A capacidade usa Força × 7,5 kg para porte Médio e × 15 kg para porte Grande.': 'Capacity uses Strength × 15 lb for Medium creatures and × 30 lb for Large creatures.',
     'Crie um personagem na aba Grupos para montar o inventário.': 'Create a character in the Characters tab to build an inventory.',
     'item': 'item',
     'itens': 'items',
@@ -278,7 +278,7 @@ const TEXT_TRANSLATIONS = {
     'Adicionar item': 'Add item',
     'Escolher no catálogo': 'Choose from catalog',
     'Quantidade': 'Quantity',
-    'Peso (kg)': 'Weight (kg)',
+    'Peso (kg)': 'Weight (lb)',
     'Valor (ex.: 10 po)': 'Value (e.g. 10 gp)',
     'Raridade': 'Rarity',
     'Requer sintonização': 'Requires attunement',
@@ -326,7 +326,7 @@ const TEXT_TRANSLATIONS = {
     'requer sintonização': 'requires attunement',
     'Carregando inventário...': 'Loading inventory...',
     'INVENTÁRIO': 'INVENTORY',
-    'A capacidade usa Força × 7,5 kg para porte Médio e × 15 kg para porte Grande.': 'Capacity uses Strength × 7.5 kg for Medium creatures and × 15 kg for Large creatures.',
+    'A capacidade usa Força × 7,5 kg para porte Médio e × 15 kg para porte Grande.': 'Capacity uses Strength × 15 lb for Medium creatures and × 30 lb for Large creatures.',
     'Crie um personagem na aba Grupos para montar o inventário.': 'Create a character in the Characters tab to build an inventory.',
     'no inventário': 'in inventory',
     'Conjuração': 'Casting',
@@ -341,8 +341,8 @@ const TEXT_TRANSLATIONS = {
     'Carregando recursos...': 'Cargando recursos...',
     'Carregando combate...': 'Cargando combate...',
     'Carregando inventário...': 'Cargando inventario...',
-    '{current} / {capacity} kg · {count} {items}': '{current} / {capacity} kg · {count} {items}',
-    '{quantity} × {weight} kg = {total} kg': '{quantity} × {weight} kg = {total} kg',
+    '{current} / {capacity} kg · {count} {items}': '{current} / {capacity} lb · {count} {items}',
+    '{quantity} × {weight} kg = {total} kg': '{quantity} × {weight} lb = {total} lb',
     'Suas campanhas': 'Tus campañas',
     'Organize grupos e personagens sem prender o app a uma única mesa.': 'Organiza grupos y personajes sin atar la app a una sola mesa.',
     'Nome do novo grupo': 'Nombre del nuevo grupo',
@@ -378,8 +378,8 @@ const TEXT_TRANSLATIONS = {
     'Antecedente': 'Trasfondo',
     'Alinhamento': 'Alineamiento',
     'Pontos de Vida': 'Puntos de golpe',
-    'Médio · FOR × 7,5 kg': 'Mediano · FUE × 7,5 kg',
-    'Grande · FOR × 15 kg': 'Grande · FUE × 15 kg',
+    'Médio · FOR × 7,5 kg': 'Mediano · FUE × 15 lb',
+    'Grande · FOR × 15 kg': 'Grande · FUE × 30 lb',
     'Atual': 'Actual',
     'Máximo': 'Máximo',
     'Temporário': 'Temporal',
@@ -474,7 +474,7 @@ const TEXT_TRANSLATIONS = {
     'Adicionar item': 'Añadir objeto',
     'Escolher no catálogo': 'Elegir del catálogo',
     'Quantidade': 'Cantidad',
-    'Peso (kg)': 'Peso (kg)',
+    'Peso (kg)': 'Peso (lb)',
     'Valor (ex.: 10 po)': 'Valor (ej.: 10 po)',
     'Raridade': 'Rareza',
     'Requer sintonização': 'Requiere sintonización',
@@ -520,11 +520,11 @@ const TEXT_TRANSLATIONS = {
     'Excluir personagem?': '¿Eliminar personaje?',
     'Isso remove "{name}" de todos os grupos e combates. Essa ação não pode ser desfeita.': 'Esto elimina a "{name}" de todos los grupos y combates. Esta acción no se puede deshacer.',
     'Desloc.': 'Mov.',
-    'Deslocamento (m)': 'Movimiento (m)',
+    'Deslocamento (m)': 'Movimiento (pies)',
     'Mod. iniciativa': 'Mod. iniciativa',
     'Porte': 'Tamaño',
-    'Médio · FOR × 7,5 kg': 'Mediano · FUE × 7,5 kg',
-    'Grande · FOR × 15 kg': 'Grande · FUE × 15 kg',
+    'Médio · FOR × 7,5 kg': 'Mediano · FUE × 15 lb',
+    'Grande · FOR × 15 kg': 'Grande · FUE × 30 lb',
     'Esta classe não possui recursos automáticos neste nível.': 'Esta clase no tiene recursos automáticos en este nivel.',
     'Crie personagens na aba Grupos para acompanhar seus recursos.': 'Crea personajes en la pestaña Personajes para seguir sus recursos.',
     'usos disponíveis': 'usos disponibles',
@@ -568,7 +568,7 @@ const TEXT_TRANSLATIONS = {
     'requer sintonização': 'requiere sintonización',
     'Carregando inventário...': 'Cargando inventario...',
     'INVENTÁRIO': 'INVENTARIO',
-    'A capacidade usa Força × 7,5 kg para porte Médio e × 15 kg para porte Grande.': 'La capacidad usa Fuerza × 7,5 kg para tamaño Mediano y × 15 kg para tamaño Grande.',
+    'A capacidade usa Força × 7,5 kg para porte Médio e × 15 kg para porte Grande.': 'La capacidad usa Fuerza × 15 lb para tamaño Mediano y × 30 lb para tamaño Grande.',
     'Conjuração': 'Lanzamiento',
     'Duração': 'Duración',
     'Próximo nível': 'Siguiente nivel',
@@ -2353,6 +2353,13 @@ const ITEM_REPLACEMENTS = {
   ],
 };
 
+const SORTED_ITEM_REPLACEMENTS = Object.fromEntries(
+  Object.entries(ITEM_REPLACEMENTS).map(([language, pairs]) => [
+    language,
+    [...pairs].sort(([left], [right]) => right.length - left.length),
+  ])
+);
+
 const ITEM_POST_REPLACEMENTS = {
   en: [
     ['Besta de Mão', 'Hand Crossbow'],
@@ -2487,24 +2494,48 @@ const ITEM_POST_REPLACEMENTS = {
   ],
 };
 
+const SORTED_ITEM_POST_REPLACEMENTS = Object.fromEntries(
+  Object.entries(ITEM_POST_REPLACEMENTS).map(([language, pairs]) => [
+    language,
+    [...pairs].sort(([left], [right]) => right.length - left.length),
+  ])
+);
+
+function formatUnitNumber(value, language) {
+  const rounded = Math.round(value * 10) / 10;
+  const text = String(rounded);
+  return normalizeLanguage(language) === 'es' ? text.replace('.', ',') : text;
+}
+
+function convertMetricText(text, language) {
+  const normalizedLanguage = normalizeLanguage(language);
+  if (normalizedLanguage === 'pt-BR') return text;
+  const distanceUnit = normalizedLanguage === 'es' ? 'pies' : 'ft';
+  return String(text || '')
+    .replace(/(\d+(?:[.,]\d+)?)\s*kg\b/g, (_, number) => {
+      const kg = Number(number.replace(',', '.')) || 0;
+      return `${formatUnitNumber(kg * 2, normalizedLanguage)} lb`;
+    })
+    .replace(/(\d+(?:[.,]\d+)?)\s*m\b/g, (_, number) => {
+      const meters = Number(number.replace(',', '.')) || 0;
+      return `${formatUnitNumber(Math.round(meters / 0.3), normalizedLanguage)} ${distanceUnit}`;
+    });
+}
+
 function postProcessItemText(text, language) {
   const normalizedLanguage = normalizeLanguage(language);
   let output = String(text || '');
-  [...(ITEM_POST_REPLACEMENTS[normalizedLanguage] || [])]
-    .sort(([left], [right]) => right.length - left.length)
-    .forEach(([from, to]) => {
+  (SORTED_ITEM_POST_REPLACEMENTS[normalizedLanguage] || []).forEach(([from, to]) => {
     output = output.split(from).join(to);
   });
-  return output;
+  return convertMetricText(output, normalizedLanguage);
 }
 
 function replaceKnownPhrases(text, language) {
   const normalizedLanguage = normalizeLanguage(language);
   let output = cleanEncoding(text);
   if (normalizedLanguage === 'pt-BR') return output;
-  [...(ITEM_REPLACEMENTS[normalizedLanguage] || ITEM_REPLACEMENTS.en)]
-    .sort(([left], [right]) => right.length - left.length)
-    .forEach(([from, to]) => {
+  (SORTED_ITEM_REPLACEMENTS[normalizedLanguage] || SORTED_ITEM_REPLACEMENTS.en).forEach(([from, to]) => {
     output = output.split(from).join(to);
   });
   return postProcessItemText(output, normalizedLanguage);
@@ -2528,6 +2559,49 @@ export function normalizeLanguage(language) {
   if (value.startsWith('es')) return 'es';
   if (value.startsWith('en')) return 'en';
   return 'pt-BR';
+}
+
+// Unidades oficiais do D&D 5e por idioma: as edições em inglês e espanhol
+// usam pés/libras; a tradução brasileira usa metros/quilogramas.
+// Fatores oficiais das traduções: 5 ft = 1,5 m e 1 lb = 0,5 kg,
+// então a conversão de volta é exata (9 m -> 30 ft, 7,5 kg -> 15 lb).
+export function usesImperialUnits(language) {
+  return normalizeLanguage(language) !== 'pt-BR';
+}
+
+export function weightUnitLabel(language) {
+  return usesImperialUnits(language) ? 'lb' : 'kg';
+}
+
+export function distanceUnitLabel(language) {
+  const normalizedLanguage = normalizeLanguage(language);
+  if (normalizedLanguage === 'en') return 'ft';
+  if (normalizedLanguage === 'es') return 'pies';
+  return 'm';
+}
+
+function roundUnit(value) {
+  return Math.round(value * 100) / 100;
+}
+
+export function displayWeight(kg, language) {
+  const value = Number(kg) || 0;
+  return usesImperialUnits(language) ? roundUnit(value * 2) : roundUnit(value);
+}
+
+export function parseWeightInput(value, language) {
+  const number = Number(String(value ?? '').replace(',', '.')) || 0;
+  return usesImperialUnits(language) ? roundUnit(number / 2) : roundUnit(number);
+}
+
+export function displayDistance(meters, language) {
+  const value = Number(meters) || 0;
+  return usesImperialUnits(language) ? Math.round(value / 0.3) : roundUnit(value);
+}
+
+export function parseDistanceInput(value, language) {
+  const number = Number(String(value ?? '').replace(',', '.')) || 0;
+  return usesImperialUnits(language) ? Math.round(number * 0.3 * 2) / 2 : roundUnit(number);
 }
 
 export function activeLanguage(settings = {}) {
@@ -2659,6 +2733,18 @@ export function spellMetaText(value, language = 'pt-BR') {
   const normalizedLanguage = normalizeLanguage(language);
   if (normalizedLanguage === 'pt-BR') return cleanEncoding(value);
   let output = cleanEncoding(value);
+  const feetUnit = normalizedLanguage === 'es' ? 'pies' : 'feet';
+  const mileUnits = normalizedLanguage === 'es' ? ['milla', 'millas'] : ['mile', 'miles'];
+  output = output
+    .replace(/(\d+(?:[.,]\d+)?)\s*quil[ôo]metros?/gi, (_, number) => {
+      const km = Number(number.replace(',', '.')) || 0;
+      const miles = Math.round((km / 1.5) * 10) / 10;
+      return `${formatUnitNumber(miles, normalizedLanguage)} ${miles === 1 ? mileUnits[0] : mileUnits[1]}`;
+    })
+    .replace(/(\d+(?:[.,]\d+)?)\s*metros?/gi, (_, number) => {
+      const meters = Number(number.replace(',', '.')) || 0;
+      return `${Math.round(meters / 0.3)} ${feetUnit}`;
+    });
   const replacements = normalizedLanguage === 'es'
     ? [
         ['Concentração', 'Concentración'], ['ConcentraÃ§Ã£o', 'Concentración'],
@@ -2691,7 +2777,7 @@ export function criticalErrorText(value, language = 'pt-BR') {
   const replacements = normalizedLanguage === 'es'
     ? [
         ['Perde a Reacao ate o inicio do proximo turno.', 'Pierde la reacción hasta el inicio del próximo turno.'],
-        ['Perde 3 m de deslocamento ate o fim do proximo turno.', 'Pierde 3 m de movimiento hasta el final del próximo turno.'],
+        ['Perde 3 m de deslocamento ate o fim do proximo turno.', 'Pierde 10 pies de movimiento hasta el final del próximo turno.'],
         ['Perde a Acao Bonus ate o fim do proximo turno.', 'Pierde la acción adicional hasta el final del próximo turno.'],
         ['Fica Surdo ate o fim do proximo turno.', 'Queda ensordecido hasta el final del próximo turno.'],
         ['Perde todo o movimento ate o fim do proximo turno.', 'Pierde todo su movimiento hasta el final del próximo turno.'],
@@ -2725,7 +2811,7 @@ export function criticalErrorText(value, language = 'pt-BR') {
       ]
     : [
         ['Perde a Reacao ate o inicio do proximo turno.', 'Loses reaction until the start of the next turn.'],
-        ['Perde 3 m de deslocamento ate o fim do proximo turno.', 'Loses 3 m of movement until the end of the next turn.'],
+        ['Perde 3 m de deslocamento ate o fim do proximo turno.', 'Loses 10 feet of movement until the end of the next turn.'],
         ['Perde a Acao Bonus ate o fim do proximo turno.', 'Loses bonus action until the end of the next turn.'],
         ['Fica Surdo ate o fim do proximo turno.', 'Becomes deafened until the end of the next turn.'],
         ['Perde todo o movimento ate o fim do proximo turno.', 'Loses all movement until the end of the next turn.'],

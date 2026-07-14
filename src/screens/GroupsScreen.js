@@ -16,7 +16,17 @@ import { subclassById, subclassesForClass } from '../data/subclassProgression';
 import { createCharacter } from '../models/Character';
 import { createGroup } from '../models/Group';
 import { useCampaign } from '../services/CampaignContext';
-import { featureText, gameTerm, subclassName, tr } from '../services/i18nService';
+import {
+  displayDistance,
+  displayWeight,
+  distanceUnitLabel,
+  featureText,
+  gameTerm,
+  parseDistanceInput,
+  subclassName,
+  tr,
+  weightUnitLabel,
+} from '../services/i18nService';
 import {
   abilityModifier,
   carryingCapacity,
@@ -121,7 +131,7 @@ export default function GroupsScreen({ language = 'pt-BR' }) {
             ...character,
             xp: String(character.xp),
             armorClass: String(character.armorClass ?? 10),
-            speed: String(character.speed ?? 9),
+            speed: String(displayDistance(character.speed ?? 9, language)),
             initiative: String(character.initiative ?? 0),
             size: character.size || 'medium',
             hp: {
@@ -133,13 +143,20 @@ export default function GroupsScreen({ language = 'pt-BR' }) {
               ATTRIBUTE_FIELDS.map(([key]) => [key, String(character.attributes?.[key] ?? 10)])
             ),
           }
-        : { ...EMPTY_CHARACTER, attributes: { ...EMPTY_CHARACTER.attributes } }
+        : {
+            ...EMPTY_CHARACTER,
+            speed: String(displayDistance(EMPTY_CHARACTER.speed, language)),
+            attributes: { ...EMPTY_CHARACTER.attributes },
+          }
     );
   }
 
   function saveCharacter() {
     if (!activeGroup || !characterDraft?.name.trim()) return;
-    const character = createCharacter(characterDraft);
+    const character = createCharacter({
+      ...characterDraft,
+      speed: parseDistanceInput(characterDraft.speed, language),
+    });
 
     setState((old) => {
       const exists = old.characters.some((item) => item.id === character.id);
@@ -327,12 +344,12 @@ export default function GroupsScreen({ language = 'pt-BR' }) {
                     <Stat label="Prof." value={signedModifier(proficiencyBonus(level))} />
                     <Stat label={tt('Iniciativa')} value={signedModifier(initiative)} />
                     <Stat label={tt('CA')} value={character.armorClass || 10} />
-                    <Stat label={tt('Desloc.')} value={`${character.speed || 9} m`} />
+                    <Stat label={tt('Desloc.')} value={`${displayDistance(character.speed || 9, language)} ${distanceUnitLabel(language)}`} />
                   </View>
                   <View style={styles.statsRow}>
                     <Stat label={tt('PV')} value={`${character.hp?.current || 0}/${character.hp?.max || 1}`} />
                     <Stat label={tt('Temp.')} value={character.hp?.temporary || 0} />
-                    <Stat label={tt('Carga')} value={`${capacity} kg`} />
+                    <Stat label={tt('Carga')} value={`${displayWeight(capacity, language)} ${weightUnitLabel(language)}`} />
                     <Stat label="XP" value={character.xp} />
                   </View>
 

@@ -3,7 +3,17 @@ import { Modal, ScrollView, StyleSheet, Switch, Text, TextInput, View } from 're
 import { FadeInView, PressableScale } from '../components/MicroInteractions';
 import { EQUIPMENT_CATALOG, EQUIPMENT_CATEGORIES, catalogKeyForItem } from '../data/equipmentCatalog';
 import { useCampaign } from '../services/CampaignContext';
-import { gameTerm, itemDescription, itemName, itemRarity, itemValue, tr } from '../services/i18nService';
+import {
+  displayWeight,
+  gameTerm,
+  itemDescription,
+  itemName,
+  itemRarity,
+  itemValue,
+  parseWeightInput,
+  tr,
+  weightUnitLabel,
+} from '../services/i18nService';
 import {
   inventoryCapacity,
   normalizeCoins,
@@ -134,7 +144,7 @@ export default function InventoryScreen({ language = 'pt-BR' }) {
       ...old,
       catalogKey: item.catalogKey || catalogKeyForItem(item),
       name: itemName(item.name, language),
-      weight: String(item.weight),
+      weight: String(displayWeight(item.weight, language)),
       value: localizedItemValue(item),
       category: item.category,
       rarity: item.rarity ? localizedItemRarity(item) : '',
@@ -152,10 +162,11 @@ export default function InventoryScreen({ language = 'pt-BR' }) {
 
   function saveItem() {
     if (!form.characterId || !form.name.trim()) return;
-    const libraryItem = form.catalogKey
+    const normalizedForm = { ...form, weight: String(parseWeightInput(form.weight, language)) };
+    const libraryItem = normalizedForm.catalogKey
       ? null
       : {
-          ...form,
+          ...normalizedForm,
           source: 'custom',
           quantity: 1,
           equipped: false,
@@ -163,12 +174,12 @@ export default function InventoryScreen({ language = 'pt-BR' }) {
         };
     setState((old) => ({
       ...old,
-      customItems: !libraryItem || catalogItems.some((item) => item.name.trim().toLowerCase() === form.name.trim().toLowerCase())
+      customItems: !libraryItem || catalogItems.some((item) => item.name.trim().toLowerCase() === normalizedForm.name.trim().toLowerCase())
         ? old.customItems || []
         : [...(old.customItems || []), libraryItem],
       characters: old.characters.map((character) =>
-        character.id === form.characterId
-          ? { ...character, inventory: upsertInventoryItem(character.inventory, form) }
+        character.id === normalizedForm.characterId
+          ? { ...character, inventory: upsertInventoryItem(character.inventory, normalizedForm) }
           : character
       ),
     }));
@@ -183,7 +194,7 @@ export default function InventoryScreen({ language = 'pt-BR' }) {
       catalogKey: item.catalogKey || source.catalogKey || '',
       characterId,
       quantity: String(item.quantity),
-      weight: String(item.weight),
+      weight: String(displayWeight(item.weight, language)),
       value: isCatalogItem ? itemValue(source.value || item.value, language) : String(item.value || ''),
       category: item.category || 'Personalizado',
       rarity: isCatalogItem ? itemRarity(source.rarity || item.rarity, language) : String(item.rarity || ''),
@@ -258,8 +269,8 @@ export default function InventoryScreen({ language = 'pt-BR' }) {
               <Text style={styles.cardTitle}>{character.name}</Text>
               <Text style={[styles.weight, overloaded && styles.overloaded]}>
                 {tt('{current} / {capacity} kg · {count} {items}', {
-                  current: currentWeight.toFixed(1),
-                  capacity,
+                  current: displayWeight(currentWeight, language).toFixed(1),
+                  capacity: displayWeight(capacity, language),
                   count: inventory.length,
                   items: inventory.length === 1 ? tt('item') : tt('itens'),
                 })}
@@ -293,7 +304,7 @@ export default function InventoryScreen({ language = 'pt-BR' }) {
               <View style={styles.flex}>
                 <Text style={styles.cardTitle}>{selectedCharacter.name}</Text>
                 <Text style={[styles.weight, overloaded && styles.overloaded]}>
-                  {currentWeight.toFixed(1)} / {capacity} kg
+                  {displayWeight(currentWeight, language).toFixed(1)} / {displayWeight(capacity, language)} {weightUnitLabel(language)}
                 </Text>
                 <Text style={styles.muted}>{inventory.length} {inventory.length === 1 ? tt('item') : tt('itens')} {tt('no inventário')}</Text>
               </View>
@@ -434,8 +445,8 @@ export default function InventoryScreen({ language = 'pt-BR' }) {
                   <Text style={styles.muted}>
                     {tt('{quantity} × {weight} kg = {total} kg', {
                       quantity: item.quantity,
-                      weight: item.weight,
-                      total: (item.quantity * item.weight).toFixed(1),
+                      weight: displayWeight(item.weight, language),
+                      total: displayWeight(item.quantity * item.weight, language).toFixed(1),
                     })}
                   </Text>
                   {!!item.value && <Text style={styles.value}>{localizedItemValue(item)} · {term(item.category || 'Personalizado')}</Text>}
@@ -494,7 +505,7 @@ export default function InventoryScreen({ language = 'pt-BR' }) {
                   >
                     <View style={styles.flex}>
                       <Text style={styles.itemName}>{localizedItemName(item)}</Text>
-                      <Text style={styles.muted}>{term(item.category)} · {localizedItemValue(item)} · {item.weight} kg</Text>
+                      <Text style={styles.muted}>{term(item.category)} · {localizedItemValue(item)} · {displayWeight(item.weight, language)} {weightUnitLabel(language)}</Text>
                       <Text style={styles.description}>{localizedItemDescription(item)}</Text>
                     </View>
                   </PressableScale>

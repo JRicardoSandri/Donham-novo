@@ -204,7 +204,7 @@ const QUESTIONS_EN = [
     id: 'inventory',
     question: 'How does inventory work?',
     keywords: ['inventory', 'item', 'items', 'coin', 'coins', 'load', 'weight', 'equipped'],
-    answer: 'In Inventory, open a character. You manage coins, add items, and edit quantity, weight, value, description, and equipped status. Carrying capacity uses STR x 7.5 kg for Medium creatures and STR x 15 kg for Large creatures.',
+    answer: 'In Inventory, open a character. You manage coins, add items, and edit quantity, weight, value, description, and equipped status. Carrying capacity uses STR x 15 lb for Medium creatures and STR x 30 lb for Large creatures.',
   },
   {
     id: 'items',
@@ -315,7 +315,7 @@ const QUESTIONS_ES = [
     id: 'inventory',
     question: 'Como funciona el inventario?',
     keywords: ['inventario', 'objeto', 'objetos', 'moneda', 'monedas', 'carga', 'peso', 'equipado'],
-    answer: 'En Inventario, abre un personaje. Controlas monedas, agregas objetos y editas cantidad, peso, valor, descripcion y equipado. La capacidad de carga usa FUE x 7,5 kg para criaturas Medianas y FUE x 15 kg para criaturas Grandes.',
+    answer: 'En Inventario, abre un personaje. Controlas monedas, agregas objetos y editas cantidad, peso, valor, descripcion y equipado. La capacidad de carga usa FUE x 15 lb para criaturas Medianas y FUE x 30 lb para criaturas Grandes.',
   },
   {
     id: 'items',
