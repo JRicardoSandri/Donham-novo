@@ -3,7 +3,7 @@
     "name": "RPG Combat Tracker",
     "slug": "domhan-rpg-companion-supremo",
     "owner": "ricardosandri",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
@@ -15,6 +15,7 @@
     ],
     "android": {
       "package": "com.domhan.rpgcompanion",
+      "versionCode": 2,
       "adaptiveIcon": {
         "foregroundImage": "./assets/icon.png",
         "backgroundColor": "#080A0E"
@@ -31,7 +32,9 @@
         {
           "android": {
             "compileSdkVersion": 35,
-            "targetSdkVersion": 35
+            "targetSdkVersion": 35,
+            "enableProguardInReleaseBuilds": true,
+            "enableShrinkResourcesInReleaseBuilds": true
           }
         }
       ]
