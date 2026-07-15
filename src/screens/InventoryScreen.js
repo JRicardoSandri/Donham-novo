@@ -597,7 +597,7 @@ const styles = StyleSheet.create({
   catalogButton: { flexDirection: 'row', justifyContent: 'space-between', backgroundColor: colors.primarySoft, borderColor: colors.primaryDark, borderWidth: 1, borderRadius: radii.md, marginTop: spacing.md, padding: 13 },
   catalogButtonText: { color: colors.primary, fontWeight: '900' },
   modalBackground: { flex: 1, backgroundColor: 'rgba(0,0,0,0.78)', justifyContent: 'flex-end' },
-  catalogSheet: { maxHeight: '90%', backgroundColor: colors.surface, borderTopLeftRadius: radii.xl, borderTopRightRadius: radii.xl, padding: spacing.lg },
+  catalogSheet: { flexShrink: 1, backgroundColor: colors.surface, borderTopLeftRadius: radii.xl, borderTopRightRadius: radii.xl, padding: spacing.lg, overflow: 'hidden' },
   categoryGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm, paddingVertical: spacing.md },
   categoryChip: { backgroundColor: colors.surfaceHighlight, borderColor: colors.borderStrong, borderWidth: 1, borderRadius: radii.pill, minWidth: 118, alignItems: 'center', paddingHorizontal: 16, paddingVertical: 11 },
   categoryChipActive: { backgroundColor: colors.primary, borderColor: colors.primary },

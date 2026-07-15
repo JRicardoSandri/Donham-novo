@@ -588,7 +588,7 @@ const styles = StyleSheet.create({
   stabilize: { backgroundColor: colors.successSoft, borderRadius: radii.sm, padding: 9 },
   stabilizeText: { color: colors.success, fontWeight: '900', fontSize: 11 },
   modalBackdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.78)', justifyContent: 'flex-end' },
-  conditionSheet: { maxHeight: '88%', backgroundColor: colors.backgroundRaised, borderTopLeftRadius: radii.xl, borderTopRightRadius: radii.xl, padding: spacing.lg },
+  conditionSheet: { flexShrink: 1, backgroundColor: colors.backgroundRaised, borderTopLeftRadius: radii.xl, borderTopRightRadius: radii.xl, padding: spacing.lg, overflow: 'hidden' },
   sheetHandle: { width: 42, height: 4, backgroundColor: colors.borderStrong, borderRadius: 2, alignSelf: 'center', marginBottom: spacing.lg },
   conditionOption: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, backgroundColor: colors.surface, borderColor: colors.border, borderWidth: 1, borderRadius: radii.md, padding: spacing.md, marginBottom: spacing.sm },
   conditionOptionActive: { borderColor: colors.primary, backgroundColor: colors.primarySoft },

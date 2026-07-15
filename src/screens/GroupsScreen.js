@@ -525,7 +525,7 @@ function CharacterModal({ draft, language, onChange, onSave, onClose }) {
     <Modal visible={Boolean(draft)} transparent animationType="slide" onRequestClose={onClose}>
       <View style={styles.modalBackground}>
         <View style={styles.sheet}>
-          <ScrollView contentContainerStyle={styles.sheetContent}>
+          <ScrollView contentContainerStyle={styles.sheetContent} keyboardShouldPersistTaps="handled">
             <Text style={styles.sectionTitle}>{draft?.id ? tt('Editar personagem') : tt('Novo personagem')}</Text>
             <Field label={tt('Nome')} value={draft?.name} onChangeText={(name) => update({ name })} />
             <Field label={tt('Jogador')} value={draft?.player} onChangeText={(player) => update({ player })} />
@@ -787,9 +787,9 @@ const styles = StyleSheet.create({
   addText: { color: colors.primary, fontWeight: '900' },
   modalBackground: { flex: 1, backgroundColor: 'rgba(0,0,0,0.75)', justifyContent: 'center', padding: spacing.lg },
   modalCard: { backgroundColor: colors.surface, borderRadius: radii.lg, padding: spacing.lg },
-  sheet: { maxHeight: '92%', backgroundColor: colors.surface, borderRadius: radii.lg },
+  sheet: { flexShrink: 1, backgroundColor: colors.surface, borderRadius: radii.lg, overflow: 'hidden' },
   sheetContent: { padding: spacing.lg, paddingBottom: 36 },
-  racePicker: { maxHeight: '82%', backgroundColor: colors.surface, borderRadius: radii.lg, padding: spacing.lg },
+  racePicker: { flexShrink: 1, backgroundColor: colors.surface, borderRadius: radii.lg, padding: spacing.lg, overflow: 'hidden' },
   raceList: { marginVertical: spacing.md },
   raceGroup: { color: colors.primary, fontSize: 11, fontWeight: '900', letterSpacing: 1, marginTop: spacing.md, marginBottom: 6 },
   raceOption: { borderColor: colors.border, borderWidth: 1, borderRadius: radii.md, marginBottom: spacing.sm, padding: 13 },
