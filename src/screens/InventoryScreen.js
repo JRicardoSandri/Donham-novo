@@ -235,7 +235,7 @@ export default function InventoryScreen({ language = 'pt-BR' }) {
   if (!state) return <Text style={styles.loading}>{tt('Carregando inventário...')}</Text>;
 
   return (
-    <ScrollView contentContainerStyle={styles.content}>
+    <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
       <Text style={styles.eyebrow}>{tt('INVENTÁRIO')}</Text>
       <Text style={styles.title}>{tt('Equipamento e carga')}</Text>
       <Text style={styles.subtitle}>{tt('A capacidade usa Força × 7,5 kg para porte Médio e × 15 kg para porte Grande.')}</Text>
@@ -496,7 +496,7 @@ export default function InventoryScreen({ language = 'pt-BR' }) {
             <Text style={styles.resultHint}>
               {tt('{count} itens encontrados', { count: visibleCatalogItems.length })}
             </Text>
-            <ScrollView style={styles.catalogList}>
+            <ScrollView style={styles.catalogList} keyboardShouldPersistTaps="handled">
               {visibleCatalogItems.map((item) => (
                   <PressableScale
                     key={`${item.category}-${item.name}`}

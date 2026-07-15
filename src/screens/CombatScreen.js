@@ -185,7 +185,7 @@ export default function CombatScreen({ language = 'pt-BR' }) {
 
   return (
     <View style={styles.screen}>
-      <ScrollView contentContainerStyle={styles.content}>
+      <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
         <View style={styles.hero}>
           <Text style={styles.eyebrow}>{tt('ENCONTRO ATIVO')}</Text>
           <View style={styles.heroRow}>
@@ -480,7 +480,7 @@ function ConditionModal({ language, participant, onToggle, onClose }) {
           <View style={styles.sheetHandle} />
           <Text style={styles.sectionTitle}>{tt('Condições de {name}', { name: participant?.name })}</Text>
           <Text style={styles.subtitle}>{tt('Toque para aplicar ou remover. Condições incapacitantes encerram concentração.')}</Text>
-          <ScrollView>
+          <ScrollView keyboardShouldPersistTaps="handled">
             {CONDITIONS.map((condition) => {
               const selected = participant?.conditions?.includes(condition.id);
               return (

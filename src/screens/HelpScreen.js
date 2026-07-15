@@ -434,7 +434,7 @@ export default function HelpScreen({ language = 'pt-BR' }) {
   }
 
   return (
-    <ScrollView contentContainerStyle={styles.content}>
+    <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
       <Text style={styles.eyebrow}>{tt('RPG COMBAT TRACKER')}</Text>
       <Text style={styles.title}>{content.title}</Text>
       <Text style={styles.subtitle}>{content.subtitle}</Text>

@@ -255,7 +255,7 @@ export default function GroupsScreen({ language = 'pt-BR' }) {
 
   return (
     <View style={styles.screen}>
-      <ScrollView contentContainerStyle={styles.content}>
+      <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
         <Text style={styles.eyebrow}>{tt('RPG COMPANION')}</Text>
         <Text style={styles.title}>{tt('Suas campanhas')}</Text>
         <Text style={styles.subtitle}>{tt('Organize grupos e personagens sem prender o app a uma única mesa.')}</Text>
@@ -641,7 +641,7 @@ function CharacterModal({ draft, language, onChange, onSave, onClose }) {
               placeholder={tt('Filtrar raças')}
               placeholderTextColor={colors.textMuted}
             />
-            <ScrollView style={styles.raceList}>
+            <ScrollView style={styles.raceList} keyboardShouldPersistTaps="handled">
               {RACE_OPTIONS
                 .filter((option) => {
                   const query = raceQuery.trim().toLowerCase();

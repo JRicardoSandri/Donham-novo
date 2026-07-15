@@ -192,7 +192,7 @@ export default function ResourcesScreen({ language = 'pt-BR' }) {
   if (!state) return <Text style={styles.loading}>{tt('Carregando recursos...')}</Text>;
 
   return (
-    <ScrollView contentContainerStyle={styles.content}>
+    <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
       <Text style={styles.eyebrow}>{tt('PROGRESSÃO AUTOMÁTICA')}</Text>
       <Text style={styles.title}>{tt('Recursos e magias')}</Text>
       <Text style={styles.subtitle}>{tt('Classe e XP determinam automaticamente recursos e espaços de magia.')}</Text>
@@ -355,7 +355,7 @@ export default function ResourcesScreen({ language = 'pt-BR' }) {
               </PressableScale>
             </ScrollView>
 
-            <ScrollView style={styles.spellList}>
+            <ScrollView style={styles.spellList} keyboardShouldPersistTaps="handled">
               {visibleSpells.length === 0 && (
                 <Text style={styles.noResources}>
                   {spellbookView === 'mine'
