@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   Alert,
   Modal,
@@ -6,20 +6,34 @@ import {
   StyleSheet,
   Text,
   TextInput,
-  TouchableOpacity,
   View,
 } from 'react-native';
+import { AnimatedBar, FadeInView, PressableScale } from '../components/MicroInteractions';
 import { ATTRIBUTE_FIELDS, CLASSES } from '../data/dnd5e';
+import { progressionFor } from '../data/classFeatures';
+import { RACE_OPTIONS, raceProgressionFor } from '../data/raceProgression';
+import { subclassById, subclassesForClass } from '../data/subclassProgression';
 import { createCharacter } from '../models/Character';
 import { createGroup } from '../models/Group';
-import { loadCampaignState, saveCampaignState } from '../services/campaignService';
+import { useCampaign } from '../services/CampaignContext';
+import {
+  displayDistance,
+  displayWeight,
+  distanceUnitLabel,
+  featureText,
+  gameTerm,
+  parseDistanceInput,
+  subclassName,
+  tr,
+  weightUnitLabel,
+} from '../services/i18nService';
 import {
   abilityModifier,
   carryingCapacity,
   initiativeFromAttributes,
-  levelFromXp,
   proficiencyBonus,
   signedModifier,
+  xpProgress,
 } from '../services/rulesService';
 import { colors, radii, spacing } from '../theme';
 
@@ -27,10 +41,18 @@ const EMPTY_CHARACTER = {
   name: '',
   player: '',
   classKey: 'Guerreiro',
+  subclassKey: null,
   race: '',
   xp: '0',
   background: '',
   alignment: '',
+  armorClass: '10',
+  speed: '9',
+  initiative: '',
+  size: 'medium',
+  hp: { current: '1', max: '1', temporary: '0' },
+  inspiration: 0,
+  plotPoints: 0,
   attributes: {
     strength: '10',
     dexterity: '10',
@@ -41,45 +63,25 @@ const EMPTY_CHARACTER = {
   },
 };
 
-export default function GroupsScreen({ onOpenLegacy }) {
-  const [state, setState] = useState({
-    schemaVersion: 2,
-    groups: [],
-    characters: [],
-    combats: [],
-    settings: {},
-    activeGroupId: null,
-  });
-  const [loaded, setLoaded] = useState(false);
+export default function GroupsScreen({ language = 'pt-BR' }) {
+  const { state, setState, saveError } = useCampaign();
+  const tt = (text, values = {}) => tr(text, language, values);
+  const term = (value) => gameTerm(value, language);
   const [groupName, setGroupName] = useState('');
   const [editingGroup, setEditingGroup] = useState(null);
   const [characterDraft, setCharacterDraft] = useState(null);
-  const [saveError, setSaveError] = useState(false);
 
-  useEffect(() => {
-    loadCampaignState().then((saved) => {
-      setState(saved);
-      setLoaded(true);
-    });
-  }, []);
-
-  useEffect(() => {
-    if (!loaded) return;
-
-    saveCampaignState(state).then((saved) => setSaveError(!saved));
-  }, [loaded, state]);
-
-  const activeGroup = state.groups.find((group) => group.id === state.activeGroupId) || null;
+  const activeGroup = state?.groups.find((group) => group.id === state.activeGroupId) || null;
   const groupCharacters = useMemo(() => {
     if (!activeGroup) return [];
     return activeGroup.characterIds
       .map((id) => state.characters.find((character) => character.id === id))
       .filter(Boolean);
-  }, [activeGroup, state.characters]);
+  }, [activeGroup, state?.characters]);
   const availableCharacters = useMemo(() => {
     if (!activeGroup) return [];
     return state.characters.filter((character) => !activeGroup.characterIds.includes(character.id));
-  }, [activeGroup, state.characters]);
+  }, [activeGroup, state?.characters]);
 
   function addGroup() {
     const name = groupName.trim();
@@ -107,10 +109,10 @@ export default function GroupsScreen({ onOpenLegacy }) {
   }
 
   function removeGroup(group) {
-    Alert.alert('Remover grupo?', `Os personagens de "${group.name}" continuarão salvos.`, [
-      { text: 'Cancelar', style: 'cancel' },
+    Alert.alert(tt('Remover grupo?'), tt('Os personagens de "{name}" continuarão salvos.', { name: group.name }), [
+      { text: tt('Cancelar'), style: 'cancel' },
       {
-        text: 'Remover',
+        text: tt('Remover'),
         style: 'destructive',
         onPress: () =>
           setState((old) => ({
@@ -128,17 +130,33 @@ export default function GroupsScreen({ onOpenLegacy }) {
         ? {
             ...character,
             xp: String(character.xp),
+            armorClass: String(character.armorClass ?? 10),
+            speed: String(displayDistance(character.speed ?? 9, language)),
+            initiative: String(character.initiative ?? 0),
+            size: character.size || 'medium',
+            hp: {
+              current: String(character.hp?.current ?? 1),
+              max: String(character.hp?.max ?? 1),
+              temporary: String(character.hp?.temporary ?? 0),
+            },
             attributes: Object.fromEntries(
               ATTRIBUTE_FIELDS.map(([key]) => [key, String(character.attributes?.[key] ?? 10)])
             ),
           }
-        : { ...EMPTY_CHARACTER, attributes: { ...EMPTY_CHARACTER.attributes } }
+        : {
+            ...EMPTY_CHARACTER,
+            speed: String(displayDistance(EMPTY_CHARACTER.speed, language)),
+            attributes: { ...EMPTY_CHARACTER.attributes },
+          }
     );
   }
 
   function saveCharacter() {
     if (!activeGroup || !characterDraft?.name.trim()) return;
-    const character = createCharacter(characterDraft);
+    const character = createCharacter({
+      ...characterDraft,
+      speed: parseDistanceInput(characterDraft.speed, language),
+    });
 
     setState((old) => {
       const exists = old.characters.some((item) => item.id === character.id);
@@ -152,6 +170,20 @@ export default function GroupsScreen({ onOpenLegacy }) {
             ? { ...group, characterIds: [...group.characterIds, character.id] }
             : group
         ),
+        combats: old.combats.map((combat) => ({
+          ...combat,
+          participants: combat.participants.map((participant) =>
+            participant.sourceId === character.id
+              ? {
+                  ...participant,
+                  name: character.name,
+                  armorClass: character.armorClass,
+                  hp: { ...character.hp },
+                  conditions: [...character.conditions],
+                }
+              : participant
+          ),
+        })),
       };
     });
     setCharacterDraft(null);
@@ -179,15 +211,57 @@ export default function GroupsScreen({ onOpenLegacy }) {
     }));
   }
 
+  function changeToken(characterId, key, delta) {
+    setState((old) => ({
+      ...old,
+      characters: old.characters.map((character) =>
+        character.id === characterId
+          ? { ...character, [key]: Math.max(0, Math.min(10, (Number(character[key]) || 0) + delta)) }
+          : character
+      ),
+    }));
+  }
+
+  function deleteCharacter(character) {
+    Alert.alert(
+      tt('Excluir personagem?'),
+      tt('Isso remove "{name}" de todos os grupos e combates. Essa ação não pode ser desfeita.', { name: character.name }),
+      [
+        { text: tt('Cancelar'), style: 'cancel' },
+        {
+          text: tt('Excluir'),
+          style: 'destructive',
+          onPress: () =>
+            setState((old) => ({
+              ...old,
+              characters: old.characters.filter((item) => item.id !== character.id),
+              groups: old.groups.map((group) => ({
+                ...group,
+                characterIds: group.characterIds.filter((id) => id !== character.id),
+              })),
+              combats: old.combats.map((combat) => ({
+                ...combat,
+                participants: combat.participants.filter((participant) => participant.sourceId !== character.id),
+                activeIndex: 0,
+                turnsTaken: 0,
+              })),
+            })),
+        },
+      ]
+    );
+  }
+
+  if (!state) return <Text style={styles.loading}>{tt('Carregando campanhas...')}</Text>;
+
   return (
     <View style={styles.screen}>
-      <ScrollView contentContainerStyle={styles.content}>
-        <Text style={styles.eyebrow}>RPG COMPANION</Text>
-        <Text style={styles.title}>Suas campanhas</Text>
-        <Text style={styles.subtitle}>Organize grupos e personagens sem prender o app a uma única mesa.</Text>
+      <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+        <Text style={styles.eyebrow}>{tt('RPG COMPANION')}</Text>
+        <Text style={styles.title}>{tt('Suas campanhas')}</Text>
+        <Text style={styles.subtitle}>{tt('Organize grupos e personagens sem prender o app a uma única mesa.')}</Text>
         {saveError && (
           <View style={styles.warning}>
-            <Text style={styles.warningText}>Não foi possível salvar os dados neste dispositivo. Tente novamente antes de fechar o app.</Text>
+            <Text style={styles.warningText}>{tt('Não foi possível salvar os dados neste dispositivo. Tente novamente antes de fechar o app.')}</Text>
           </View>
         )}
 
@@ -196,122 +270,193 @@ export default function GroupsScreen({ onOpenLegacy }) {
             style={styles.inputGrow}
             value={groupName}
             onChangeText={setGroupName}
-            placeholder="Nome do novo grupo"
+            placeholder={tt('Nome do novo grupo')}
             placeholderTextColor={colors.textMuted}
           />
-          <TouchableOpacity style={styles.primaryButton} onPress={addGroup}>
-            <Text style={styles.primaryText}>Criar</Text>
-          </TouchableOpacity>
+          <PressableScale style={styles.primaryButton} onPress={addGroup}>
+            <Text style={styles.primaryText}>{tt('Criar')}</Text>
+          </PressableScale>
         </View>
 
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.groupStrip}>
           {state.groups.map((group) => {
             const active = group.id === state.activeGroupId;
             return (
-              <TouchableOpacity
+              <PressableScale
                 key={group.id}
                 style={[styles.groupChip, active && styles.groupChipActive]}
                 onPress={() => setState((old) => ({ ...old, activeGroupId: group.id }))}
                 onLongPress={() => setEditingGroup({ ...group })}
               >
                 <Text style={[styles.groupChipText, active && styles.groupChipTextActive]}>{group.name}</Text>
-                <Text style={styles.groupCount}>{group.characterIds.length} personagens</Text>
-              </TouchableOpacity>
+                <Text style={styles.groupCount}>
+                  {group.characterIds.length} {group.characterIds.length === 1 ? tt('personagem') : tt('personagens')}
+                </Text>
+              </PressableScale>
             );
           })}
         </ScrollView>
 
         {!activeGroup ? (
           <View style={styles.emptyCard}>
-            <Text style={styles.cardTitle}>Crie seu primeiro grupo</Text>
-            <Text style={styles.muted}>Depois você poderá adicionar personagens e preparar o combate.</Text>
+            <Text style={styles.cardTitle}>{tt('Crie seu primeiro grupo')}</Text>
+            <Text style={styles.muted}>{tt('Depois você poderá adicionar personagens e preparar o combate.')}</Text>
           </View>
         ) : (
           <>
             <View style={styles.sectionHeader}>
               <View>
                 <Text style={styles.sectionTitle}>{activeGroup.name}</Text>
-                <Text style={styles.muted}>Segure o cartão do grupo para editar o nome.</Text>
+                <Text style={styles.muted}>{tt('Segure o cartão do grupo para editar o nome.')}</Text>
               </View>
-              <TouchableOpacity style={styles.smallDanger} onPress={() => removeGroup(activeGroup)}>
-                <Text style={styles.dangerText}>Remover</Text>
-              </TouchableOpacity>
+              <PressableScale style={styles.smallDanger} onPress={() => removeGroup(activeGroup)}>
+                <Text style={styles.dangerText}>{tt('Remover')}</Text>
+              </PressableScale>
             </View>
 
             {groupCharacters.map((character) => {
-              const level = levelFromXp(character.xp);
-              const initiative = initiativeFromAttributes(character.attributes);
-              const capacity = carryingCapacity(character.attributes);
+              const progress = xpProgress(character.xp);
+              const level = progress.level;
+              const progression = progressionFor(character.classKey, level);
+              const raceProgression = raceProgressionFor(character.race, level);
+              const subclass = subclassById(character.classKey, character.subclassKey);
+              const classLabel = subclass ? `${term(character.classKey)} (${subclassName(subclass[1], language)})` : term(character.classKey);
+              const initiative = character.initiative ?? initiativeFromAttributes(character.attributes);
+              const capacity = carryingCapacity(character.attributes, character.size);
               return (
-                <View key={character.id} style={styles.characterCard}>
+                <FadeInView key={character.id} animationKey={`${character.id}-${level}-${character.xp}`} style={styles.characterCard}>
                   <View style={styles.characterHeader}>
                     <View style={styles.flex}>
                       <Text style={styles.cardTitle}>{character.name}</Text>
                       <Text style={styles.muted}>
-                        {character.race || 'Raça não informada'} · {character.classKey} nível {level}
+                        {character.race ? term(character.race) : tt('Raça não informada')} · {classLabel} {tt('Nível')} {level}
                       </Text>
-                      <Text style={styles.muted}>Jogador: {character.player || 'Não informado'}</Text>
+                      <Text style={styles.muted}>{tt('Jogador')}: {character.player || tt('Não informado')}</Text>
+                      {subclass && <Text style={styles.muted}>{tt('Subclasse')}: {subclassName(subclass[1], language)}</Text>}
                     </View>
                     <View style={styles.levelBadge}>
-                      <Text style={styles.levelLabel}>NÍVEL</Text>
+                      <Text style={styles.levelLabel}>{tt('NÍVEL')}</Text>
                       <Text style={styles.levelValue}>{level}</Text>
                     </View>
                   </View>
 
                   <View style={styles.statsRow}>
                     <Stat label="Prof." value={signedModifier(proficiencyBonus(level))} />
-                    <Stat label="Iniciativa" value={signedModifier(initiative)} />
-                    <Stat label="Carga" value={`${capacity} lb`} />
+                    <Stat label={tt('Iniciativa')} value={signedModifier(initiative)} />
+                    <Stat label={tt('CA')} value={character.armorClass || 10} />
+                    <Stat label={tt('Desloc.')} value={`${displayDistance(character.speed || 9, language)} ${distanceUnitLabel(language)}`} />
+                  </View>
+                  <View style={styles.statsRow}>
+                    <Stat label={tt('PV')} value={`${character.hp?.current || 0}/${character.hp?.max || 1}`} />
+                    <Stat label={tt('Temp.')} value={character.hp?.temporary || 0} />
+                    <Stat label={tt('Carga')} value={`${displayWeight(capacity, language)} ${weightUnitLabel(language)}`} />
                     <Stat label="XP" value={character.xp} />
                   </View>
 
-                  <View style={styles.actions}>
-                    <TouchableOpacity style={styles.secondaryButton} onPress={() => openCharacter(character)}>
-                      <Text style={styles.secondaryText}>Editar ficha</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity style={styles.secondaryButton} onPress={() => removeCharacterFromGroup(character)}>
-                      <Text style={styles.dangerText}>Remover do grupo</Text>
-                    </TouchableOpacity>
+                  <View style={styles.progressHeader}>
+                    <Text style={styles.muted}>
+                      {progress.nextXp
+                        ? `${tt('Próximo nível')}: ${progress.nextXp} XP · ${tt('faltam')} ${progress.missing}`
+                        : tt('Nível máximo')}
+                    </Text>
+                    <Text style={styles.progressPercent}>{progress.percent}%</Text>
                   </View>
-                </View>
+                  <AnimatedBar percent={progress.percent} style={styles.progressTrack} fillStyle={styles.progressFill} />
+
+                  {progression.unlocked.length > 0 && (
+                    <View style={styles.featurePanel}>
+                      <Text style={styles.featureTitle}>{tt('Habilidades por nível')}</Text>
+                      {progression.unlocked.map(([featureLevel, text]) => (
+                        <Text key={`${character.id}-feature-${featureLevel}`} style={styles.featureText}>
+                          {tt('Nível')} {featureLevel}: {featureText(text, language)}
+                        </Text>
+                      ))}
+                      {progression.upcoming.length > 0 && (
+                        <Text style={styles.nextFeature}>
+                          {tt('Próximo')}: {tt('Nível')} {progression.upcoming[0][0]} · {featureText(progression.upcoming[0][1], language)}
+                        </Text>
+                      )}
+                    </View>
+                  )}
+
+                  {raceProgression.unlocked.length > 0 && (
+                    <View style={styles.featurePanel}>
+                      <Text style={styles.featureTitle}>{tt('Habilidades raciais')}</Text>
+                      {raceProgression.unlocked.map(([featureLevel, text]) => (
+                        <Text key={`${character.id}-race-${featureLevel}`} style={styles.featureText}>
+                          {tt('Nível')} {featureLevel}: {featureText(text, language)}
+                        </Text>
+                      ))}
+                      {raceProgression.upcoming.length > 0 && (
+                        <Text style={styles.nextFeature}>
+                          {tt('Próximo')}: {tt('Nível')} {raceProgression.upcoming[0][0]} · {featureText(raceProgression.upcoming[0][1], language)}
+                        </Text>
+                      )}
+                    </View>
+                  )}
+
+                  <View style={styles.tokenRow}>
+                    <TokenCounter
+                      label={tt('Inspiração')}
+                      value={character.inspiration || 0}
+                      onMinus={() => changeToken(character.id, 'inspiration', -1)}
+                      onPlus={() => changeToken(character.id, 'inspiration', 1)}
+                    />
+                    <TokenCounter
+                      label={tt('Pontos de Enredo')}
+                      value={character.plotPoints || 0}
+                      onMinus={() => changeToken(character.id, 'plotPoints', -1)}
+                      onPlus={() => changeToken(character.id, 'plotPoints', 1)}
+                    />
+                  </View>
+
+                  <View style={styles.actions}>
+                    <PressableScale style={styles.secondaryButton} onPress={() => openCharacter(character)}>
+                      <Text style={styles.secondaryText}>{tt('Editar ficha')}</Text>
+                    </PressableScale>
+                    <PressableScale style={styles.secondaryButton} onPress={() => removeCharacterFromGroup(character)}>
+                      <Text style={styles.dangerText}>{tt('Remover do grupo')}</Text>
+                    </PressableScale>
+                    <PressableScale style={styles.deleteButton} onPress={() => deleteCharacter(character)}>
+                      <Text style={styles.deleteText}>{tt('Excluir personagem')}</Text>
+                    </PressableScale>
+                  </View>
+                </FadeInView>
               );
             })}
 
-            <TouchableOpacity style={styles.primaryWide} onPress={() => openCharacter()}>
-              <Text style={styles.primaryText}>Adicionar personagem</Text>
-            </TouchableOpacity>
+            <PressableScale style={styles.primaryWide} onPress={() => openCharacter()}>
+              <Text style={styles.primaryText}>{tt('Adicionar personagem')}</Text>
+            </PressableScale>
 
             {availableCharacters.length > 0 && (
               <View style={styles.availableSection}>
-                <Text style={styles.cardTitle}>Personagens disponíveis</Text>
-                <Text style={styles.muted}>Adicione ao grupo personagens que já foram criados.</Text>
+                <Text style={styles.cardTitle}>{tt('Personagens disponíveis')}</Text>
+                <Text style={styles.muted}>{tt('Adicione ao grupo personagens que já foram criados.')}</Text>
                 {availableCharacters.map((character) => (
-                  <TouchableOpacity
+                  <PressableScale
                     key={`available-${character.id}`}
                     style={styles.availableCharacter}
                     onPress={() => addExistingCharacter(character)}
                   >
                     <View style={styles.flex}>
                       <Text style={styles.secondaryText}>{character.name}</Text>
-                      <Text style={styles.muted}>{character.classKey} · {character.player || 'Sem jogador'}</Text>
+                      <Text style={styles.muted}>{term(character.classKey)} · {character.player || tt('Sem jogador')}</Text>
                     </View>
-                    <Text style={styles.addText}>+ Adicionar</Text>
-                  </TouchableOpacity>
+                    <Text style={styles.addText}>{tt('+ Adicionar')}</Text>
+                  </PressableScale>
                 ))}
               </View>
             )}
           </>
         )}
 
-        <TouchableOpacity style={styles.legacyButton} onPress={onOpenLegacy}>
-          <Text style={styles.legacyTitle}>Abrir campanha legada</Text>
-          <Text style={styles.muted}>Recursos, combate, XP e moedas continuam disponíveis.</Text>
-        </TouchableOpacity>
       </ScrollView>
 
-      <GroupModal draft={editingGroup} onChange={setEditingGroup} onSave={saveGroupName} onClose={() => setEditingGroup(null)} />
+      <GroupModal draft={editingGroup} language={language} onChange={setEditingGroup} onSave={saveGroupName} onClose={() => setEditingGroup(null)} />
       <CharacterModal
         draft={characterDraft}
+        language={language}
         onChange={setCharacterDraft}
         onSave={saveCharacter}
         onClose={() => setCharacterDraft(null)}
@@ -329,27 +474,49 @@ function Stat({ label, value }) {
   );
 }
 
-function GroupModal({ draft, onChange, onSave, onClose }) {
+function TokenCounter({ label, value, onMinus, onPlus }) {
+  return (
+    <View style={styles.token}>
+      <Text style={styles.tokenLabel}>{label}</Text>
+      <View style={styles.tokenControls}>
+        <PressableScale style={styles.tokenButton} onPress={onMinus}>
+          <Text style={styles.tokenButtonText}>−</Text>
+        </PressableScale>
+        <Text style={styles.tokenValue}>{value}/10</Text>
+        <PressableScale style={styles.tokenButton} onPress={onPlus}>
+          <Text style={styles.tokenButtonText}>+</Text>
+        </PressableScale>
+      </View>
+    </View>
+  );
+}
+
+function GroupModal({ draft, language, onChange, onSave, onClose }) {
+  const tt = (text, values = {}) => tr(text, language, values);
   return (
     <Modal visible={Boolean(draft)} transparent animationType="fade" onRequestClose={onClose}>
       <View style={styles.modalBackground}>
         <View style={styles.modalCard}>
-          <Text style={styles.sectionTitle}>Editar grupo</Text>
+          <Text style={styles.sectionTitle}>{tt('Editar grupo')}</Text>
           <TextInput
             style={styles.input}
             value={draft?.name || ''}
             onChangeText={(name) => onChange((old) => ({ ...old, name }))}
-            placeholder="Nome do grupo"
+            placeholder={tt('Nome do grupo')}
             placeholderTextColor={colors.textMuted}
           />
-          <ModalActions onClose={onClose} onSave={onSave} />
+          <ModalActions language={language} onClose={onClose} onSave={onSave} />
         </View>
       </View>
     </Modal>
   );
 }
 
-function CharacterModal({ draft, onChange, onSave, onClose }) {
+function CharacterModal({ draft, language, onChange, onSave, onClose }) {
+  const tt = (text, values = {}) => tr(text, language, values);
+  const term = (value) => gameTerm(value, language);
+  const [racePickerOpen, setRacePickerOpen] = useState(false);
+  const [raceQuery, setRaceQuery] = useState('');
   const update = (patch) => onChange((old) => ({ ...old, ...patch }));
   const updateAttribute = (key, value) =>
     onChange((old) => ({ ...old, attributes: { ...old.attributes, [key]: value } }));
@@ -358,35 +525,96 @@ function CharacterModal({ draft, onChange, onSave, onClose }) {
     <Modal visible={Boolean(draft)} transparent animationType="slide" onRequestClose={onClose}>
       <View style={styles.modalBackground}>
         <View style={styles.sheet}>
-          <ScrollView contentContainerStyle={styles.sheetContent}>
-            <Text style={styles.sectionTitle}>{draft?.id ? 'Editar personagem' : 'Novo personagem'}</Text>
-            <Field label="Nome" value={draft?.name} onChangeText={(name) => update({ name })} />
-            <Field label="Jogador" value={draft?.player} onChangeText={(player) => update({ player })} />
-            <Field label="Raça" value={draft?.race} onChangeText={(race) => update({ race })} />
+          <ScrollView contentContainerStyle={styles.sheetContent} keyboardShouldPersistTaps="handled">
+            <Text style={styles.sectionTitle}>{draft?.id ? tt('Editar personagem') : tt('Novo personagem')}</Text>
+            <Field label={tt('Nome')} value={draft?.name} onChangeText={(name) => update({ name })} />
+            <Field label={tt('Jogador')} value={draft?.player} onChangeText={(player) => update({ player })} />
+            <Text style={styles.fieldLabel}>{tt('Raça')}</Text>
+            <PressableScale style={styles.selectInput} onPress={() => setRacePickerOpen(true)}>
+              <Text style={draft?.race ? styles.selectText : styles.selectPlaceholder}>
+                {draft?.race ? term(draft.race) : tt('Escolher raça')}
+              </Text>
+              <Text style={styles.selectArrow}>⌄</Text>
+            </PressableScale>
             <Field label="XP" value={draft?.xp} keyboardType="numeric" onChangeText={(xp) => update({ xp })} />
-            <Field label="Antecedente" value={draft?.background} onChangeText={(background) => update({ background })} />
-            <Field label="Alinhamento" value={draft?.alignment} onChangeText={(alignment) => update({ alignment })} />
+            <Field label={tt('Antecedente')} value={draft?.background} onChangeText={(background) => update({ background })} />
+            <Field label={tt('Alinhamento')} value={draft?.alignment} onChangeText={(alignment) => update({ alignment })} />
+            <View style={styles.fieldRow}>
+              <View style={styles.flex}>
+                <Field label={tt('CA')} value={draft?.armorClass} keyboardType="numeric" onChangeText={(armorClass) => update({ armorClass })} />
+              </View>
+              <View style={styles.flex}>
+                <Field label={tt('Deslocamento (m)')} value={draft?.speed} keyboardType="numeric" onChangeText={(speed) => update({ speed })} />
+              </View>
+              <View style={styles.flex}>
+                <Field label={tt('Mod. iniciativa')} value={draft?.initiative} keyboardType="numeric" onChangeText={(initiative) => update({ initiative })} />
+              </View>
+            </View>
+            <Text style={styles.fieldLabel}>{tt('Porte')}</Text>
+            <View style={styles.sizeRow}>
+              {[
+                ['medium', tt('Médio · FOR × 7,5 kg')],
+                ['large', tt('Grande · FOR × 15 kg')],
+              ].map(([size, label]) => (
+                <PressableScale
+                  key={size}
+                  style={[styles.sizeButton, draft?.size === size && styles.sizeButtonActive]}
+                  onPress={() => update({ size })}
+                >
+                  <Text style={[styles.sizeText, draft?.size === size && styles.sizeTextActive]}>{label}</Text>
+                </PressableScale>
+              ))}
+            </View>
+            <Text style={styles.fieldLabel}>{tt('Pontos de Vida')}</Text>
+            <View style={styles.fieldRow}>
+              <View style={styles.flex}>
+                <Field label={tt('Atual')} value={draft?.hp?.current} keyboardType="numeric" onChangeText={(current) => update({ hp: { ...draft.hp, current } })} />
+              </View>
+              <View style={styles.flex}>
+                <Field label={tt('Máximo')} value={draft?.hp?.max} keyboardType="numeric" onChangeText={(max) => update({ hp: { ...draft.hp, max } })} />
+              </View>
+              <View style={styles.flex}>
+                <Field label={tt('Temporário')} value={draft?.hp?.temporary} keyboardType="numeric" onChangeText={(temporary) => update({ hp: { ...draft.hp, temporary } })} />
+              </View>
+            </View>
 
-            <Text style={styles.fieldLabel}>Classe</Text>
+            <Text style={styles.fieldLabel}>{tt('Classe')}</Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.classStrip}>
               {CLASSES.map((classKey) => (
-                <TouchableOpacity
+                <PressableScale
                   key={classKey}
                   style={[styles.classChip, draft?.classKey === classKey && styles.classChipActive]}
-                  onPress={() => update({ classKey })}
+                  onPress={() => update({ classKey, subclassKey: null })}
                 >
-                  <Text style={[styles.classText, draft?.classKey === classKey && styles.classTextActive]}>{classKey}</Text>
-                </TouchableOpacity>
+                  <Text style={[styles.classText, draft?.classKey === classKey && styles.classTextActive]}>{term(classKey)}</Text>
+                </PressableScale>
               ))}
             </ScrollView>
 
-            <Text style={styles.fieldLabel}>Atributos</Text>
+            {subclassesForClass(draft?.classKey).length > 0 && (
+              <>
+                <Text style={styles.fieldLabel}>{tt('Subclasse')}</Text>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.classStrip}>
+                  {subclassesForClass(draft?.classKey).map(([subclassId, subclassLabel]) => (
+                    <PressableScale
+                      key={subclassId}
+                      style={[styles.classChip, draft?.subclassKey === subclassId && styles.classChipActive]}
+                      onPress={() => update({ subclassKey: subclassId })}
+                    >
+                      <Text style={[styles.classText, draft?.subclassKey === subclassId && styles.classTextActive]}>{subclassName(subclassLabel, language)}</Text>
+                    </PressableScale>
+                  ))}
+                </ScrollView>
+              </>
+            )}
+
+            <Text style={styles.fieldLabel}>{tt('Atributos')}</Text>
             <View style={styles.attributeGrid}>
               {ATTRIBUTE_FIELDS.map(([key, label]) => {
                 const modifier = abilityModifier(draft?.attributes?.[key] ?? 10);
                 return (
                   <View key={key} style={styles.attributeCard}>
-                    <Text style={styles.attributeLabel}>{label}</Text>
+                    <Text style={styles.attributeLabel}>{term(label)}</Text>
                     <TextInput
                       style={styles.attributeInput}
                       keyboardType="numeric"
@@ -398,10 +626,56 @@ function CharacterModal({ draft, onChange, onSave, onClose }) {
                 );
               })}
             </View>
-            <ModalActions onClose={onClose} onSave={onSave} />
+            <ModalActions language={language} onClose={onClose} onSave={onSave} />
           </ScrollView>
         </View>
       </View>
+      <Modal visible={racePickerOpen} transparent animationType="fade" onRequestClose={() => setRacePickerOpen(false)}>
+        <View style={styles.modalBackground}>
+          <View style={styles.racePicker}>
+            <Text style={styles.sectionTitle}>{tt('Escolher raça')}</Text>
+            <TextInput
+              style={styles.input}
+              value={raceQuery}
+              onChangeText={setRaceQuery}
+              placeholder={tt('Filtrar raças')}
+              placeholderTextColor={colors.textMuted}
+            />
+            <ScrollView style={styles.raceList} keyboardShouldPersistTaps="handled">
+              {RACE_OPTIONS
+                .filter((option) => {
+                  const query = raceQuery.trim().toLowerCase();
+                  if (!query) return true;
+                  return option.name.toLowerCase().includes(query)
+                    || term(option.name).toLowerCase().includes(query)
+                    || term(option.group).toLowerCase().includes(query);
+                })
+                .map((option, index, filtered) => (
+                  <View key={option.name}>
+                    {(index === 0 || filtered[index - 1].group !== option.group) && (
+                      <Text style={styles.raceGroup}>{term(option.group)}</Text>
+                    )}
+                    <PressableScale
+                      style={[styles.raceOption, draft?.race === option.name && styles.raceOptionActive]}
+                      onPress={() => {
+                        update({ race: option.name });
+                        setRacePickerOpen(false);
+                        setRaceQuery('');
+                      }}
+                    >
+                      <Text style={[styles.raceOptionText, draft?.race === option.name && styles.raceOptionTextActive]}>
+                        {term(option.name)}
+                      </Text>
+                    </PressableScale>
+                  </View>
+                ))}
+            </ScrollView>
+            <PressableScale style={styles.secondaryButton} onPress={() => setRacePickerOpen(false)}>
+              <Text style={styles.secondaryText}>{tt('Fechar')}</Text>
+            </PressableScale>
+          </View>
+        </View>
+      </Modal>
     </Modal>
   );
 }
@@ -415,20 +689,22 @@ function Field({ label, ...props }) {
   );
 }
 
-function ModalActions({ onClose, onSave }) {
+function ModalActions({ language, onClose, onSave }) {
+  const tt = (text, values = {}) => tr(text, language, values);
   return (
     <View style={styles.actions}>
-      <TouchableOpacity style={styles.secondaryButton} onPress={onClose}>
-        <Text style={styles.secondaryText}>Cancelar</Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.primaryButton} onPress={onSave}>
-        <Text style={styles.primaryText}>Salvar</Text>
-      </TouchableOpacity>
+      <PressableScale style={styles.secondaryButton} onPress={onClose}>
+        <Text style={styles.secondaryText}>{tt('Cancelar')}</Text>
+      </PressableScale>
+      <PressableScale style={styles.primaryButton} onPress={onSave}>
+        <Text style={styles.primaryText}>{tt('Salvar')}</Text>
+      </PressableScale>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+  loading: { flex: 1, color: colors.text, backgroundColor: colors.background, padding: spacing.lg },
   screen: { flex: 1, backgroundColor: colors.background },
   content: { padding: spacing.lg, paddingBottom: 48 },
   eyebrow: { color: colors.primary, fontSize: 12, fontWeight: '900', letterSpacing: 2 },
@@ -456,6 +732,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 12,
   },
+  selectInput: { flexDirection: 'row', alignItems: 'center', backgroundColor: colors.surfaceMuted, borderColor: colors.border, borderWidth: 1, borderRadius: radii.md, marginTop: 6, paddingHorizontal: 14, paddingVertical: 14 },
+  selectText: { flex: 1, color: colors.text },
+  selectPlaceholder: { flex: 1, color: colors.textMuted },
+  selectArrow: { color: colors.primary, fontSize: 20, fontWeight: '900' },
   primaryButton: { backgroundColor: colors.primary, borderRadius: radii.md, justifyContent: 'center', paddingHorizontal: 18, paddingVertical: 12 },
   primaryWide: { backgroundColor: colors.primary, borderRadius: radii.md, alignItems: 'center', marginTop: spacing.md, padding: 14 },
   primaryText: { color: colors.background, fontWeight: '900' },
@@ -482,19 +762,47 @@ const styles = StyleSheet.create({
   stat: { flex: 1, backgroundColor: colors.surfaceMuted, borderRadius: radii.sm, alignItems: 'center', paddingVertical: 9 },
   statLabel: { color: colors.textMuted, fontSize: 9 },
   statValue: { color: colors.text, fontWeight: '900', marginTop: 2 },
-  actions: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.lg },
-  secondaryButton: { flex: 1, borderColor: colors.border, borderWidth: 1, borderRadius: radii.md, alignItems: 'center', padding: 12 },
+  tokenRow: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.md },
+  token: { flex: 1, backgroundColor: colors.primarySoft, borderRadius: radii.md, padding: spacing.sm },
+  tokenLabel: { color: colors.primary, fontSize: 11, fontWeight: '900', textAlign: 'center' },
+  tokenControls: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: spacing.sm, marginTop: 6 },
+  tokenButton: { width: 32, height: 32, borderRadius: radii.sm, backgroundColor: colors.surfaceHighlight, alignItems: 'center', justifyContent: 'center' },
+  tokenButtonText: { color: colors.text, fontSize: 19, fontWeight: '900' },
+  tokenValue: { minWidth: 42, color: colors.text, fontWeight: '900', textAlign: 'center' },
+  progressHeader: { flexDirection: 'row', justifyContent: 'space-between', marginTop: spacing.md },
+  progressPercent: { color: colors.primary, fontSize: 11, fontWeight: '900' },
+  progressTrack: { height: 7, backgroundColor: colors.surfaceMuted, borderRadius: radii.pill, overflow: 'hidden', marginTop: 6 },
+  progressFill: { height: '100%', backgroundColor: colors.primary, borderRadius: radii.pill },
+  featurePanel: { backgroundColor: colors.surfaceMuted, borderRadius: radii.md, marginTop: spacing.md, padding: spacing.md },
+  featureTitle: { color: colors.text, fontWeight: '900', marginBottom: 6 },
+  featureText: { color: colors.textMuted, fontSize: 11, lineHeight: 17 },
+  nextFeature: { color: colors.primary, fontSize: 11, fontWeight: '800', marginTop: 7 },
+  actions: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm, marginTop: spacing.lg },
+  secondaryButton: { flex: 1, minWidth: 120, borderColor: colors.border, borderWidth: 1, borderRadius: radii.md, alignItems: 'center', padding: 12 },
   secondaryText: { color: colors.text, fontWeight: '800' },
-  legacyButton: { backgroundColor: colors.surfaceMuted, borderColor: colors.border, borderWidth: 1, borderRadius: radii.lg, marginTop: spacing.xl, padding: spacing.lg },
-  legacyTitle: { color: colors.primary, fontWeight: '900', marginBottom: 4 },
+  deleteButton: { flex: 1, minWidth: 150, backgroundColor: colors.dangerSoft, borderColor: '#5B2B2B', borderWidth: 1, borderRadius: radii.md, alignItems: 'center', padding: 12 },
+  deleteText: { color: colors.danger, fontWeight: '900' },
   availableSection: { backgroundColor: colors.surfaceMuted, borderColor: colors.border, borderWidth: 1, borderRadius: radii.lg, marginTop: spacing.lg, padding: spacing.lg },
   availableCharacter: { flexDirection: 'row', alignItems: 'center', borderTopColor: colors.border, borderTopWidth: 1, marginTop: spacing.md, paddingTop: spacing.md },
   addText: { color: colors.primary, fontWeight: '900' },
   modalBackground: { flex: 1, backgroundColor: 'rgba(0,0,0,0.75)', justifyContent: 'center', padding: spacing.lg },
   modalCard: { backgroundColor: colors.surface, borderRadius: radii.lg, padding: spacing.lg },
-  sheet: { maxHeight: '92%', backgroundColor: colors.surface, borderRadius: radii.lg },
+  sheet: { flexShrink: 1, backgroundColor: colors.surface, borderRadius: radii.lg, overflow: 'hidden' },
   sheetContent: { padding: spacing.lg, paddingBottom: 36 },
+  racePicker: { flexShrink: 1, backgroundColor: colors.surface, borderRadius: radii.lg, padding: spacing.lg, overflow: 'hidden' },
+  raceList: { marginVertical: spacing.md },
+  raceGroup: { color: colors.primary, fontSize: 11, fontWeight: '900', letterSpacing: 1, marginTop: spacing.md, marginBottom: 6 },
+  raceOption: { borderColor: colors.border, borderWidth: 1, borderRadius: radii.md, marginBottom: spacing.sm, padding: 13 },
+  raceOptionActive: { backgroundColor: colors.primarySoft, borderColor: colors.primary },
+  raceOptionText: { color: colors.text, fontWeight: '800' },
+  raceOptionTextActive: { color: colors.primary },
   fieldLabel: { color: colors.textMuted, fontSize: 12, fontWeight: '800', marginTop: spacing.md },
+  fieldRow: { flexDirection: 'row', gap: spacing.sm },
+  sizeRow: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.sm },
+  sizeButton: { flex: 1, borderColor: colors.border, borderWidth: 1, borderRadius: radii.md, padding: 11 },
+  sizeButtonActive: { backgroundColor: colors.primarySoft, borderColor: colors.primary },
+  sizeText: { color: colors.textMuted, fontSize: 11, fontWeight: '800', textAlign: 'center' },
+  sizeTextActive: { color: colors.primary },
   classStrip: { gap: spacing.sm, paddingVertical: spacing.sm },
   classChip: { borderColor: colors.border, borderWidth: 1, borderRadius: radii.pill, paddingHorizontal: 12, paddingVertical: 8 },
   classChipActive: { backgroundColor: colors.primary, borderColor: colors.primary },

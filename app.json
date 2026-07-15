@@ -1,29 +1,46 @@
 {
   "expo": {
-    "name": "Domhan RPG Companion",
+    "name": "RPG Combat Tracker",
     "slug": "domhan-rpg-companion-supremo",
-    "owner": "JRicardoSandri",
-    "version": "1.0.0",
+    "owner": "ricardosandri",
+    "version": "1.0.2",
+    "newArchEnabled": false,
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
     "splash": {
-      "backgroundColor": "#070A0F"
+      "backgroundColor": "#080A0E"
     },
     "assetBundlePatterns": [
       "**/*"
     ],
     "android": {
       "package": "com.domhan.rpgcompanion",
+      "softwareKeyboardLayoutMode": "pan",
+      "versionCode": 3,
       "adaptiveIcon": {
         "foregroundImage": "./assets/icon.png",
-        "backgroundColor": "#070A0F"
+        "backgroundColor": "#080A0E"
       }
     },
     "extra": {
       "eas": {
         "projectId": "72b5b937-0c26-4cbc-bdc8-03fe792010ef"
       }
-    }
+    },
+    "plugins": [
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "compileSdkVersion": 35,
+            "targetSdkVersion": 35,
+            "enableProguardInReleaseBuilds": false,
+            "enableShrinkResourcesInReleaseBuilds": false
+          }
+        }
+      ],
+      "expo-asset"
+    ]
   }
 }

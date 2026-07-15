@@ -1,11 +1,12 @@
 import { INCAPACITATING_CONDITIONS } from '../data/conditions.js';
 
 export function createCombat() {
-  return { id: 'active-combat', round: 1, activeIndex: 0, participants: [], log: [] };
+  return { id: 'active-combat', round: 1, activeIndex: 0, turnsTaken: 0, participants: [], log: [] };
 }
 
 export function heroParticipant(character) {
   const hpMax = Math.max(1, Number(character.hp?.max) || 1);
+  const hpCurrent = Number(character.hp?.current ?? hpMax);
   return {
     id: `hero-${character.id}`,
     sourceId: character.id,
@@ -13,7 +14,11 @@ export function heroParticipant(character) {
     name: character.name,
     armorClass: Number(character.armorClass) || 10,
     initiative: 0,
-    hp: { current: Math.min(Number(character.hp?.current) || hpMax, hpMax), max: hpMax, temporary: Number(character.hp?.temporary) || 0 },
+    hp: {
+      current: Math.min(Number.isFinite(hpCurrent) ? Math.max(0, hpCurrent) : hpMax, hpMax),
+      max: hpMax,
+      temporary: Math.max(0, Number(character.hp?.temporary) || 0),
+    },
     conditions: Array.isArray(character.conditions) ? character.conditions : [],
     deathSaves: { successes: 0, failures: 0, stable: false, dead: false },
     concentrationDc: null,
@@ -127,10 +132,32 @@ export function sortedParticipants(participants) {
   return [...participants].sort((a, b) => b.initiative - a.initiative);
 }
 
+export function prioritizeTiedParticipant(participants, participantId) {
+  const selectedIndex = participants.findIndex((participant) => participant.id === participantId);
+  if (selectedIndex < 0) return participants;
+
+  const selected = participants[selectedIndex];
+  const tiedIndexes = participants
+    .map((participant, index) => participant.initiative === selected.initiative ? index : -1)
+    .filter((index) => index >= 0);
+  if (tiedIndexes.length < 2) return participants;
+
+  const firstTiedIndex = Math.min(...tiedIndexes);
+  const reordered = participants.filter((participant) => participant.id !== participantId);
+  reordered.splice(firstTiedIndex, 0, selected);
+  return reordered;
+}
+
 export function advanceTurn(combat) {
   if (!combat.participants.length) return combat;
-  const next = combat.activeIndex + 1;
-  return next >= combat.participants.length
-    ? { ...combat, activeIndex: 0, round: combat.round + 1 }
-    : { ...combat, activeIndex: next };
+  const [current, ...waiting] = combat.participants;
+  const nextTurnsTaken = (combat.turnsTaken || 0) + 1;
+  const roundComplete = nextTurnsTaken >= combat.participants.length;
+  return {
+    ...combat,
+    participants: [...waiting, current],
+    activeIndex: 0,
+    turnsTaken: roundComplete ? 0 : nextTurnsTaken,
+    round: roundComplete ? combat.round + 1 : combat.round,
+  };
 }
