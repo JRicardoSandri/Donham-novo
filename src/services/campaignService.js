@@ -2,7 +2,7 @@ import { createCharacter } from '../models/Character.js';
 import { createCombat, heroParticipant, sortedParticipants } from './combatService.js';
 import { STORAGE_KEYS, loadJson, saveJson } from './storageService';
 
-export const SCHEMA_VERSION = 7;
+export const SCHEMA_VERSION = 8;
 
 const EMPTY_STATE = {
   schemaVersion: SCHEMA_VERSION,
@@ -10,6 +10,7 @@ const EMPTY_STATE = {
   characters: [],
   customItems: [],
   combats: [],
+  soloSessions: [],
   settings: {},
   activeGroupId: null,
 };
@@ -73,6 +74,7 @@ function normalizeState(saved = {}) {
           participants: Array.isArray(combat.participants) ? combat.participants : [],
         }))
       : [],
+    soloSessions: Array.isArray(saved.soloSessions) ? saved.soloSessions : [],
     settings: saved.settings && typeof saved.settings === 'object'
       ? { rulesEdition: '5e-2014', ...saved.settings }
       : { rulesEdition: '5e-2014' },
@@ -203,6 +205,7 @@ function integrateLegacy(saved, legacy) {
     characters,
     customItems: normalized.customItems,
     combats,
+    soloSessions: normalized.soloSessions,
     activeGroupId: normalized.activeGroupId || legacyGroup.id,
     settings: { ...normalized.settings, legacyIntegrated: true },
   });

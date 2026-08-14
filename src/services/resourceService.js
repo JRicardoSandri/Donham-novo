@@ -16,15 +16,15 @@ function normalizedName(value) {
     .toLowerCase();
 }
 
-function resource(id, name, max, recovery, previous, matcher = null) {
+function resource(id, name, max, recovery, previous, matcher = null, unlimited = false) {
   const normalized = normalizedName(name);
   const old = previous.find((item) =>
     item.id === id ||
     normalizedName(item.name) === normalized ||
     (matcher ? matcher(item) : false)
   );
-  const spent = old ? Math.max(0, old.max - old.current) : 0;
-  return { id, name, max, current: Math.max(0, max - spent), recovery, automatic: true };
+  const spent = old && !unlimited ? Math.max(0, old.max - old.current) : 0;
+  return { id, name, max, current: Math.max(0, max - spent), recovery, automatic: true, unlimited };
 }
 
 export function resourcesForCharacter(character) {
@@ -39,7 +39,9 @@ export function resourcesForCharacter(character) {
         definition.name,
         definition.max(level, character),
         typeof definition.recovery === 'function' ? definition.recovery(level, character) : definition.recovery,
-        previous
+        previous,
+        null,
+        typeof definition.unlimited === 'function' ? definition.unlimited(level, character) : Boolean(definition.unlimited)
       )
     );
 
@@ -106,7 +108,7 @@ export function resourcesForCharacter(character) {
 
 export function spendResource(resources, resourceId, delta) {
   return resources.map((item) =>
-    item.id === resourceId
+    item.id === resourceId && !item.unlimited
       ? { ...item, current: Math.max(0, Math.min(item.max, item.current + delta)) }
       : item
   );

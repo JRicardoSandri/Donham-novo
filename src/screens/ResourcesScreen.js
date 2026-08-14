@@ -278,14 +278,14 @@ export default function ResourcesScreen({ language = 'pt-BR' }) {
                 <Text style={styles.muted}>{tt('Recupera em descanso')} {normalizeRecovery(item.recovery) === RECOVERY.SHORT ? tt('curto') : tt('longo')}</Text>
               </View>
               <View style={styles.resourceControls}>
-                <PressableScale style={styles.control} onPress={() => updateResources(character.id, (items) => spendResource(items, item.id, -1))}>
+                <PressableScale style={styles.control} disabled={item.unlimited} onPress={() => updateResources(character.id, (items) => spendResource(items, item.id, -1))}>
                   <Text style={styles.controlText}>−</Text>
                 </PressableScale>
-                <Text style={[styles.count, item.current === 0 && styles.emptyCount]}>{item.current}/{item.max}</Text>
-                <PressableScale style={styles.control} onPress={() => updateResources(character.id, (items) => spendResource(items, item.id, 1))}>
+                <Text style={[styles.count, item.current === 0 && styles.emptyCount]}>{item.unlimited ? "∞" : `${item.current}/${item.max}`}</Text>
+                <PressableScale style={styles.control} disabled={item.unlimited} onPress={() => updateResources(character.id, (items) => spendResource(items, item.id, 1))}>
                   <Text style={styles.controlText}>+</Text>
                 </PressableScale>
-                <PressableScale style={styles.textControl} onPress={() => updateResources(character.id, (items) => items.map((resource) => resource.id === item.id ? { ...resource, current: 0 } : resource))}>
+                <PressableScale style={styles.textControl} onPress={() => updateResources(character.id, (items) => items.map((resource) => resource.id === item.id && !resource.unlimited ? { ...resource, current: 0 } : resource))}>
                   <Text style={styles.textControlLabel}>{tt('Usou')}</Text>
                 </PressableScale>
                 <PressableScale style={styles.textControl} onPress={() => updateResources(character.id, (items) => items.map((resource) => resource.id === item.id ? { ...resource, current: resource.max } : resource))}>

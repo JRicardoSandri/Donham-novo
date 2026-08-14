@@ -1,7 +1,12 @@
 import { resourcesForCharacter } from '../services/resourceService.js';
 import { CLASS_RESOURCES } from '../data/classProgression.js';
 import { ALL_RACE_RESOURCE_IDS, ALL_RACE_RESOURCE_NAMES } from '../data/raceProgression.js';
-import { ALL_SUBCLASS_RESOURCE_IDS, ALL_SUBCLASS_RESOURCE_NAMES } from '../data/subclassProgression.js';
+import {
+  ALL_SUBCLASS_RESOURCE_IDS,
+  ALL_SUBCLASS_RESOURCE_NAMES,
+  subclassById,
+  subclassUnlockLevel,
+} from '../data/subclassProgression.js';
 import { normalizeSpellcasting } from '../services/spellService.js';
 import {
   carryingCapacity,
@@ -55,14 +60,20 @@ export function createCharacter(input = {}) {
   );
   const attributes = { ...DEFAULT_ATTRIBUTES, ...(input.attributes || {}) };
   const level = levelFromXp(xp);
+  const classKey = input.classKey || 'Guerreiro';
+  const subclassKey = input.subclassKey
+    && level >= subclassUnlockLevel(classKey)
+    && subclassById(classKey, input.subclassKey)
+    ? input.subclassKey
+    : null;
   const calculatedInitiative = initiativeFromAttributes(attributes);
 
   const character = {
     id: input.id || `character-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
     name: String(input.name || '').trim(),
     player: String(input.player || '').trim(),
-    classKey: input.classKey || 'Guerreiro',
-    subclassKey: input.subclassKey || null,
+    classKey,
+    subclassKey,
     race: String(input.race || '').trim(),
     xp,
     background: String(input.background || '').trim(),

@@ -12,7 +12,7 @@ import { AnimatedBar, FadeInView, PressableScale } from '../components/MicroInte
 import { ATTRIBUTE_FIELDS, CLASSES } from '../data/dnd5e';
 import { progressionFor } from '../data/classFeatures';
 import { RACE_OPTIONS, raceProgressionFor } from '../data/raceProgression';
-import { subclassById, subclassesForClass } from '../data/subclassProgression';
+import { subclassById, subclassUnlockLevel, subclassesForClass } from '../data/subclassProgression';
 import { createCharacter } from '../models/Character';
 import { createGroup } from '../models/Group';
 import { useCampaign } from '../services/CampaignContext';
@@ -32,6 +32,7 @@ import {
   carryingCapacity,
   initiativeFromAttributes,
   proficiencyBonus,
+  levelFromXp,
   signedModifier,
   xpProgress,
 } from '../services/rulesService';
@@ -518,6 +519,8 @@ function CharacterModal({ draft, language, onChange, onSave, onClose }) {
   const [racePickerOpen, setRacePickerOpen] = useState(false);
   const [raceQuery, setRaceQuery] = useState('');
   const update = (patch) => onChange((old) => ({ ...old, ...patch }));
+  const draftLevel = levelFromXp(draft?.xp);
+  const subclassUnlocked = draftLevel >= subclassUnlockLevel(draft?.classKey);
   const updateAttribute = (key, value) =>
     onChange((old) => ({ ...old, attributes: { ...old.attributes, [key]: value } }));
 
@@ -591,7 +594,7 @@ function CharacterModal({ draft, language, onChange, onSave, onClose }) {
               ))}
             </ScrollView>
 
-            {subclassesForClass(draft?.classKey).length > 0 && (
+            {subclassUnlocked && subclassesForClass(draft?.classKey).length > 0 && (
               <>
                 <Text style={styles.fieldLabel}>{tt('Subclasse')}</Text>
                 <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.classStrip}>

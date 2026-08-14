@@ -213,6 +213,12 @@ export const SUBCLASS_RESOURCES = {
   ],
 };
 
+export function subclassUnlockLevel(classKey) {
+  if (['Bruxo', 'Clerigo', 'Clérigo', 'Feiticeiro'].includes(classKey)) return 1;
+  if (['Druida', 'Mago'].includes(classKey)) return 2;
+  return 3;
+}
+
 export function subclassesForClass(classKey) {
   return SUBCLASS_OPTIONS[classKey] || [];
 }

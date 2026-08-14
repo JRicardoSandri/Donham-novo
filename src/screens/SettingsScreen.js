@@ -79,6 +79,11 @@ export default function SettingsScreen({ language, settings = {}, onSettingsChan
           <Text style={styles.versionValue}>{APP_VERSION}</Text>
         </View>
       </FadeInView>
+
+      <FadeInView animationKey="settings-license" delay={120} style={styles.card}>
+        <Text style={styles.cardTitle}>{t('settingsLicenseTitle', currentLanguage)}</Text>
+        <Text style={styles.mutedBlock}>{t('settingsLicenseBody', currentLanguage)}</Text>
+      </FadeInView>
     </ScrollView>
   );
 }

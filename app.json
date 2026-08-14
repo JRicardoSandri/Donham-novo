@@ -1,8 +1,8 @@
 {
   "expo": {
-    "name": "RPG Combat Tracker",
-    "slug": "domhan-rpg-companion-supremo",
-    "owner": "ricardosandri",
+    "name": "RPG Campanhas Solo",
+    "slug": "rpg-campanhas-solo",
+    "owner": "rickerthsandri",
     "version": "1.0.2",
     "newArchEnabled": false,
     "orientation": "portrait",
@@ -15,17 +15,13 @@
       "**/*"
     ],
     "android": {
-      "package": "com.domhan.rpgcompanion",
+      "package": "com.rickerthsandri.rpgcampanhassolo",
       "softwareKeyboardLayoutMode": "pan",
-      "versionCode": 3,
+      "edgeToEdgeEnabled": true,
+      "versionCode": 1,
       "adaptiveIcon": {
         "foregroundImage": "./assets/icon.png",
         "backgroundColor": "#080A0E"
-      }
-    },
-    "extra": {
-      "eas": {
-        "projectId": "72b5b937-0c26-4cbc-bdc8-03fe792010ef"
       }
     },
     "plugins": [
@@ -35,12 +31,18 @@
           "android": {
             "compileSdkVersion": 35,
             "targetSdkVersion": 35,
-            "enableProguardInReleaseBuilds": false,
-            "enableShrinkResourcesInReleaseBuilds": false
+            "usesCleartextTraffic": true,
+            "enableProguardInReleaseBuilds": true,
+            "enableShrinkResourcesInReleaseBuilds": true
           }
         }
       ],
       "expo-asset"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "edbd8678-d2f8-4d1f-b704-8c4eedbd0388"
+      }
+    }
   }
 }

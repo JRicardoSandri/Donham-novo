@@ -1,11 +1,13 @@
 import React, { useCallback, useState } from 'react';
-import { SafeAreaView, StatusBar, StyleSheet, Text, View } from 'react-native';
+import { StatusBar, StyleSheet, Text, View } from 'react-native';
+import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 import AppSplashScreen from './src/components/AppSplashScreen';
 import { FadeInView, PressableScale } from './src/components/MicroInteractions';
 import GroupsScreen from './src/screens/GroupsScreen';
 import ResourcesScreen from './src/screens/ResourcesScreen';
 import CombatScreen from './src/screens/CombatScreen';
 import InventoryScreen from './src/screens/InventoryScreen';
+import SoloCampaignScreen from './src/screens/SoloCampaignScreen';
 import SettingsScreen from './src/screens/SettingsScreen';
 import { CampaignProvider, useCampaign } from './src/services/CampaignContext';
 import { activeLanguage, t } from './src/services/i18nService';
@@ -13,9 +15,11 @@ import { colors, shadows } from './src/theme';
 
 export default function App() {
   return (
-    <CampaignProvider>
-      <AppContent />
-    </CampaignProvider>
+    <SafeAreaProvider>
+      <CampaignProvider>
+        <AppContent />
+      </CampaignProvider>
+    </SafeAreaProvider>
   );
 }
 
@@ -25,26 +29,29 @@ function AppContent() {
   const [showSplash, setShowSplash] = useState(true);
   const finishSplash = useCallback(() => setShowSplash(false), []);
   const language = activeLanguage(state?.settings);
+  const insets = useSafeAreaInsets();
 
   return (
     <View style={styles.appRoot}>
-      <SafeAreaView style={styles.safe}>
+      <View style={[styles.safe, { paddingTop: insets.top }]}>
         <StatusBar barStyle="light-content" backgroundColor={colors.background} />
         <FadeInView animationKey={area} style={styles.screen}>
           {area === 'groups' && <GroupsScreen language={language} />}
           {area === 'resources' && <ResourcesScreen language={language} />}
           {area === 'combat' && <CombatScreen language={language} />}
           {area === 'inventory' && <InventoryScreen language={language} />}
+          {area === 'adventure' && <SoloCampaignScreen language={language} />}
           {area === 'settings' && <SettingsScreen language={language} settings={state?.settings} onSettingsChange={setState} />}
         </FadeInView>
-        <View style={styles.navigation}>
+        <View style={[styles.navigation, { paddingBottom: 10 + insets.bottom }]}>
           <NavButton symbol="♙" label={t('navCharacters', language)} active={area === 'groups'} onPress={() => setArea('groups')} />
           <NavButton symbol="✦" label={t('navResources', language)} active={area === 'resources'} onPress={() => setArea('resources')} />
           <NavButton symbol="⚔" label={t('navCombat', language)} active={area === 'combat'} onPress={() => setArea('combat')} />
           <NavButton symbol="▣" label={t('navItems', language)} active={area === 'inventory'} onPress={() => setArea('inventory')} />
+          <NavButton symbol="◇" label={t('navAdventure', language)} active={area === 'adventure'} onPress={() => setArea('adventure')} />
           <NavButton symbol="⚙" label={t('navSettings', language)} active={area === 'settings'} onPress={() => setArea('settings')} />
         </View>
-      </SafeAreaView>
+      </View>
       {showSplash && <AppSplashScreen onFinish={finishSplash} />}
     </View>
   );

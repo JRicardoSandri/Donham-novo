@@ -7,16 +7,23 @@
     "start": "expo start",
     "android": "expo start --android",
     "web": "expo start --web",
-    "build:apk": "eas build -p android --profile preview"
+    "build:apk": "eas build -p android --profile preview",
+    "qa:rules": "node --experimental-default-type=module scripts/qa-rules-matrix.mjs",
+    "qa:campaign": "node scripts/qa-campaign-mechanics.mjs"
   },
   "dependencies": {
+    "@expo/metro-runtime": "~5.0.5",
     "@react-native-async-storage/async-storage": "2.1.2",
     "expo": "~53.0.27",
     "expo-asset": "~11.1.7",
     "expo-build-properties": "~0.14.8",
     "expo-status-bar": "~2.2.3",
     "react": "19.0.0",
-    "react-native": "0.79.6"
+    "react-dom": "19.0.0",
+    "react-native": "0.79.6",
+    "react-native-safe-area-context": "5.4.0",
+    "react-native-web": "^0.20.0",
+    "react-native-webview": "13.13.5"
   },
   "devDependencies": {
     "@babel/core": "^7.24.0"

@@ -7,7 +7,7 @@ const charismaModifier = (character) =>
   Math.floor(((Number(character.attributes?.charisma) || 10) - 10) / 2);
 
 export const CLASS_RESOURCES = {
-  Barbaro: [{ id: 'rage', name: 'Furia', unlock: 1, recovery: RECOVERY.LONG, max: (level) => (level < 3 ? 2 : level < 6 ? 3 : level < 12 ? 4 : level < 17 ? 5 : 6) }],
+  Barbaro: [{ id: 'rage', name: 'Furia', unlock: 1, recovery: RECOVERY.LONG, max: (level) => (level < 3 ? 2 : level < 6 ? 3 : level < 12 ? 4 : level < 17 ? 5 : 6), unlimited: (level) => level >= 20 }],
   Bardo: [{
     id: 'bardic-inspiration',
     name: 'Inspiracao de Bardo',
@@ -16,7 +16,7 @@ export const CLASS_RESOURCES = {
     max: (_level, character) => Math.max(1, charismaModifier(character)),
   }],
   Clerigo: [{ id: 'channel-divinity', name: 'Canalizar Divindade', unlock: 2, recovery: RECOVERY.SHORT, max: (level) => (level < 6 ? 1 : level < 18 ? 2 : 3) }],
-  Druida: [{ id: 'wild-shape', name: 'Forma Selvagem', unlock: 2, recovery: RECOVERY.SHORT, max: () => 2 }],
+  Druida: [{ id: 'wild-shape', name: 'Forma Selvagem', unlock: 2, recovery: RECOVERY.SHORT, max: () => 2, unlimited: (level) => level >= 20 }],
   Feiticeiro: [
     { id: 'sorcery-points', name: 'Pontos de Feiticaria', unlock: 2, recovery: RECOVERY.LONG, max: (level) => level },
   ],
