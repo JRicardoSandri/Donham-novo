@@ -1,9 +1,9 @@
 {
   "expo": {
-    "name": "RPG Campanhas Solo",
-    "slug": "rpg-campanhas-solo",
-    "owner": "rickerthsandri",
-    "version": "1.0.2",
+    "name": "RPG Combat Tracker",
+    "slug": "domhan-rpg-companion-supremo",
+    "owner": "ricardosandri",
+    "version": "1.0.3",
     "newArchEnabled": false,
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -15,7 +15,7 @@
       "**/*"
     ],
     "android": {
-      "package": "com.rickerthsandri.rpgcampanhassolo",
+      "package": "com.domhan.rpgcompanion",
       "softwareKeyboardLayoutMode": "pan",
       "edgeToEdgeEnabled": true,
       "versionCode": 1,
@@ -41,7 +41,7 @@
     ],
     "extra": {
       "eas": {
-        "projectId": "edbd8678-d2f8-4d1f-b704-8c4eedbd0388"
+        "projectId": "72b5b937-0c26-4cbc-bdc8-03fe792010ef"
       }
     }
   }

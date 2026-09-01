@@ -57,7 +57,7 @@ const QUESTIONS_PT = [
     id: 'campaign',
     question: 'Como funcionam as campanhas solo?',
     keywords: ['campanha', 'campanhas', 'aventura', 'aventuras', 'solo', 'livro-jogo', 'historia', 'checkpoint', 'progresso', 'tabuleiro'],
-    answer: 'Na aba Campanha, escolha uma das aventuras solo e jogue com um personagem do grupo ativo. Cada campanha e um livro-jogo com narrativa, escolhas, armadilhas, pontos de descanso e combates taticos no tabuleiro fieis ao D&D 5e: iniciativa, deslocamento, ataques de oportunidade, magias em area, recursos de classe e concentracao. A aventura usa a ficha inteira do personagem (atributos, CA, PV, magias do catalogo e recursos). O progresso e salvo em checkpoints por personagem, entao voce pode trocar de campanha ou heroi e continuar de onde parou.',
+    answer: 'Na aba Campanha, escolha uma das aventuras solo e jogue com um personagem do grupo ativo. Cada campanha e um livro-jogo com narrativa, escolhas, armadilhas, pontos de descanso e combates taticos no tabuleiro fieis as regras 5e: iniciativa, deslocamento, ataques de oportunidade, magias em area, recursos de classe e concentracao. A aventura usa a ficha inteira do personagem (atributos, CA, PV, magias do catalogo e recursos). O progresso e salvo em checkpoints por personagem, entao voce pode trocar de campanha ou heroi e continuar de onde parou.',
   },
   {
     id: 'combat',
@@ -174,7 +174,7 @@ const QUESTIONS_EN = [
     id: 'campaign',
     question: 'How do solo campaigns work?',
     keywords: ['campaign', 'campaigns', 'adventure', 'adventures', 'solo', 'gamebook', 'story', 'checkpoint', 'progress', 'board'],
-    answer: 'In the Adventure tab, pick one of the solo adventures and play it with a character from the active party. Each campaign is a gamebook with narrative, choices, traps, rest points, and tactical board combat faithful to D&D 5e: initiative, movement, opportunity attacks, area spells, class resources, and concentration. The adventure uses the full character sheet (ability scores, AC, HP, catalog spells, and resources). Progress is saved at checkpoints per character, so you can switch campaign or hero and resume where you left off.',
+    answer: 'In the Adventure tab, pick one of the solo adventures and play it with a character from the active party. Each campaign is a gamebook with narrative, choices, traps, rest points, and tactical board combat faithful to 5e rules: initiative, movement, opportunity attacks, area spells, class resources, and concentration. The adventure uses the full character sheet (ability scores, AC, HP, catalog spells, and resources). Progress is saved at checkpoints per character, so you can switch campaign or hero and resume where you left off.',
   },
   {
     id: 'combat',
@@ -291,7 +291,7 @@ const QUESTIONS_ES = [
     id: 'campaign',
     question: 'Como funcionan las campanas en solitario?',
     keywords: ['campana', 'campanas', 'aventura', 'aventuras', 'solitario', 'librojuego', 'historia', 'checkpoint', 'progreso', 'tablero'],
-    answer: 'En la pestana Aventura, elige una de las aventuras en solitario y juegala con un personaje del grupo activo. Cada campana es un librojuego con narrativa, decisiones, trampas, puntos de descanso y combates tacticos en el tablero fieles a D&D 5e: iniciativa, desplazamiento, ataques de oportunidad, conjuros de area, recursos de clase y concentracion. La aventura usa la ficha completa del personaje (atributos, CA, PG, conjuros del catalogo y recursos). El progreso se guarda en checkpoints por personaje, asi que puedes cambiar de campana o heroe y continuar donde lo dejaste.',
+    answer: 'En la pestana Aventura, elige una de las aventuras en solitario y juegala con un personaje del grupo activo. Cada campana es un librojuego con narrativa, decisiones, trampas, puntos de descanso y combates tacticos en el tablero fieles a las reglas 5e: iniciativa, desplazamiento, ataques de oportunidad, conjuros de area, recursos de clase y concentracion. La aventura usa la ficha completa del personaje (atributos, CA, PG, conjuros del catalogo y recursos). El progreso se guarda en checkpoints por personaje, asi que puedes cambiar de campana o heroe y continuar donde lo dejaste.',
   },
   {
     id: 'combat',

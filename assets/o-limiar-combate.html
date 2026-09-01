@@ -3357,6 +3357,11 @@
           turn.bonusActionSpent = true; turn.disengaged = true; drawActions();
         });
         cunningDisengage.disabled = turn.bonusActionSpent; gAct.appendChild(cunningDisengage);
+        var cunningHide = button('Ação Ardilosa · Esconder', 'ação bônus · vantagem no próximo ataque', 'res', function () {
+          turn.bonusActionSpent = true; S.advNextAtk = true; renderBadges(); drawActions();
+          hint('Você se esconde com a Ação Ardilosa: vantagem no próximo ataque, habilitando o Ataque Furtivo.');
+        });
+        cunningHide.disabled = turn.bonusActionSpent; gAct.appendChild(cunningHide);
       }
       if (/paladino/.test(className) && CHAR.level >= 2) {
         var smiteSlot = availableSlot(1);

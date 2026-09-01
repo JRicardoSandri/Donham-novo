@@ -13,6 +13,7 @@ const BASE_TRANSLATIONS = {
     navResources: 'Recursos',
     navCombat: 'Combate',
     navItems: 'Inventário',
+    navAdventure: 'Campanha',
     navHelp: 'Ajuda interativa',
     navSettings: 'Ajustes',
     settingsTitle: 'Configurações',
@@ -35,6 +36,7 @@ const BASE_TRANSLATIONS = {
     navResources: 'Resources',
     navCombat: 'Combat',
     navItems: 'Inventory',
+    navAdventure: 'Campaign',
     navHelp: 'Interactive Help',
     navSettings: 'Settings',
     settingsTitle: 'Settings',
@@ -57,6 +59,7 @@ const BASE_TRANSLATIONS = {
     navResources: 'Recursos',
     navCombat: 'Combate',
     navItems: 'Inventario',
+    navAdventure: 'Campaña',
     navHelp: 'Ayuda interactiva',
     navSettings: 'Ajustes',
     settingsTitle: 'Configuración',
@@ -2552,7 +2555,7 @@ export function normalizeLanguage(language) {
   return 'pt-BR';
 }
 
-// Unidades oficiais do D&D 5e por idioma: as edições em inglês e espanhol
+// Unidades oficiais das regras 5e por idioma: as edições em inglês e espanhol
 // usam pés/libras; a tradução brasileira usa metros/quilogramas.
 // Fatores oficiais das traduções: 5 ft = 1,5 m e 1 lb = 0,5 kg,
 // então a conversão de volta é exata (9 m -> 30 ft, 7,5 kg -> 15 lb).
